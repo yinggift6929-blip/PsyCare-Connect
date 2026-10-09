@@ -1,0 +1,567 @@
+import { AppClinicData } from '../types.ts';
+
+export const initialClinicData: AppClinicData = {
+  patients: [
+    {
+      id: 'P101',
+      hn: '66-00124',
+      name: 'นายสมชาย ใจดี',
+      gender: 'ชาย',
+      age: 42,
+      diagnosis: 'Schizophrenia (Treatment-Resistant)',
+      trackingGroup: 'home_visit',
+      statusTag: 'Clozapine Clinic',
+      riskLevel: 'high',
+      adherenceScore: 92,
+      phone: '081-234-5678',
+      address: '12/4 หมู่ 3 ต.ในเมือง อ.เมือง',
+      lastVisit: '2026-10-04',
+      nextAppointment: '2026-10-09', // วันนี้!
+      nextAppointmentType: 'home_visit',
+      nextAppointmentObjective: 'เยี่ยมบ้านติดตามอาการน้ำลายไหลย้อยตอนนอน และนับเม็ดยา Clozapine',
+      updatedAt: '2026-10-08 14:30'
+    },
+    {
+      id: 'P102',
+      hn: '66-00482',
+      name: 'นางสาววิภาดา สุขสันต์',
+      gender: 'หญิง',
+      age: 29,
+      diagnosis: 'Major Depressive Disorder (MDD)',
+      trackingGroup: 'telemed',
+      statusTag: 'High Suicide Risk',
+      riskLevel: 'high',
+      adherenceScore: 65,
+      phone: '089-876-5432',
+      address: '88/15 ซอยสุขเกษม',
+      lastVisit: '2026-10-05',
+      nextAppointment: '2026-10-09', // วันนี้!
+      nextAppointmentType: 'telemed',
+      nextAppointmentObjective: 'โทร Telemed ติดตามอาการคลื่นไส้จากการทาน Sertraline หลังอาหารเช้า',
+      updatedAt: '2026-10-08 16:15'
+    },
+    {
+      id: 'P103',
+      hn: '65-01899',
+      name: 'นายประเสริฐ มั่นคง',
+      gender: 'ชาย',
+      age: 54,
+      diagnosis: 'Bipolar I Disorder',
+      trackingGroup: 'clinic_dtp',
+      statusTag: 'Lithium TDM',
+      riskLevel: 'moderate',
+      adherenceScore: 88,
+      phone: '086-111-2233',
+      address: '45 ถ.มิตรภาพ',
+      lastVisit: '2026-09-20',
+      nextAppointment: '2026-10-15',
+      nextAppointmentType: 'clinic',
+      nextAppointmentObjective: 'ติดตามผลตรวจระดับยา Lithium ในเลือด และทบทวนการห้ามใช้ NSAIDs',
+      updatedAt: '2026-10-07 10:00'
+    },
+    {
+      id: 'P104',
+      hn: '67-00215',
+      name: 'นายอนุชา พงษ์เพียร',
+      gender: 'ชาย',
+      age: 35,
+      diagnosis: 'Schizoaffective Disorder',
+      trackingGroup: 'home_visit',
+      statusTag: 'Depot LAI',
+      riskLevel: 'moderate',
+      adherenceScore: 95,
+      phone: '082-998-8776',
+      address: '109 หมู่ 7 ต.รอบเวียง',
+      lastVisit: '2026-09-25',
+      nextAppointment: '2026-10-23',
+      nextAppointmentType: 'home_visit',
+      nextAppointmentObjective: 'นัดเยี่ยมบ้านฉีดยา Depot Paliperidone 100 mg IM',
+      updatedAt: '2026-10-06 11:20'
+    },
+    {
+      id: 'P105',
+      hn: '67-00331',
+      name: 'นางเพ็ญศรี มีสุข',
+      gender: 'หญิง',
+      age: 61,
+      diagnosis: 'Schizophrenia with Metabolic Syndrome',
+      trackingGroup: 'clinic_dtp',
+      statusTag: 'Olanzapine Weight Gain',
+      riskLevel: 'high',
+      adherenceScore: 78,
+      phone: '081-555-4321',
+      address: '24/1 ถ.สถิตย์ยุติธรรม ต.ในเมือง',
+      lastVisit: '2026-09-28',
+      nextAppointment: '2026-10-09', // วันนี้!
+      nextAppointmentType: 'clinic',
+      nextAppointmentObjective: 'ตรวจติดตาม FBS, Lipid profile, น้ำหนักตัวที่ขึ้นจาก Olanzapine และประเมิน DTP',
+      updatedAt: '2026-10-08 17:00'
+    }
+  ],
+  medications: [
+    {
+      id: 'M101',
+      patientId: 'P101',
+      hn: '66-00124',
+      name: 'Clozapine 100 mg tab',
+      sig: 'รับประทานครั้งละ 1 เม็ด ก่อนนอน (1 tab hs)',
+      indication: 'คุมอาการจิตเภทดื้อยา (Refractory Schizophrenia)',
+      adherence: 95,
+      category: 'Antipsychotic',
+      startDate: '2026-04-10',
+      notes: 'ติดตาม WBC/ANC สม่ำเสมอ'
+    },
+    {
+      id: 'M102',
+      patientId: 'P101',
+      hn: '66-00124',
+      name: 'Trihexyphenidyl (Artane) 2 mg tab',
+      sig: 'รับประทานครั้งละ 1 เม็ด วันละ 1 ครั้ง ก่อนนอน',
+      indication: 'ป้องกันและบรรเทาอาการข้างเคียงกล้ามเนื้อเกร็งสั่น (EPS)',
+      adherence: 90,
+      category: 'Antiparkinson',
+      startDate: '2026-04-10'
+    },
+    {
+      id: 'M103',
+      patientId: 'P102',
+      hn: '66-00482',
+      name: 'Sertraline 50 mg tab',
+      sig: 'รับประทานครั้งละ 1 เม็ด หลังอาหารเช้า',
+      indication: 'รักษาโรคซึมเศร้า (Major Depression)',
+      adherence: 60,
+      category: 'Antidepressant',
+      startDate: '2026-09-15',
+      notes: 'ผู้ป่วยบ่นคลื่นไส้ ลืมทานยาบ่อย'
+    },
+    {
+      id: 'M104',
+      patientId: 'P102',
+      hn: '66-00482',
+      name: 'Lorazepam 1 mg tab',
+      sig: 'รับประทานครั้งละ 1 เม็ด ก่อนนอน เมื่อนอนไม่หลับ (prn)',
+      indication: 'ช่วยให้นอนหลับ ลดความกังวลชั่วคราว',
+      adherence: 80,
+      category: 'Anxiolytic',
+      startDate: '2026-09-15'
+    },
+    {
+      id: 'M105',
+      patientId: 'P103',
+      hn: '65-01899',
+      name: 'Lithium carbonate 300 mg cap',
+      sig: 'รับประทานครั้งละ 1 แคปซูล วันละ 2 ครั้ง หลังอาหารเช้า-เย็น',
+      indication: 'ยาปรับสมดุลอารมณ์ (Mood Stabilizer) ใน Bipolar I',
+      adherence: 90,
+      category: 'Mood Stabilizer',
+      startDate: '2025-11-01',
+      notes: 'ห้ามทานร่วมกับยาแก้ปวดกลุ่ม NSAIDs เด็ดขาด'
+    },
+    {
+      id: 'M106',
+      patientId: 'P103',
+      hn: '65-01899',
+      name: 'Quetiapine 200 mg tab',
+      sig: 'รับประทานครั้งละ 1 เม็ด ก่อนนอน',
+      indication: 'ช่วยการนอนหลับ และคุมอารมณ์พลุ่งพล่าน',
+      adherence: 85,
+      category: 'Antipsychotic',
+      startDate: '2026-01-10'
+    },
+    {
+      id: 'M107',
+      patientId: 'P104',
+      hn: '67-00215',
+      name: 'Paliperidone palmitate (Invega Sustenna) 100 mg/mL inj',
+      sig: 'ฉีดเข้ากล้ามเนื้อ 1 หลอด ทุก 4 สัปดาห์',
+      indication: 'ยาฉีดออกฤทธิ์เนิ่นควบคุมอาการจิตเภท (LAI Depot)',
+      adherence: 100,
+      category: 'Antipsychotic',
+      startDate: '2026-03-01',
+      notes: 'ฉีดโดยพยาบาลที่คลินิกจิตเวช'
+    }
+  ],
+  dtps: [
+    {
+      id: 'D101',
+      patientId: 'P101',
+      hn: '66-00124',
+      date: '2026-10-04',
+      domain: 'Adverse Drug Reaction / EPS',
+      description: 'ผู้ป่วยมีภาวะน้ำลายไหลย้อยมากผิดปกติช่วงกลางคืน (Clozapine-induced hypersalivation/sialorrhea)',
+      causeDrug: 'Clozapine 100 mg',
+      intervention: 'แนะนำสุขอนามัยการนอน หนุนหมอนสูง และปรึกษาจิตแพทย์พิจารณาปรับขนาดยาหรือให้ยาช่วยลดน้ำลายหากรบกวนการนอน',
+      status: 'pending',
+      recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)'
+    },
+    {
+      id: 'D102',
+      patientId: 'P101',
+      hn: '66-00124',
+      date: '2026-09-20',
+      domain: 'Safety Monitoring',
+      description: 'ครบกำหนดตรวจติดตามระดับเม็ดเลือดขาว (WBC และ Absolute Neutrophil Count - ANC) ตามเกณฑ์ Clozapine Protocol',
+      causeDrug: 'Clozapine 100 mg',
+      intervention: 'ส่งเจาะเลือด CBC ผล ANC = 3,450 /mm³ (Green Zone ปลอดภัย สั่งจ่ายยาต่อได้ตามปกติ)',
+      status: 'resolved',
+      recordedBy: 'ภก.กิตติพงษ์'
+    },
+    {
+      id: 'D103',
+      patientId: 'P102',
+      hn: '66-00482',
+      date: '2026-10-05',
+      domain: 'Non-adherence',
+      description: 'ผู้ป่วยหยุดยา Sertraline เองติดต่อกัน 4 วัน เนื่องจากมีอาการคลื่นไส้ มวนท้องหลังจากเริ่มทานยา',
+      causeDrug: 'Sertraline 50 mg',
+      intervention: 'อธิบายว่าเป็นผลข้างเคียงช่วง 1-2 สัปดาห์แรกของกลุ่ม SSRI และจะดีขึ้นเอง แนะนำทานพร้อมอาหารเช้าทันทีหรือหลังอาหารทันที พร้อมสร้างความเข้าใจเรื่องระยะเวลาออกฤทธิ์ต้านเศร้า',
+      status: 'pending',
+      recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)'
+    },
+    {
+      id: 'D104',
+      patientId: 'P103',
+      hn: '65-01899',
+      date: '2026-09-10',
+      domain: 'Drug Interaction',
+      description: 'ผู้ป่วยซื้อยาแก้ปวดข้อไอบูโพรเฟน (Ibuprofen 400 mg) ทานเอง มีความเสี่ยงต่อ Lithium Toxicity จากไตขับยาลิเทียมลดลง',
+      causeDrug: 'Lithium carbonate + Ibuprofen',
+      intervention: 'อธิบายอันตรายของการใช้ NSAIDs กับ Lithium ให้ผู้ป่วยและญาติฟัง แนะนำให้ใช้ Paracetamol บรรเทาอาการปวดแทน และเก็บยา NSAIDs ออกจากบ้าน',
+      status: 'resolved',
+      recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)'
+    }
+  ],
+  soapNotes: [
+    {
+      id: 'S101',
+      patientId: 'P101',
+      hn: '66-00124',
+      date: '2026-10-04',
+      subjective: 'ผู้ป่วยและญาติมาตามนัด อาการหูแว่วภาพหลอนไม่มีแล้ว อารมณ์สงบดี สามารถช่วยงานบ้านได้ แต่บ่นเรื่องน้ำลายไหลเลอะหมอนตอนนอนหลับ ต้องเปลี่ยนปลอกหมอนบ่อยครั้ง',
+      objective: 'BP 122/78 mmHg, PR 76 bpm, น้ำหนัก 72 kg (คงที่). Adherence จากการนับเม็ด = 92%. ผลตรวจ ANC ล่าสุด 3,450 /mm³ (อยู่ใน Green Zone)',
+      assessment: 'Schizophrenia อาการสงบควบคุมได้ดีด้วย Clozapine 100 mg hs. มีปัญหา Clozapine-induced hypersalivation ยังไม่มีไข้หรืออาการติดเชื้อ',
+      plan: '1. จ่าย Clozapine 100 mg 1xhs ต่อเนื่อง 14 วัน\n2. ให้คำแนะนำการนอนหนุนหมอนสูง และวางผ้าซับน้ำลาย\n3. ส่งต่อปรึกษาแพทย์และทีมพยาบาลติดตามอาการสำลัก\n4. นัดตรวจ CBC ติดตามสัปดาห์หน้า',
+      recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)',
+      role: 'pharmacist'
+    },
+    {
+      id: 'S102',
+      patientId: 'P102',
+      hn: '66-00482',
+      date: '2026-10-05',
+      subjective: 'ผู้ป่วยมีสีหน้าหมองเศร้า ร้องไห้ระหว่างสัมภาษณ์ บอกว่าทานยา Sertraline แล้วคลื่นไส้ มึนศีรษะ จึงหยุดยาเองไป 4 วัน รู้สึกท้อแท้ ไม่อยากทำอะไร',
+      objective: 'PHQ-9 = 18 (ซึมเศร้าปานกลางค่อนข้างรุนแรง), 8Q = 9 (มีความคิดอยากตายเป็นพักๆ แต่ไม่มีแผนการชัดเจน). Adherence 60%',
+      assessment: 'MDD with poor medication adherence secondary to GI adverse effects (SSRI nausea). มีความเสี่ยงซึมเศร้ากำเริบ',
+      plan: '1. เสริมสร้างแรงจูงใจในการใช้ยา (Adherence counseling) แนะนำทาน Sertraline พร้อมอาหารเช้า\n2. ส่งต่อด่วนถึงนักจิตวิทยาเพื่อทำ CBT และประสานพยาบาลติดตามทางโทรศัพท์\n3. มอบเบอร์โทรศัพท์คลินิกจิตเวชกรณีฉุกเฉิน',
+      recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)',
+      role: 'pharmacist'
+    }
+  ],
+  safetyLogs: [
+    {
+      id: 'SL101',
+      patientId: 'P101',
+      hn: '66-00124',
+      date: '2026-10-04',
+      clozapineWbc: 6800,
+      clozapineAnc: 3450,
+      epsSymptoms: 'Mild sialorrhea (ไม่พบ Tremor, Rigidity หรือ Akathisia)',
+      metabolicBp: '122/78 mmHg',
+      metabolicFbs: 104,
+      metabolicLipids: 'Chol 210, TG 180',
+      weight: 72,
+      bmi: 24.8,
+      notes: 'WBC/ANC ปลอดภัยในระดับ Green Zone'
+    },
+    {
+      id: 'SL102',
+      patientId: 'P103',
+      hn: '65-01899',
+      date: '2026-09-20',
+      lithiumLevel: 0.78,
+      epsSymptoms: 'Fine tremor เล็กน้อยที่ปลายนิ้วมือสองข้าง',
+      metabolicBp: '130/82 mmHg',
+      metabolicFbs: 108,
+      weight: 81,
+      bmi: 26.5,
+      notes: 'Lithium level อยู่ในช่วงการรักษา (Target 0.6 - 1.0 mEq/L) การทำงานของไต eGFR 82 ปกติ'
+    }
+  ],
+  nurseRecords: [
+    {
+      id: 'N101',
+      patientId: 'P101',
+      hn: '66-00124',
+      date: '2026-10-04',
+      bp: '122/78',
+      pulse: '76',
+      weight: 72,
+      bmi: 24.8,
+      dotObserved: true,
+      mseObservation: 'ผู้ป่วยสบตาดี พูดคุยตอบคำถามตรงประเด็น ไม่มีพฤติกรรมก้าวร้าว แต่งกายเรียบร้อย ญาติดูแลใกล้ชิด',
+      riskBehavior: 'ไม่พบพฤติกรรมเสี่ยงหรือความรุนแรง',
+      nurseName: 'พว.ประภัสสร (พยาบาลจิตเวช)'
+    },
+    {
+      id: 'N102',
+      patientId: 'P104',
+      hn: '67-00215',
+      date: '2026-09-25',
+      bp: '118/76',
+      pulse: '72',
+      weight: 68,
+      bmi: 23.2,
+      depotDrug: 'Paliperidone palmitate 100 mg IM (Deltoid)',
+      depotDate: '2026-09-25',
+      dotObserved: true,
+      mseObservation: 'มาตามนัดฉีดยาตรงเวลา อาการทางจิตนิ่งดี ไม่มีอาการข้างเคียงบริเวณที่ฉีด นัดฉีดเข็มถัดไป 23 ต.ค.',
+      riskBehavior: 'ปกติ ให้ความร่วมมือดีเยี่ยม',
+      nurseName: 'พว.สมหญิง (พยาบาลจิตเวช)'
+    }
+  ],
+  psychRecords: [
+    {
+      id: 'PS101',
+      patientId: 'P102',
+      hn: '66-00482',
+      date: '2026-10-05',
+      phq9Score: 18,
+      suicideRisk8q: 'ปานกลาง (8Q = 9)',
+      gad7Score: 12,
+      therapyType: 'CBT (การปรับความคิดและพฤติกรรม) + Safety Planning',
+      sessionNumber: 'ครั้งที่ 3 / 6',
+      counselingNotes: 'ผู้ป่วยระบายความรู้สึกท้อแท้จากผลข้างเคียงของยาและความเครียดจากงาน ได้ร่วมทำ Safety Plan และกำหนดกิจกรรมตารางชีวิต (Behavioral Activation) พร้อมประสานเภสัชกรแนะนำเทคนิคทานยา',
+      psychologistName: 'นจต.นภัสสร (นักจิตวิทยาคลินิก)'
+    },
+    {
+      id: 'PS102',
+      patientId: 'P103',
+      hn: '65-01899',
+      date: '2026-09-15',
+      phq9Score: 4,
+      suicideRisk8q: '0 (ไม่มีความเสี่ยง)',
+      gad7Score: 5,
+      therapyType: 'Psychoeducation & Relapse Prevention',
+      sessionNumber: 'ครั้งที่ 4 / 4',
+      counselingNotes: 'ผู้ป่วยเข้าใจสัญญาณเตือน (Early Warning Signs) ของภาวะ Mania และ Depression เป็นอย่างดี สามารถจัดการสุขอนามัยการนอนหลับได้ดี',
+      psychologistName: 'นจต.นภัสสร (นักจิตวิทยาคลินิก)'
+    }
+  ],
+  handovers: [
+    {
+      id: 'H101',
+      patientId: 'P102',
+      hn: '66-00482',
+      patientName: 'นางสาววิภาดา สุขสันต์',
+      timestamp: '2026-10-06 09:30',
+      senderRole: 'psychologist',
+      targetRole: 'pharmacist',
+      priority: 'urgent',
+      subject: 'ติดตามความร่วมมือการทานยา Sertraline หลังทำ CBT',
+      content: 'คนไข้แจ้งว่าพยายามทานยาตามที่เภสัชแนะนำหลังอาหารเช้าแล้ว อาการคลื่นไส้ลดลง รบกวนเภสัชกรช่วยติดตามและให้กำลังใจต่อเนื่องในนัดถัดไป 12 ต.ค. ด้วยนะคะ',
+      status: 'open'
+    },
+    {
+      id: 'H102',
+      patientId: 'P101',
+      hn: '66-00124',
+      patientName: 'นายสมชาย ใจดี',
+      timestamp: '2026-10-05 11:15',
+      senderRole: 'pharmacist',
+      targetRole: 'nurse',
+      priority: 'urgent',
+      subject: 'เฝ้าระวังอาการน้ำลายไหลย้อยตอนนอน (Sialorrhea)',
+      content: 'ผู้ป่วยมีปัญหาน้ำลายไหลมากจาก Clozapine รบกวนพยาบาลช่วยย้ำญาติเรื่องท่านอนหนุนหมอนสูง และสอบถามอาการสำลักหรือไอตอนตื่นนอนด้วยครับ',
+      status: 'open'
+    },
+    {
+      id: 'H103',
+      patientId: 'P104',
+      hn: '67-00215',
+      patientName: 'นายอนุชา พงษ์เพียร',
+      timestamp: '2026-09-25 14:00',
+      senderRole: 'nurse',
+      targetRole: 'all',
+      priority: 'normal',
+      subject: 'ฉีดยา Depot Paliperidone เรียบร้อยตามแผน',
+      content: 'ฉีดยา Paliperidone 100 mg IM Deltoid เรียบร้อย นัดครั้งถัดไป 23 ต.ค. 2026 ผู้ป่วยอาการคงที่และอารมณ์ดี',
+      status: 'resolved',
+      resolvedBy: 'ภญ.สุพิชฌาย์',
+      resolvedAt: '2026-09-25 15:30',
+      responseNote: 'รับทราบ ขอบคุณทีมพยาบาลครับ'
+    }
+  ],
+  mars5Records: [
+    {
+      id: 'MARS101',
+      patientId: 'P101',
+      hn: '66-00124',
+      date: '2026-10-04',
+      q1: 5,
+      q2: 5,
+      q3: 5,
+      q4: 4,
+      q5: 5,
+      totalScore: 24,
+      interpretation: 'ความร่วมมือดี (High Adherence ≥ 23-24 คะแนน)',
+      evaluatedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)',
+      notes: 'ผู้ป่วยทาน Clozapine สม่ำเสมอ มีญาติช่วยเตือนความจำ'
+    },
+    {
+      id: 'MARS102',
+      patientId: 'P102',
+      hn: '66-00482',
+      date: '2026-10-05',
+      q1: 3,
+      q2: 2,
+      q3: 3,
+      q4: 3,
+      q5: 2,
+      totalScore: 13,
+      interpretation: 'ความร่วมมือปานกลาง/ต่ำ (Poor-Moderate Adherence < 23 คะแนน)',
+      evaluatedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)',
+      notes: 'หยุดยา Sertraline เองบ่อยเนื่องจากคลื่นไส้'
+    }
+  ],
+  diepssRecords: [
+    {
+      id: 'DIEPSS101',
+      patientId: 'P101',
+      hn: '66-00124',
+      date: '2026-10-04',
+      antipsychoticDrug: 'Clozapine 100 mg / Risperidone 2 mg',
+      gait: 0,
+      kineticTremor: 0,
+      restTremor: 0,
+      sialorrhea: 3,
+      muscleRigidity: 0,
+      akathisia: 0,
+      dystonia: 0,
+      dyskinesia: 0,
+      overallSeverity: 1,
+      totalScore: 4,
+      severityLabel: 'Minimal/Mild (เล็กน้อย-เบา)',
+      actionPlan: 'ให้คำแนะนำสุขอนามัยการนอนหนุนหมอนสูง เฝ้าระวังการสำลัก ยังไม่ต้องปรับยา',
+      evaluatedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)'
+    },
+    {
+      id: 'DIEPSS102',
+      patientId: 'P104',
+      hn: '67-00215',
+      date: '2026-09-25',
+      antipsychoticDrug: 'Paliperidone palmitate 100 mg LAI',
+      gait: 0,
+      kineticTremor: 1,
+      restTremor: 0,
+      sialorrhea: 0,
+      muscleRigidity: 1,
+      akathisia: 0,
+      dystonia: 0,
+      dyskinesia: 0,
+      overallSeverity: 1,
+      totalScore: 3,
+      severityLabel: 'Minimal/Mild (เล็กน้อย-เบา)',
+      actionPlan: 'มีมือสั่นและเกร็งต้านเล็กน้อย ติดตามอาการต่อเนื่อง ยังไม่ต้องเพิ่ม Artane',
+      evaluatedBy: 'พว.สมหญิง (พยาบาลจิตเวช)'
+    }
+  ],
+  homeVisits: [
+    {
+      id: 'HV101',
+      patientId: 'P101',
+      hn: '66-00124',
+      date: '2026-10-02',
+      teamMembers: 'ภญ.สุพิชฌาย์ (เภสัชกร), พว.ประภัสสร (พยาบาลจิตเวช), อสม.ชุมชน',
+      environmentNotes: 'บ้านเดี่ยวชั้นเดียว สะอาด อากาศถ่ายเทดี ผู้ป่วยอาศัยอยู่กับพี่สาวซึ่งเป็นผู้ดูแลหลัก พี่สาวมีความเข้าใจโรคจิตเวชเป็นอย่างดีและคอยจัดยาให้ทาน',
+      selectedCommonProblems: [
+        'พบยาเก่าหรือยาเหลือค้างจำนวนมากในบ้าน (Hoarding)',
+        'น้ำลายไหลยืดเลอะหมอนตอนนอนหลับ (Sialorrhea)'
+      ],
+      customProblemNotes: 'พบปลอกหมอนเปียกชื้นทุกเช้า ญาติวิตกกังวลเรื่องสำลัก',
+      problemsFound: 'พบยาเก่าเหลือค้างจำนวนมากในบ้าน (Hoarding), น้ำลายไหลยืดเลอะหมอนตอนนอนหลับ (Sialorrhea) [เพิ่มเติม: พบปลอกหมอนเปียกชื้นทุกเช้า ญาติวิตกกังวลเรื่องสำลัก]',
+      followupDetails: 'เภสัชกรช่วยคัดแยกยาเก่าทิ้งและจัดยาลงกล่อง 7 วัน (Pill Box), พยาบาลแนะนำเรื่องการเปลี่ยนผ้าปูและหนุนหมอนสูง 2 ใบเพื่อป้องกันสำลัก',
+      actionPlan: 'นัดติดตามผลทางคลินิกที่โรงพยาบาลในสัปดาห์ถัดไป ประสาน อสม. ช่วยแวะเยี่ยมเดือนละ 2 ครั้ง',
+      nextAppointmentDate: '2026-10-09',
+      nextAppointmentType: 'home_visit',
+      images: [
+        'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=600&auto=format&fit=crop&q=80'
+      ],
+      recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)'
+    }
+  ],
+  telemedRecords: [
+    {
+      id: 'TM101',
+      patientId: 'P102',
+      hn: '66-00482',
+      date: '2026-10-07',
+      channel: 'โทรศัพท์ (Phone Call)',
+      respondent: 'ผู้ป่วยโดยตรง',
+      symptomsStatus: 'อารมณ์ดิ่งลดลงเล็กน้อย ยังมีร้องไห้ช่วงหัวค่ำ แต่เริ่มหลับได้',
+      adherenceStatus: 'ทานยา Sertraline ได้ 2 วันแล้ว หลังปรับมาทานพร้อมอาหารเช้าตามคำแนะนำเภสัชกร อาการคลื่นไส้ลดลงมาก',
+      sideEffectsStatus: 'คลื่นไส้เล็กน้อยช่วง 30 นาทีแรกหลังทานยา ไม่อาเจียน',
+      counselingProvided: 'ให้กำลังใจและชื่นชมที่ทานยาต่อเนื่อง ย้ำให้ทานพร้อมอาหารเช้าต่อไป อาการคลื่นไส้จะหายไปในสัปดาห์ที่ 2',
+      nextAppointmentDate: '2026-10-09',
+      nextAppointmentType: 'telemed',
+      recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)'
+    }
+  ],
+  metabolicRecords: [
+    {
+      id: 'MET101',
+      patientId: 'P101',
+      hn: '66-00124',
+      date: '2026-10-04',
+      suspectedDrug: 'Clozapine 100 mg (High Metabolic Risk)',
+      waistCm: 94,
+      weightKg: 74,
+      heightCm: 171,
+      bmi: 25.3,
+      sbp: 124,
+      dbp: 78,
+      fbs: 104,
+      hba1c: 5.7,
+      triglycerides: 185,
+      hdl: 42,
+      totalCholesterol: 210,
+      ldl: 131,
+      criteriaMetCount: 3,
+      isMetabolicSyndrome: true,
+      criteriaList: [
+        'รอบเอวเกินเกณฑ์ชาย (>90 cm) = 94 cm',
+        'ระดับน้ำตาล Fasting Blood Sugar (≥100 mg/dL) = 104 mg/dL',
+        'ระดับไตรกลีเซอไรด์สูง (≥150 mg/dL) = 185 mg/dL'
+      ],
+      pharmacistAdvice: 'เข้าเกณฑ์ Metabolic Syndrome (3/5 ข้อ) มีความเสี่ยงต่อโรคหัวใจและหลอดเลือด แนะนำควบคุมอาหารหวาน มัน เค็ม และออกกำลังกายสม่ำเสมอ นัดตรวจ Lipid profile ซ้ำใน 3 เดือน',
+      recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)'
+    },
+    {
+      id: 'MET102',
+      patientId: 'P103',
+      hn: '65-01899',
+      date: '2026-09-20',
+      suspectedDrug: 'Quetiapine 200 mg',
+      waistCm: 88,
+      weightKg: 81,
+      heightCm: 172,
+      bmi: 27.4,
+      sbp: 132,
+      dbp: 84,
+      fbs: 98,
+      hba1c: 5.4,
+      triglycerides: 160,
+      hdl: 46,
+      totalCholesterol: 195,
+      ldl: 117,
+      criteriaMetCount: 2,
+      isMetabolicSyndrome: false,
+      criteriaList: [
+        'ความดันโลหิตตัวบนสูง (≥130 mmHg) = 132 mmHg',
+        'ระดับไตรกลีเซอไรด์สูง (≥150 mg/dL) = 160 mg/dL'
+      ],
+      pharmacistAdvice: 'ยังไม่เข้าเกณฑ์ Metabolic Syndrome (2/5 ข้อ) แต่น้ำหนักเกิน (BMI 27.4) แนะนำคุมอาหารและชั่งน้ำหนักทุกสัปดาห์',
+      recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)'
+    }
+  ]
+};

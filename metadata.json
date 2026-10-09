@@ -1,0 +1,6 @@
+{
+  "name": "PsyCare Sheet Connect - ระบบบริบาลเภสัชกรรมและสหวิชาชีพจิตเวช",
+  "description": "เว็บแอปบันทึกการบริบาลเภสัชกรรมจิตเวชและดูแลร่วมกับทีมสหวิชาชีพ (พยาบาล, นักจิตวิทยา) ซิงค์ข้อมูลกับ Google Sheet อัตโนมัติ เปิดได้ทุกอุปกรณ์ข้อมูลไม่สูญหาย",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
