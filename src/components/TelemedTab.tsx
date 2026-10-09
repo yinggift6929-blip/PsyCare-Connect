@@ -18,8 +18,8 @@ export const TelemedTab: React.FC<TelemedTabProps> = ({
   return (
     <div className="space-y-5">
       {/* Header Banner */}
-      <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5">
-        <div className="flex items-center justify-between mb-2 pb-2 border-b border-pink-50">
+      <div className="bg-white rounded-2xl shadow-xs border border-rose-100 p-5">
+        <div className="flex items-center justify-between mb-2 pb-2 border-b border-rose-50">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-teal-100 text-teal-700 rounded-xl">
               <PhoneCall className="w-4 h-4" />

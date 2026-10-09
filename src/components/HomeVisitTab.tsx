@@ -19,8 +19,8 @@ export const HomeVisitTab: React.FC<HomeVisitTabProps> = ({
   return (
     <div className="space-y-5">
       {/* Overview & Action Header */}
-      <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5">
-        <div className="flex items-center justify-between mb-2 pb-2 border-b border-pink-50">
+      <div className="bg-white rounded-2xl shadow-xs border border-rose-100 p-5">
+        <div className="flex items-center justify-between mb-2 pb-2 border-b border-rose-50">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-purple-100 text-purple-700 rounded-xl">
               <Home className="w-4 h-4" />
@@ -47,7 +47,7 @@ export const HomeVisitTab: React.FC<HomeVisitTabProps> = ({
       {/* Visits List */}
       <div className="space-y-4">
         {patientVisits.length === 0 ? (
-          <div className="bg-white p-12 rounded-2xl border border-pink-100 text-center text-slate-400 text-xs space-y-2">
+          <div className="bg-white p-12 rounded-2xl border border-rose-100 text-center text-slate-400 text-xs space-y-2">
             <Home className="w-10 h-10 mx-auto text-purple-200" />
             <p className="font-medium text-slate-600">ยังไม่มีบันทึกการเยี่ยมบ้านสำหรับผู้ป่วยรายนี้</p>
             <p className="text-[11px] text-slate-400">

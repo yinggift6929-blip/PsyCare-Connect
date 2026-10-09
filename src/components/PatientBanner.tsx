@@ -53,8 +53,8 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 text-xs font-bold bg-pink-100 text-pink-900 px-3 py-1 rounded-full border border-pink-200 shadow-2xs">
-        <Building2 className="w-3.5 h-3.5 text-pink-600" /> คลินิกจิตเวช / ปัญหาการใช้ยา (DTP)
+      <span className="inline-flex items-center gap-1 text-xs font-bold bg-rose-50 text-rose-900 px-3 py-1 rounded-full border border-rose-200 shadow-2xs">
+        <Building2 className="w-3.5 h-3.5 text-rose-500" /> คลินิกจิตเวช / ปัญหาการใช้ยา (DTP)
       </span>
     );
   };
@@ -66,14 +66,14 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-4 sm:p-5 relative overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-xs border border-rose-100 p-4 sm:p-5 relative overflow-hidden">
       {/* Decorative background accent */}
-      <div className="absolute right-0 top-0 w-32 h-32 bg-gradient-to-bl from-pink-100/50 to-transparent rounded-bl-full pointer-events-none" />
+      <div className="absolute right-0 top-0 w-32 h-32 bg-gradient-to-bl from-rose-100/40 to-transparent rounded-bl-full pointer-events-none" />
 
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         {/* Patient Identity & Bio */}
         <div className="flex items-start space-x-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-100 to-rose-100 text-pink-700 border border-pink-200 flex items-center justify-center font-bold text-lg shadow-inner shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-100 to-pink-100 text-rose-700 border border-rose-200 flex items-center justify-center font-bold text-lg shadow-inner shrink-0">
             {patient.gender === 'ชาย' ? 'ช' : 'ญ'}
           </div>
 
@@ -82,7 +82,7 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
               <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
                 {patient.name}
               </h2>
-              <span className="text-xs bg-pink-50 text-pink-700 px-2.5 py-0.5 rounded-full font-mono font-medium border border-pink-200">
+              <span className="text-xs bg-rose-50 text-rose-700 px-2.5 py-0.5 rounded-full font-mono font-medium border border-rose-200">
                 HN: {patient.hn}
               </span>
               {getGroupBadge(patient.trackingGroup || 'home_visit')}
@@ -102,7 +102,7 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
 
             <div className="flex items-center gap-x-4 gap-y-1 flex-wrap text-xs text-slate-600">
               <span>
-                <strong className="text-pink-700">การวินิจฉัยหลัก:</strong> {patient.diagnosis}
+                <strong className="text-rose-700">การวินิจฉัยหลัก:</strong> {patient.diagnosis}
               </span>
               <span>
                 <strong>อายุ:</strong> {patient.age} ปี ({patient.gender})
@@ -144,7 +144,7 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
         {/* Clinical Metric Tiles & Actions */}
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {/* Adherence Card */}
-          <div className="bg-pink-50/40 border border-pink-100 rounded-xl p-2.5 text-center min-w-[90px]">
+          <div className="bg-rose-50/40 border border-rose-100 rounded-xl p-2.5 text-center min-w-[90px]">
             <span className="text-[10px] text-slate-500 block">Adherence</span>
             <span className={`text-sm font-bold block mt-0.5 ${
               patient.adherenceScore >= 80 ? 'text-teal-600' : patient.adherenceScore >= 60 ? 'text-amber-600' : 'text-rose-600'
@@ -174,7 +174,7 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
             <button
               onClick={() => onEditPatient(patient)}
               title="แก้ไขข้อมูลผู้ป่วยและวันนัดติดตาม"
-              className="text-slate-600 hover:text-pink-600 hover:bg-white p-2 rounded-lg transition"
+              className="text-slate-600 hover:text-rose-600 hover:bg-white p-2 rounded-lg transition"
             >
               <Edit className="w-4 h-4" />
             </button>

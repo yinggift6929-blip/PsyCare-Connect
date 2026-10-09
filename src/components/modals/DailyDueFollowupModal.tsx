@@ -56,24 +56,24 @@ export const DailyDueFollowupModal: React.FC<DailyDueFollowupModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-3xl w-full p-5 sm:p-7 shadow-2xl border border-pink-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-5">
+      <div className="bg-white rounded-3xl max-w-3xl w-full p-5 sm:p-7 shadow-xl border border-rose-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-5">
         {/* Header Alert Banner */}
-        <div className="flex items-start justify-between gap-3 pb-3 border-b border-pink-100">
+        <div className="flex items-start justify-between gap-3 pb-3 border-b border-rose-100">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white shadow-md shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-400 to-pink-400 flex items-center justify-center text-white shadow-xs shrink-0">
               <Bell className="w-6 h-6 animate-bounce" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-tight">
+                <h3 className="text-base sm:text-lg font-bold text-slate-800 leading-tight">
                   แจ้งเตือนผู้ป่วยที่ต้องติดตามวันนี้ (Daily Follow-up Alert)
                 </h3>
-                <span className="text-xs bg-rose-100 text-rose-800 font-bold px-2.5 py-0.5 rounded-full border border-rose-200">
+                <span className="text-xs bg-rose-50 text-rose-700 font-bold px-2.5 py-0.5 rounded-full border border-rose-200">
                   {totalDueToday} รายการ
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-pink-600" />
+                <Calendar className="w-3.5 h-3.5 text-rose-500" />
                 ประจำวัน: <strong className="text-slate-700">{todayDisplay}</strong>
               </p>
             </div>
@@ -109,14 +109,14 @@ export const DailyDueFollowupModal: React.FC<DailyDueFollowupModalProps> = ({
             <span className="text-[10px] bg-teal-100 text-teal-800 font-semibold px-2 py-0.5 rounded-lg">Telepsychiatry</span>
           </div>
 
-          <div className="p-3 bg-pink-50/60 rounded-2xl border border-pink-100 flex items-center justify-between">
+          <div className="p-3 bg-rose-50/60 rounded-2xl border border-rose-100 flex items-center justify-between">
             <div>
-              <span className="text-[11px] font-bold text-pink-900 block flex items-center gap-1">
-                <Building2 className="w-3.5 h-3.5 text-pink-600" /> กลุ่มคลินิกจิตเวช / DTP
+              <span className="text-[11px] font-bold text-rose-900 block flex items-center gap-1">
+                <Building2 className="w-3.5 h-3.5 text-rose-500" /> กลุ่มคลินิกจิตเวช / DTP
               </span>
-              <span className="text-xl font-bold text-pink-950 mt-0.5 block">{clinicDue.length} ราย</span>
+              <span className="text-xl font-bold text-rose-950 mt-0.5 block">{clinicDue.length} ราย</span>
             </div>
-            <span className="text-[10px] bg-pink-100 text-pink-800 font-semibold px-2 py-0.5 rounded-lg">OPD Clinic</span>
+            <span className="text-[10px] bg-rose-100/70 text-rose-800 font-semibold px-2 py-0.5 rounded-lg">OPD Clinic</span>
           </div>
         </div>
 
@@ -286,7 +286,7 @@ export const DailyDueFollowupModal: React.FC<DailyDueFollowupModalProps> = ({
           </span>
           <button
             onClick={onClose}
-            className="bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-md transition transform active:scale-95"
+            className="bg-rose-400 hover:bg-rose-500 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-xs transition transform active:scale-95"
           >
             เข้าสู่หน้าจอหลัก (Enter App)
           </button>

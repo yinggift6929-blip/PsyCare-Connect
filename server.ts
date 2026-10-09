@@ -26,6 +26,8 @@ if (!fs.existsSync(DATA_DIR)) {
 let sharedGoogleToken: string | null = null;
 let sharedSpreadsheetId: string = '1ILefnwJLb1fsKLqjlRElV4E04dMmBUXFpq2wZXtPTVw';
 let lastSyncTimestamp: string = new Date().toISOString();
+let dataVersion: number = Date.now();
+let cachedClinicData: any = null;
 
 // Read existing token if available
 if (fs.existsSync(TOKEN_FILE)) {
@@ -38,14 +40,36 @@ if (fs.existsSync(TOKEN_FILE)) {
   }
 }
 
+// Preload clinic data from disk into memory
+if (fs.existsSync(DATA_FILE)) {
+  try {
+    cachedClinicData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+  } catch (e) {
+    console.error('Error reading clinic data file:', e);
+  }
+}
+
+// API: Check Current Data Version (Ultra-fast polling across devices)
+app.get('/api/clinic-data/version', (req, res) => {
+  res.json({
+    version: dataVersion,
+    timestamp: lastSyncTimestamp
+  });
+});
+
 // API: Get Clinic Data (Shared across all devices without login)
 app.get('/api/clinic-data', (req, res) => {
   try {
+    if (cachedClinicData) {
+      res.setHeader('x-data-version', dataVersion.toString());
+      return res.json(cachedClinicData);
+    }
     if (fs.existsSync(DATA_FILE)) {
       const content = fs.readFileSync(DATA_FILE, 'utf-8');
-      return res.json(JSON.parse(content));
+      cachedClinicData = JSON.parse(content);
+      res.setHeader('x-data-version', dataVersion.toString());
+      return res.json(cachedClinicData);
     }
-    // Return 404 so frontend can use initial seed data on first run
     return res.status(404).json({ message: 'No stored clinic data yet' });
   } catch (error: any) {
     console.error('Error reading clinic data:', error);
@@ -53,13 +77,27 @@ app.get('/api/clinic-data', (req, res) => {
   }
 });
 
-// API: Save/Sync Clinic Data
+// API: Save/Sync Clinic Data (Persists and notifies all connected devices)
 app.post('/api/clinic-data', (req, res) => {
   try {
-    const data = req.body;
-    fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    const incoming = req.body;
+    if (!incoming || typeof incoming !== 'object') {
+      return res.status(400).json({ error: 'Invalid data format' });
+    }
+
+    // Update in-memory cache and bump version
+    cachedClinicData = incoming;
+    dataVersion = Date.now();
     lastSyncTimestamp = new Date().toISOString();
-    return res.json({ success: true, timestamp: lastSyncTimestamp });
+
+    // Persist to disk
+    fs.writeFileSync(DATA_FILE, JSON.stringify(incoming, null, 2), 'utf-8');
+
+    return res.json({ 
+      success: true, 
+      version: dataVersion, 
+      timestamp: lastSyncTimestamp 
+    });
   } catch (error: any) {
     console.error('Error saving clinic data:', error);
     return res.status(500).json({ error: error.message });

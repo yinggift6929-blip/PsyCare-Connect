@@ -136,8 +136,8 @@ export const EditPatientModal: React.FC<EditPatientModalProps> = ({
                 onClick={() => setTrackingGroup('clinic_dtp')}
                 className={`p-2 rounded-xl text-center font-bold border transition flex flex-col items-center gap-1 ${
                   trackingGroup === 'clinic_dtp'
-                    ? 'bg-pink-600 text-white border-pink-700 shadow-xs'
-                    : 'bg-white text-slate-700 hover:bg-pink-50 border-slate-200'
+                    ? 'bg-rose-400 text-white border-rose-500 shadow-xs'
+                    : 'bg-white text-slate-700 hover:bg-rose-50 border-slate-200'
                 }`}
               >
                 <Building2 className="w-4 h-4" />
@@ -313,7 +313,7 @@ export const EditPatientModal: React.FC<EditPatientModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-pink-600 hover:bg-pink-700 text-white font-semibold rounded-xl shadow-xs transition"
+              className="px-5 py-2 bg-rose-400 hover:bg-rose-500 text-white font-semibold rounded-xl shadow-xs transition transform active:scale-95"
             >
               บันทึกการแก้ไข & ซิงค์อัตโนมัติ
             </button>

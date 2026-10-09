@@ -86,18 +86,18 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-pink-100 text-pink-800 px-2 py-0.2 rounded-md border border-pink-200">
-        <Building2 className="w-2.5 h-2.5 text-pink-600" /> คลินิก/DTP
+      <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-rose-50 text-rose-800 px-2 py-0.2 rounded-md border border-rose-200">
+        <Building2 className="w-2.5 h-2.5 text-rose-500" /> คลินิก/DTP
       </span>
     );
   };
 
   return (
-    <aside className="bg-white rounded-3xl shadow-sm border border-pink-100 flex flex-col h-[calc(100vh-140px)] min-h-[580px]">
+    <aside className="bg-white rounded-3xl shadow-xs border border-rose-100 flex flex-col h-[calc(100vh-140px)] min-h-[580px]">
       {/* Sidebar Header */}
-      <div className="p-4 border-b border-pink-50 flex items-center justify-between">
+      <div className="p-4 border-b border-rose-50 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-2 bg-pink-100 text-pink-700 rounded-2xl">
+          <div className="p-2 bg-rose-100/70 text-rose-700 rounded-2xl">
             <Users className="w-4 h-4" />
           </div>
           <div>
@@ -112,7 +112,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
 
         <button
           onClick={onOpenAddPatient}
-          className="bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-sm transition"
+          className="bg-rose-400 hover:bg-rose-500 active:bg-rose-600 text-white text-xs font-semibold px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-xs transition transform active:scale-95"
         >
           <UserPlus className="w-3.5 h-3.5" />
           <span>เพิ่มผู้ป่วย</span>
@@ -120,15 +120,15 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
       </div>
 
       {/* 3 Prominent Group Switcher Bars (Requirement 2) */}
-      <div className="p-3 border-b border-pink-50 space-y-2 bg-slate-50/50">
+      <div className="p-3 border-b border-rose-50 space-y-2 bg-rose-50/20">
         <div className="relative">
-          <Search className="w-4 h-4 text-pink-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-rose-300 absolute left-3 top-2.5" />
           <input
             type="text"
             placeholder="ค้นหา ชื่อ, HN, หรือโรคจิตเวช..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full text-xs pl-9 pr-3 py-2 bg-white border border-pink-100 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400 transition"
+            className="w-full text-xs pl-9 pr-3 py-2 bg-white border border-rose-150 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 transition"
           />
         </div>
 
@@ -162,8 +162,8 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
             onClick={() => onFilterTagChange('clinic_dtp')}
             className={`py-1.5 px-1 rounded-xl text-[11px] font-bold transition flex items-center justify-center gap-1 ${
               filterTag === 'clinic_dtp'
-                ? 'bg-pink-600 text-white shadow-2xs'
-                : 'text-slate-600 hover:bg-pink-50 hover:text-pink-700'
+                ? 'bg-rose-400 text-white shadow-2xs'
+                : 'text-slate-600 hover:bg-rose-50 hover:text-rose-700'
             }`}
           >
             <Building2 className="w-3 h-3" />
@@ -247,8 +247,8 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
                 onClick={() => onSelectPatient(patient.id)}
                 className={`p-3 rounded-2xl border text-left cursor-pointer transition-all duration-150 ${
                   isSelected
-                    ? 'bg-pink-50/90 border-pink-400 shadow-sm ring-1 ring-pink-300'
-                    : 'bg-white hover:bg-pink-50/30 border-slate-100 hover:border-pink-200'
+                    ? 'bg-rose-50/90 border-rose-300 shadow-xs ring-1 ring-rose-200'
+                    : 'bg-white hover:bg-rose-50/30 border-slate-100 hover:border-rose-200'
                 }`}
               >
                 <div className="flex items-start justify-between gap-1">

@@ -136,15 +136,15 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
 
   return (
     <div className="space-y-5">
-      {/* 1. Quick Clinical Assessment Launchpad Banner */}
-      <div className="bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 rounded-2xl p-4 text-white shadow-md">
+      {/* 1. Quick Clinical Assessment Launchpad Banner (Soft, soothing pastel rose) */}
+      <div className="bg-gradient-to-r from-rose-100/90 via-pink-100/70 to-rose-50 rounded-2xl p-4 text-slate-800 shadow-xs border border-rose-200/80">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h3 className="font-bold text-sm flex items-center gap-2">
-              <ClipboardCheck className="w-4 h-4 text-pink-200" />
+            <h3 className="font-bold text-sm flex items-center gap-2 text-slate-800">
+              <ClipboardCheck className="w-4 h-4 text-rose-500" />
               ชุดแบบประเมินทางเภสัชกรรมจิตเวช (Clinical Assessment Scales)
             </h3>
-            <p className="text-[11px] text-pink-100/90 mt-0.5">
+            <p className="text-[11px] text-slate-600 mt-0.5">
               แบบประเมินความร่วมมือในการใช้ยา (MARS-5), ประเมิน ADR ทางระบบประสาท (DIEPSS), และติดตาม Metabolic Syndrome
             </p>
           </div>
@@ -152,21 +152,21 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={onOpenMars5}
-              className="bg-white text-pink-700 hover:bg-pink-50 text-xs font-semibold px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5"
+              className="bg-white text-rose-700 hover:bg-rose-50 border border-rose-200 text-xs font-semibold px-3 py-1.5 rounded-xl shadow-2xs transition flex items-center gap-1.5"
             >
-              <ClipboardCheck className="w-3.5 h-3.5" /> ทำแบบประเมิน MARS-5
+              <ClipboardCheck className="w-3.5 h-3.5 text-rose-500" /> ทำแบบประเมิน MARS-5
             </button>
             <button
               onClick={onOpenDiepss}
-              className="bg-white text-amber-700 hover:bg-amber-50 text-xs font-semibold px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5"
+              className="bg-white text-amber-800 hover:bg-amber-50 border border-amber-200 text-xs font-semibold px-3 py-1.5 rounded-xl shadow-2xs transition flex items-center gap-1.5"
             >
-              <Activity className="w-3.5 h-3.5" /> ประเมิน ADR ด้วย DIEPSS
+              <Activity className="w-3.5 h-3.5 text-amber-600" /> ประเมิน ADR ด้วย DIEPSS
             </button>
             <button
               onClick={onOpenMetabolic}
-              className="bg-white text-rose-700 hover:bg-rose-50 text-xs font-semibold px-3 py-1.5 rounded-xl shadow-sm transition flex items-center gap-1.5"
+              className="bg-white text-teal-800 hover:bg-teal-50 border border-teal-200 text-xs font-semibold px-3 py-1.5 rounded-xl shadow-2xs transition flex items-center gap-1.5"
             >
-              <HeartPulse className="w-3.5 h-3.5" /> ติดตาม Metabolic
+              <HeartPulse className="w-3.5 h-3.5 text-teal-600" /> ติดตาม Metabolic
             </button>
           </div>
         </div>
@@ -653,7 +653,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
           <div className="flex justify-end gap-2 pt-1">
             <button
               type="submit"
-              className="bg-pink-600 hover:bg-pink-700 active:bg-pink-800 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-xs transition"
+              className="bg-rose-400 hover:bg-rose-500 active:bg-rose-600 text-white text-xs font-semibold px-4 py-2 rounded-xl shadow-xs transition transform active:scale-95"
             >
               บันทึก SOAP Note ลงระบบ & Google Sheet
             </button>

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { User } from 'firebase/auth';
 import { 
   Pill, 
@@ -48,6 +48,7 @@ import {
 import { 
   fetchServerClinicData, 
   saveServerClinicData, 
+  checkServerDataVersion,
   fetchSharedGoogleToken, 
   saveSharedGoogleToken 
 } from './services/apiSync.ts';
@@ -145,6 +146,10 @@ export default function App() {
     onConfirm: () => {}
   });
 
+  // Real-time Central Sync Version Refs
+  const lastKnownVersionRef = useRef<number>(0);
+  const isSyncingCentralRef = useRef<boolean>(false);
+
   // Current Active Patient
   const activePatient = clinicData.patients.find(p => p.id === selectedPatientId) || clinicData.patients[0];
 
@@ -157,7 +162,13 @@ export default function App() {
       saveLocalClinicData(nextData);
 
       // 2. Persist to Central Backend Database immediately (auto-sync across all devices without email login)
-      saveServerClinicData(nextData).catch(err => {
+      saveServerClinicData(nextData).then((res) => {
+        if (res.success && res.version) {
+          lastKnownVersionRef.current = res.version;
+          setSyncStatusMessage('✓ บันทึกข้อมูลและซิงค์ตรงกันทุกอุปกรณ์เรียบร้อยแล้ว');
+          setTimeout(() => setSyncStatusMessage(null), 3500);
+        }
+      }).catch(err => {
         console.warn('Central database auto-save notice:', err);
       });
 
@@ -183,11 +194,31 @@ export default function App() {
     });
   }, [spreadsheetId]);
 
-  // Initial Data Load on Mount from Central Server (No login needed!)
+  // Initial Data Load on Mount and Real-time Cross-Device Polling
   useEffect(() => {
     let isMounted = true;
 
-    // Fetch central data from server (No login needed!)
+    // Pull latest data from central server if updated on another device
+    const checkAndPullUpdates = async () => {
+      if (isSyncingCentralRef.current) return;
+      try {
+        const ver = await checkServerDataVersion();
+        if (ver && ver.version && ver.version > lastKnownVersionRef.current) {
+          isSyncingCentralRef.current = true;
+          const remote = await fetchServerClinicData();
+          if (isMounted && remote && Array.isArray(remote.patients) && remote.patients.length > 0) {
+            lastKnownVersionRef.current = ver.version;
+            setClinicData(remote);
+            saveLocalClinicData(remote);
+          }
+          isSyncingCentralRef.current = false;
+        }
+      } catch (e) {
+        isSyncingCentralRef.current = false;
+      }
+    };
+
+    // Initial load from server (No login needed!)
     fetchServerClinicData().then((serverData) => {
       if (isMounted && serverData && serverData.patients && serverData.patients.length > 0) {
         setClinicData(serverData);
@@ -196,10 +227,17 @@ export default function App() {
       } else {
         // If server has no data yet, push local clinic data immediately so all devices have shared data
         const initial = loadLocalClinicData();
-        saveServerClinicData(initial).catch((e) => {
+        saveServerClinicData(initial).then(res => {
+          if (res.version) lastKnownVersionRef.current = res.version;
+        }).catch((e) => {
           console.warn('Initial server seed warning:', e);
         });
       }
+    });
+
+    // Check version right away
+    checkServerDataVersion().then(v => {
+      if (v?.version) lastKnownVersionRef.current = v.version;
     });
 
     // Check if a shared Google token / spreadsheet ID exists
@@ -209,25 +247,24 @@ export default function App() {
       }
     });
 
-    // Background sync check every 12 seconds to sync data between team members across devices
-    const interval = setInterval(() => {
-      fetchServerClinicData().then((latest) => {
-        if (isMounted && latest && latest.patients && latest.patients.length > 0) {
-          setClinicData((current) => {
-            // Check if updated on another device
-            if (JSON.stringify(current) !== JSON.stringify(latest)) {
-              saveLocalClinicData(latest);
-              return latest;
-            }
-            return current;
-          });
-        }
-      });
-    }, 12000);
+    // Event listeners: Instantly pull updates when user refocuses browser window or switches tabs
+    const handleFocus = () => { checkAndPullUpdates(); };
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        checkAndPullUpdates();
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    // Fast polling every 2.5 seconds to guarantee all devices see the exact same data in real time
+    const interval = setInterval(checkAndPullUpdates, 2500);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibility);
     };
   }, []);
 
@@ -863,6 +900,26 @@ export default function App() {
     }));
   };
 
+  // Manual Live Refresh from Server (cross-device live sync)
+  const handleManualRefreshServer = async () => {
+    setIsSyncing(true);
+    try {
+      const remote = await fetchServerClinicData();
+      const ver = await checkServerDataVersion();
+      if (ver?.version) lastKnownVersionRef.current = ver.version;
+      if (remote && Array.isArray(remote.patients)) {
+        setClinicData(remote);
+        saveLocalClinicData(remote);
+        setSyncStatusMessage('✓ ดึงข้อมูลล่าสุดจากทุกเครื่องตรงกันเรียบร้อยแล้ว');
+        setTimeout(() => setSyncStatusMessage(null), 3000);
+      }
+    } catch (e: any) {
+      alert(`ไม่สามารถดึงข้อมูลได้: ${e.message}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const openHandoversCount = activePatient 
     ? clinicData.handovers.filter(h => h.patientId === activePatient.id && h.status === 'open').length 
     : 0;
@@ -872,7 +929,7 @@ export default function App() {
   const dueTodayCount = clinicData.patients.filter(p => p.nextAppointment === todayStr).length;
 
   return (
-    <div className="min-h-screen bg-pink-50/30 text-slate-800 flex flex-col">
+    <div className="min-h-screen bg-[#faf6f7] text-slate-800 flex flex-col">
       {/* Top Main Navigation Header */}
       <Header
         currentRole={currentRole}
@@ -887,6 +944,7 @@ export default function App() {
         onLogin={handleLogin}
         onLogout={handleLogout}
         onSyncNow={handleSyncNow}
+        onRefreshServerData={handleManualRefreshServer}
         onOpenSettings={() => setIsSheetSettingsOpen(true)}
       />
 
@@ -938,14 +996,14 @@ export default function App() {
                 />
 
                 {/* Multidisciplinary Workplace Navigation Tabs */}
-                <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-1.5 flex flex-wrap gap-1 text-xs font-semibold">
+                <div className="bg-white rounded-2xl shadow-xs border border-rose-100 p-1.5 flex flex-wrap gap-1 text-xs font-semibold">
                   {/* Tab 1: Pharmacist Care & DTP */}
                   <button
                     onClick={() => setActiveTab('rx')}
                     className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
                       activeTab === 'rx'
-                        ? 'bg-pink-600 text-white shadow-sm'
-                        : 'text-slate-600 hover:text-pink-600 hover:bg-pink-50/60'
+                        ? 'bg-rose-400 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-rose-600 hover:bg-rose-50/60'
                     }`}
                   >
                     <Pill className="w-3.5 h-3.5" />

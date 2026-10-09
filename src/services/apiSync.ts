@@ -1,12 +1,28 @@
 import { AppClinicData } from '../types.ts';
 
 /**
+ * Checks current server data version for ultra-fast light polling
+ */
+export async function checkServerDataVersion(): Promise<{ version: number; timestamp: string } | null> {
+  try {
+    const res = await fetch('/api/clinic-data/version', { cache: 'no-store' });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (error) {
+    // quiet network fallback
+  }
+  return null;
+}
+
+/**
  * Fetches shared clinic data from the full-stack server
  * Enables cross-device auto-sync without requiring email sign-in on every device!
  */
 export async function fetchServerClinicData(): Promise<AppClinicData | null> {
   try {
     const res = await fetch('/api/clinic-data', {
+      cache: 'no-store',
       headers: {
         'Accept': 'application/json'
       }
@@ -27,7 +43,7 @@ export async function fetchServerClinicData(): Promise<AppClinicData | null> {
  * Saves clinic data to the server disk
  * Immediately persists to all devices accessing the web app URL
  */
-export async function saveServerClinicData(data: AppClinicData): Promise<boolean> {
+export async function saveServerClinicData(data: AppClinicData): Promise<{ success: boolean; version?: number; timestamp?: string }> {
   try {
     const res = await fetch('/api/clinic-data', {
       method: 'POST',
@@ -36,10 +52,14 @@ export async function saveServerClinicData(data: AppClinicData): Promise<boolean
       },
       body: JSON.stringify(data)
     });
-    return res.ok;
+    if (res.ok) {
+      const result = await res.json();
+      return { success: true, version: result.version, timestamp: result.timestamp };
+    }
+    return { success: false };
   } catch (error) {
     console.error('Failed to post clinic data to server:', error);
-    return false;
+    return { success: false };
   }
 }
 
