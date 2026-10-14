@@ -17,7 +17,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Users,
-  Bell
+  Bell,
+  BarChart3
 } from 'lucide-react';
 
 import { 
@@ -93,6 +94,7 @@ import { DiepssAssessmentModal } from './components/assessments/DiepssAssessment
 import { HomeVisitModal } from './components/assessments/HomeVisitModal.tsx';
 import { TelemedModal } from './components/assessments/TelemedModal.tsx';
 import { MetabolicMonitoringModal } from './components/assessments/MetabolicMonitoringModal.tsx';
+import { MonthlyPharmacyCareDashboard } from './components/MonthlyPharmacyCareDashboard.tsx';
 
 export default function App() {
   // Authentication & Google Sheet State
@@ -132,6 +134,7 @@ export default function App() {
   const [isTelemedOpen, setIsTelemedOpen] = useState(false);
   const [isMetabolicOpen, setIsMetabolicOpen] = useState(false);
   const [isSheetSettingsOpen, setIsSheetSettingsOpen] = useState(false);
+  const [isMonthlyDashboardOpen, setIsMonthlyDashboardOpen] = useState(false);
 
   // Confirmation Dialog State
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -569,6 +572,14 @@ export default function App() {
     }));
   };
 
+  // Action: Update Patient Appointment
+  const handleUpdateAppointment = (patientId: string, appointment: { nextAppointment?: string; nextAppointmentType?: 'home_visit' | 'telemed' | 'clinic'; nextAppointmentObjective?: string }) => {
+    updateDataAndSync((prev) => ({
+      ...prev,
+      patients: prev.patients.map(p => p.id === patientId ? { ...p, ...appointment, updatedAt: new Date().toISOString() } : p)
+    }));
+  };
+
   // Action: Save SOAP Note
   const handleSaveSoapNote = (soap: { subjective: string; objective: string; assessment: string; plan: string }) => {
     if (!activePatient) return;
@@ -941,6 +952,7 @@ export default function App() {
         lastSyncTime={lastSync}
         dueTodayCount={dueTodayCount}
         onOpenDailyAlert={() => setIsDailyAlertOpen(true)}
+        onOpenMonthlyDashboard={() => setIsMonthlyDashboardOpen(true)}
         onLogin={handleLogin}
         onLogout={handleLogout}
         onSyncNow={handleSyncNow}
@@ -991,8 +1003,10 @@ export default function App() {
                   patient={activePatient}
                   dtps={clinicData.dtps}
                   handovers={clinicData.handovers}
+                  medications={clinicData.medications}
                   onEditPatient={() => setIsEditPatientOpen(true)}
                   onDeletePatient={handleDeletePatient}
+                  onNavigateTab={(tab) => setActiveTab(tab)}
                 />
 
                 {/* Multidisciplinary Workplace Navigation Tabs */}
@@ -1054,11 +1068,11 @@ export default function App() {
                     onClick={() => setActiveTab('psych')}
                     className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
                       activeTab === 'psych'
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : 'text-slate-600 hover:text-purple-600 hover:bg-purple-50/60'
+                        ? 'bg-amber-200 text-amber-950 font-bold shadow-xs border border-amber-300'
+                        : 'text-slate-600 hover:text-amber-900 hover:bg-amber-50'
                     }`}
                   >
-                    <Brain className="w-3.5 h-3.5" />
+                    <Brain className="w-3.5 h-3.5 text-amber-700" />
                     <span>ประเมินจิตวิทยา & CBT</span>
                   </button>
 
@@ -1094,6 +1108,16 @@ export default function App() {
                     <TrendingUp className="w-3.5 h-3.5" />
                     <span>แนวโน้ม & Lab Monitor</span>
                   </button>
+
+                  {/* Dashboard สรุปผลงานคลินิกจิตดี (รายเดือน) */}
+                  <button
+                    onClick={() => setIsMonthlyDashboardOpen(true)}
+                    className="px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition text-indigo-700 hover:text-indigo-900 bg-indigo-50/80 hover:bg-indigo-100 font-bold ml-auto border border-indigo-200/80 shadow-2xs cursor-pointer"
+                    title="แสดง Dashboard สรุปผลการบริบาลเภสัชกรรมผู้ป่วยคลินิกจิตดี รายเดือน เพื่อดึงสรุปเป็นผลการดำเนินงาน"
+                  >
+                    <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>📊 Dashboard ผลงานรายเดือน</span>
+                  </button>
                 </div>
 
                 {/* Tab Views */}
@@ -1114,8 +1138,12 @@ export default function App() {
                     onOpenMars5={() => setIsMars5Open(true)}
                     onOpenDiepss={() => setIsDiepssOpen(true)}
                     onOpenMetabolic={() => setIsMetabolicOpen(true)}
+                    onSaveMedication={handleSaveMedication}
+                    onSaveDtp={handleSaveDtp}
+                    onUpdateAppointment={handleUpdateAppointment}
                     onSaveSoapNote={handleSaveSoapNote}
                     onSaveSafetyLog={handleSaveSafetyLog}
+                    onSaveMars5={handleSaveMars5}
                   />
                 )}
 
@@ -1287,6 +1315,28 @@ export default function App() {
         }}
       />
 
+      {/* Monthly Clinic Jit-Dee Pharmacy Care Dashboard Modal */}
+      <MonthlyPharmacyCareDashboard
+        isOpen={isMonthlyDashboardOpen}
+        onClose={() => setIsMonthlyDashboardOpen(false)}
+        patients={clinicData.patients}
+        dtps={clinicData.dtps}
+        medications={clinicData.medications}
+        homeVisits={clinicData.homeVisits}
+        telemedRecords={clinicData.telemedRecords}
+        nurseRecords={clinicData.nurseRecords}
+        psychRecords={clinicData.psychRecords}
+        safetyLogs={clinicData.safetyLogs}
+        mars5Records={clinicData.mars5Records}
+        diepssRecords={clinicData.diepssRecords}
+        metabolicRecords={clinicData.metabolicRecords}
+        onSelectPatient={(patientId) => {
+          setSelectedPatientId(patientId);
+          setActiveTab('rx');
+        }}
+        onSyncNow={handleSyncNow}
+      />
+
       {/* Google Sheet Settings Modal */}
       <SheetSettingsModal
         isOpen={isSheetSettingsOpen}
@@ -1298,6 +1348,28 @@ export default function App() {
         onForcePull={handleForcePull}
         isSyncing={isSyncing}
         lastSyncTime={lastSync}
+      />
+
+      {/* Monthly Pharmacy Care Dashboard Modal (Requirement 3) */}
+      <MonthlyPharmacyCareDashboard
+        isOpen={isMonthlyDashboardOpen}
+        onClose={() => setIsMonthlyDashboardOpen(false)}
+        patients={clinicData.patients}
+        dtps={clinicData.dtps}
+        medications={clinicData.medications}
+        homeVisits={clinicData.homeVisits}
+        telemedRecords={clinicData.telemedRecords}
+        nurseRecords={clinicData.nurseRecords}
+        psychRecords={clinicData.psychRecords}
+        safetyLogs={clinicData.safetyLogs}
+        mars5Records={clinicData.mars5Records}
+        diepssRecords={clinicData.diepssRecords}
+        metabolicRecords={clinicData.metabolicRecords}
+        onSelectPatient={(patientId) => {
+          setSelectedPatientId(patientId);
+          setActiveTab('rx');
+        }}
+        onSyncNow={handleSyncNow}
       />
 
       {/* Destructive Operation Confirmation Dialog (Mandatory) */}

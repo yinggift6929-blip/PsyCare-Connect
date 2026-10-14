@@ -99,9 +99,9 @@ export const DiepssAssessmentModal: React.FC<DiepssAssessmentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-pink-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-4">
+      <div className="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-rose-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-pink-100">
+        <div className="flex items-center justify-between pb-3 border-b border-rose-100">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-amber-100 text-amber-800 rounded-xl">
               <Activity className="w-5 h-5" />
@@ -209,7 +209,7 @@ export const DiepssAssessmentModal: React.FC<DiepssAssessmentModalProps> = ({
               placeholder="เช่น มี Akathisia ปานกลาง แนะนำประสานแพทย์พิจารณา Propranolol 10-20 mg หรือมี Tremor/Rigidity พิจารณาให้ Trihexyphenidyl 2 mg..."
               value={actionPlan}
               onChange={(e) => setActionPlan(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
@@ -220,7 +220,7 @@ export const DiepssAssessmentModal: React.FC<DiepssAssessmentModalProps> = ({
               type="text"
               value={evaluatedBy}
               onChange={(e) => setEvaluatedBy(e.target.value)}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 

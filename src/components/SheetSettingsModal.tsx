@@ -52,9 +52,9 @@ export const SheetSettingsModal: React.FC<SheetSettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-pink-100 max-h-[90vh] overflow-y-auto custom-scrollbar space-y-5">
+      <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto custom-scrollbar space-y-5">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-pink-100">
+        <div className="flex items-center justify-between pb-3 border-b border-rose-100">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
               <FileSpreadsheet className="w-5 h-5" />
@@ -87,11 +87,11 @@ export const SheetSettingsModal: React.FC<SheetSettingsModalProps> = ({
               value={sheetIdInput}
               onChange={(e) => setSheetIdInput(e.target.value)}
               placeholder="เช่น 1ILefnwJLb1fsKLqjlRElV4E04dMmBUXFpq2wZXtPTVw"
-              className="flex-1 text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="flex-1 text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
             <button
               onClick={handleSaveId}
-              className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition"
+              className="bg-rose-400 hover:bg-rose-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-xs transition transform active:scale-95"
             >
               บันทึก ID
             </button>
@@ -114,16 +114,16 @@ export const SheetSettingsModal: React.FC<SheetSettingsModalProps> = ({
         </div>
 
         {/* Sheet Structure & Tabs Checklist */}
-        <div className="bg-pink-50/40 p-4 rounded-xl border border-pink-100 space-y-2">
+        <div className="bg-rose-50/40 p-4 rounded-xl border border-rose-100 space-y-2">
           <div className="flex items-center justify-between">
             <h4 className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
-              <Layers className="w-4 h-4 text-pink-600" />
+              <Layers className="w-4 h-4 text-rose-500" />
               โครงสร้างแท็บใน Google Sheet ({REQUIRED_TABS.length} แท็บ)
             </h4>
             <button
               onClick={onInitializeHeaders}
               disabled={isSyncing}
-              className="text-xs bg-white text-pink-700 hover:bg-pink-100 border border-pink-200 px-3 py-1 rounded-lg font-medium shadow-2xs transition"
+              className="text-xs bg-white text-rose-700 hover:bg-rose-50 border border-rose-200 px-3 py-1 rounded-lg font-medium shadow-2xs transition"
             >
               ตรวจสอบและสร้างหัวตาราง (Init Headers)
             </button>
@@ -131,7 +131,7 @@ export const SheetSettingsModal: React.FC<SheetSettingsModalProps> = ({
 
           <div className="grid grid-cols-2 gap-2 pt-2 text-[11px] text-slate-700">
             {REQUIRED_TABS.map((tab) => (
-              <div key={tab.title} className="flex items-center gap-1.5 bg-white p-2 rounded-lg border border-pink-100/60">
+              <div key={tab.title} className="flex items-center gap-1.5 bg-white p-2 rounded-lg border border-rose-100/70">
                 <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 shrink-0" />
                 <span className="font-medium truncate">{tab.title}</span>
                 <span className="text-[10px] text-slate-400">({tab.headers.length} คอลัมน์)</span>
@@ -143,7 +143,7 @@ export const SheetSettingsModal: React.FC<SheetSettingsModalProps> = ({
         {/* Synchronization Actions */}
         <div className="space-y-3 pt-1 border-t border-slate-100">
           <h4 className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
-            <Database className="w-4 h-4 text-pink-600" />
+            <Database className="w-4 h-4 text-rose-500" />
             การควบคุมข้อมูลและการซิงค์ (Manual Sync Controls)
           </h4>
 
@@ -152,9 +152,9 @@ export const SheetSettingsModal: React.FC<SheetSettingsModalProps> = ({
             <button
               onClick={onForcePush}
               disabled={isSyncing}
-              className="p-3 bg-pink-50 hover:bg-pink-100 text-pink-900 border border-pink-200 rounded-xl text-left transition flex items-start gap-2.5"
+              className="p-3 bg-rose-50/70 hover:bg-rose-100/70 text-rose-900 border border-rose-200 rounded-xl text-left transition flex items-start gap-2.5"
             >
-              <Upload className="w-4 h-4 text-pink-600 mt-0.5 shrink-0" />
+              <Upload className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
               <div>
                 <strong className="block text-xs">ส่งข้อมูลทั้งหมดขึ้น Sheet (Force Push)</strong>
                 <p className="text-[10px] text-slate-600 mt-0.5">

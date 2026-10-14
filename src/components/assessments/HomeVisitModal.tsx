@@ -288,7 +288,7 @@ export const HomeVisitModal: React.FC<HomeVisitModalProps> = ({
               placeholder="เช่น คัดแยกยาหมดอายุทิ้ง, จัดยากระบอก 7 วัน (Pill Box), ให้คำแนะนำลดน้ำลายไหลย้อย, สอนญาติเทคนิคการสื่อสารเชิงบวก..."
               value={followupDetails}
               onChange={(e) => setFollowupDetails(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
@@ -301,14 +301,14 @@ export const HomeVisitModal: React.FC<HomeVisitModalProps> = ({
               placeholder="เช่น ประสาน อสม. ช่วยติดตามการกินยาสัปดาห์ละ 1 ครั้ง, นัดพบจิตแพทย์ที่คลินิก 18 ต.ค."
               value={actionPlan}
               onChange={(e) => setActionPlan(e.target.value)}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
           {/* Requirement 4: Setting Next Appointment for continuous follow-up */}
-          <div className="p-3 bg-pink-50/40 rounded-xl border border-pink-200 space-y-2">
+          <div className="p-3 bg-rose-50/50 rounded-xl border border-rose-200 space-y-2">
             <span className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
-              <Calendar className="w-4 h-4 text-pink-600" />
+              <Calendar className="w-4 h-4 text-rose-500" />
               กำหนดวันนัดติดตามต่อเนื่อง (Next Follow-up Appointment):
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

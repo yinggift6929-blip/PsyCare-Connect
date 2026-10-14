@@ -64,10 +64,10 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-pink-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between pb-3 border-b border-pink-100 mb-4">
+      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div className="flex items-center justify-between pb-3 border-b border-rose-100 mb-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-pink-100 text-pink-700 rounded-xl">
+            <div className="p-2 bg-rose-100/70 text-rose-700 rounded-xl">
               <UserPlus className="w-5 h-5" />
             </div>
             <div>
@@ -82,8 +82,8 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           {/* Tracking Group Selector */}
-          <div className="bg-pink-50/50 p-3 rounded-xl border border-pink-100 space-y-1.5">
-            <label className="block font-bold text-pink-900">
+          <div className="bg-rose-50/30 p-3 rounded-xl border border-rose-100 space-y-1.5">
+            <label className="block font-bold text-slate-800">
               กลุ่มการติดตามผู้ป่วย (Care Tracking Group): *
             </label>
             <div className="grid grid-cols-3 gap-2">
@@ -132,7 +132,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 }`}
               >
                 <Building2 className="w-4 h-4" />
-                <span>คลินิกจิตเวช/DTP</span>
+                <span>กลุ่มคลินิก/DRPs</span>
               </button>
             </div>
           </div>
@@ -146,7 +146,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 placeholder="เช่น 66-00982"
                 value={hn}
                 onChange={(e) => setHn(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 font-mono"
               />
             </div>
             <div>
@@ -157,7 +157,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 placeholder="เช่น นายประดิษฐ์ มีสุข"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
           </div>
@@ -168,7 +168,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
               <select
                 value={gender}
                 onChange={(e) => setGender(e.target.value as any)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               >
                 <option value="ชาย">ชาย</option>
                 <option value="หญิง">หญิง</option>
@@ -181,7 +181,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 placeholder="40"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
             <div>
@@ -192,7 +192,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 max="100"
                 value={adherenceScore}
                 onChange={(e) => setAdherenceScore(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
           </div>
@@ -202,7 +202,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
             <select
               value={diagnosis}
               onChange={(e) => setDiagnosis(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             >
               <option value="Schizophrenia (โรคจิตเภท)">Schizophrenia (โรคจิตเภท)</option>
               <option value="Major Depressive Disorder (โรคซึมเศร้า)">Major Depressive Disorder (โรคซึมเศร้า)</option>
@@ -223,7 +223,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 placeholder="ระบุการวินิจฉัย"
                 value={customDiag}
                 onChange={(e) => setCustomDiag(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
           )}
@@ -234,7 +234,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
               <select
                 value={statusTag}
                 onChange={(e) => setStatusTag(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               >
                 <option value="General Psych">General Psych (จิตเวชทั่วไป)</option>
                 <option value="Clozapine Clinic">Clozapine Clinic (คลินิกโคลซาปีน)</option>
@@ -248,7 +248,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
               <select
                 value={riskLevel}
                 onChange={(e) => setRiskLevel(e.target.value as any)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               >
                 <option value="low">ปกติ / เสี่ยงต่ำ (Low)</option>
                 <option value="moderate">ปานกลาง (Moderate)</option>
@@ -265,7 +265,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 placeholder="081-xxx-xxxx"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
             <div>
@@ -275,15 +275,15 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 placeholder="บ้านเลขที่, หมู่, ตำบล, อำเภอ"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
           </div>
 
           {/* Continuous Appointment Tracking Section */}
-          <div className="bg-pink-50/40 p-3 rounded-xl border border-pink-200 space-y-2">
+          <div className="bg-rose-50/40 p-3 rounded-xl border border-rose-100 space-y-2">
             <span className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
-              <Calendar className="w-4 h-4 text-pink-600" />
+              <Calendar className="w-4 h-4 text-rose-500" />
               การติดตามต่อเนื่อง (Continuous Follow-up Appointment):
             </span>
             <div className="grid grid-cols-2 gap-2">
@@ -293,7 +293,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                   type="date"
                   value={nextAppointment}
                   onChange={(e) => setNextAppointment(e.target.value)}
-                  className="w-full p-2 bg-white border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full p-2 bg-white border border-rose-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300"
                 />
               </div>
               <div>
@@ -301,7 +301,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 <select
                   value={nextAppointmentType}
                   onChange={(e) => setNextAppointmentType(e.target.value as any)}
-                  className="w-full p-2 bg-white border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400"
+                  className="w-full p-2 bg-white border border-rose-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300"
                 >
                   <option value="home_visit">🏠 เยี่ยมบ้าน (Home Visit)</option>
                   <option value="telemed">📱 โทร/ติดต่อ Telemed</option>
@@ -316,7 +316,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 placeholder="เช่น เยี่ยมบ้านติดตามการทานยา, โทรเช็คผลข้างเคียง, นัดเจาะเลือด Clozapine ANC"
                 value={nextAppointmentObjective}
                 onChange={(e) => setNextAppointmentObjective(e.target.value)}
-                className="w-full p-2 bg-white border border-pink-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2 bg-white border border-rose-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
           </div>

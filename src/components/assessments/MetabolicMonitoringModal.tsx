@@ -112,9 +112,9 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-pink-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-rose-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-pink-100">
+        <div className="flex items-center justify-between pb-3 border-b border-rose-100">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-rose-100 text-rose-800 rounded-xl">
               <HeartPulse className="w-5 h-5" />
@@ -135,7 +135,7 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
 
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Antipsychotic Drug & Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-pink-50/40 p-3 rounded-xl border border-pink-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-rose-50/30 p-3 rounded-xl border border-rose-100">
             <div>
               <label className="block font-bold text-slate-700 mb-1">วันที่ตรวจวัด / ผลตรวจ Lab:</label>
               <input
@@ -143,7 +143,7 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full p-2 bg-white border border-pink-200 rounded-xl"
+                className="w-full p-2 bg-white border border-rose-200 rounded-xl"
               />
             </div>
             <div>
@@ -153,7 +153,7 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
                 value={suspectedDrug}
                 onChange={(e) => setSuspectedDrug(e.target.value)}
                 placeholder="เช่น Clozapine, Olanzapine, Quetiapine, Risperidone"
-                className="w-full p-2 bg-white border border-pink-200 rounded-xl"
+                className="w-full p-2 bg-white border border-rose-200 rounded-xl"
               />
             </div>
           </div>
@@ -161,7 +161,7 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
           {/* Anthropometrics & BP */}
           <div>
             <h4 className="font-bold text-slate-800 mb-2 flex items-center gap-1.5">
-              <Scale className="w-4 h-4 text-pink-600" /> ข้อมูลสัดส่วนร่างกายและความดันโลหิต:
+              <Scale className="w-4 h-4 text-rose-500" /> ข้อมูลสัดส่วนร่างกายและความดันโลหิต:
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div>
@@ -402,7 +402,7 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
               placeholder="เช่น แนะนำการปรับเปลี่ยนพฤติกรรม ลดอาหารหวานมันเค็ม นัดตรวจซ้ำ 3 เดือน หรือปรึกษาแพทย์พิจารณาปรับเปลี่ยนยาต้านโรคจิตที่เสี่ยงต่ำ..."
               value={pharmacistAdvice}
               onChange={(e) => setPharmacistAdvice(e.target.value)}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
@@ -412,7 +412,7 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
               type="text"
               value={recordedBy}
               onChange={(e) => setRecordedBy(e.target.value)}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
@@ -426,7 +426,7 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl shadow-xs transition"
+              className="px-5 py-2 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-xl shadow-xs transition"
             >
               บันทึกผล Metabolic & ซิงค์ Google Sheet
             </button>

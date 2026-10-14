@@ -12,7 +12,8 @@ import {
   Settings2,
   Sparkles,
   Bell,
-  Smartphone
+  Smartphone,
+  BarChart3
 } from 'lucide-react';
 import { RoleType } from '../types.ts';
 
@@ -26,6 +27,7 @@ interface HeaderProps {
   lastSyncTime: string | null;
   dueTodayCount: number;
   onOpenDailyAlert: () => void;
+  onOpenMonthlyDashboard?: () => void;
   onLogin: () => void;
   onLogout: () => void;
   onSyncNow: () => void;
@@ -43,6 +45,7 @@ export const Header: React.FC<HeaderProps> = ({
   lastSyncTime,
   dueTodayCount,
   onOpenDailyAlert,
+  onOpenMonthlyDashboard,
   onLogin,
   onLogout,
   onSyncNow,
@@ -103,16 +106,29 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => onSelectRole('psychologist')}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
                 currentRole === 'psychologist'
-                  ? 'bg-purple-400 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-purple-700 hover:bg-purple-50/70'
+                  ? 'bg-amber-200 text-amber-950 shadow-xs border border-amber-300'
+                  : 'text-slate-600 hover:text-amber-900 hover:bg-amber-50'
               }`}
             >
-              <Brain className="w-3.5 h-3.5" /> นักจิตวิทยา (Psychologist)
+              <Brain className="w-3.5 h-3.5 text-amber-700" /> นักจิตวิทยา (Psychologist)
             </button>
           </div>
 
-          {/* Right: Daily Alert Bell, Fast Sync & Google Sheet */}
+          {/* Right: Dashboard, Daily Alert Bell, Fast Sync & Google Sheet */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Monthly Clinic Jit-Dee Pharmacy Dashboard Button (Requirement 3) */}
+            {onOpenMonthlyDashboard && (
+              <button
+                onClick={onOpenMonthlyDashboard}
+                title="แสดง Dashboard สรุปผลการบริบาลเภสัชกรรมผู้ป่วยคลินิกจิตดี เป็นรายเดือน เพื่อดึงสรุปเป็นผลการดำเนินงาน"
+                className="px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white rounded-xl shadow-xs transition flex items-center gap-1.5 text-xs font-bold active:scale-95 cursor-pointer"
+              >
+                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                <span className="hidden md:inline">Dashboard สรุปผลงาน</span>
+                <span className="md:hidden">Dashboard</span>
+              </button>
+            )}
+
             {/* Daily Due Followup Alert Bell (Requirement 5) */}
             <button
               onClick={onOpenDailyAlert}
@@ -278,7 +294,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => onSelectRole('psychologist')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  currentRole === 'psychologist' ? 'bg-purple-400 text-white' : 'text-slate-600'
+                  currentRole === 'psychologist' ? 'bg-amber-200 text-amber-950 border border-amber-300' : 'text-slate-600'
                 }`}
               >
                 จิตวิทยา

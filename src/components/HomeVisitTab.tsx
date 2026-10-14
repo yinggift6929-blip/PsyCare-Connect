@@ -56,9 +56,9 @@ export const HomeVisitTab: React.FC<HomeVisitTabProps> = ({
           </div>
         ) : (
           patientVisits.map((visit) => (
-            <div key={visit.id} className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5 space-y-3.5 text-xs">
+            <div key={visit.id} className="bg-white rounded-2xl shadow-sm border border-rose-100 p-5 space-y-3.5 text-xs">
               {/* Visit Header */}
-              <div className="flex items-center justify-between pb-2 border-b border-pink-50 flex-wrap gap-2">
+              <div className="flex items-center justify-between pb-2 border-b border-rose-50 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-purple-950 text-sm flex items-center gap-1.5">
                     <Calendar className="w-4 h-4 text-purple-600" />
@@ -116,7 +116,7 @@ export const HomeVisitTab: React.FC<HomeVisitTabProps> = ({
 
               {/* Attached Images Gallery */}
               {visit.images && visit.images.length > 0 && (
-                <div className="pt-2 border-t border-pink-50 space-y-2">
+                <div className="pt-2 border-t border-rose-50 space-y-2">
                   <span className="font-bold text-slate-700 text-[11px] flex items-center gap-1.5">
                     <ImageIcon className="w-3.5 h-3.5 text-pink-600" />
                     รูปภาพประกอบการเยี่ยมบ้าน ({visit.images.length} รูป):

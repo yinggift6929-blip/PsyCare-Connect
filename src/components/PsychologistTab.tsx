@@ -39,10 +39,10 @@ export const PsychologistTab: React.FC<PsychologistTabProps> = ({
   return (
     <div className="space-y-5">
       {/* Psychological Overview & Scores */}
-      <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5">
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-pink-50">
+      <div className="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-rose-50">
           <div className="flex items-center gap-2">
-            <div className="p-1.5 bg-purple-100 text-purple-700 rounded-xl">
+            <div className="p-1.5 bg-amber-100 text-amber-800 rounded-xl">
               <Brain className="w-4 h-4" />
             </div>
             <div>
@@ -57,7 +57,7 @@ export const PsychologistTab: React.FC<PsychologistTabProps> = ({
 
           <button
             onClick={onOpenAddPsychLog}
-            className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-3.5 py-1.5 rounded-xl font-medium transition flex items-center gap-1.5 shadow-2xs"
+            className="text-xs bg-amber-300 hover:bg-amber-400 text-amber-950 border border-amber-400/50 px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 shadow-2xs"
           >
             <Plus className="w-3.5 h-3.5" /> บันทึกผลประเมิน / CBT ใหม่
           </button>
@@ -66,12 +66,12 @@ export const PsychologistTab: React.FC<PsychologistTabProps> = ({
         {/* 3 Metric Summary Tiles */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* PHQ-9 Card */}
-          <div className="p-3.5 bg-purple-50/50 rounded-xl border border-purple-100 space-y-1">
-            <span className="text-[11px] font-semibold text-purple-700 block">
+          <div className="p-3.5 bg-amber-50/60 rounded-xl border border-amber-200/80 space-y-1">
+            <span className="text-[11px] font-semibold text-amber-800 block">
               แบบประเมินภาวะซึมเศร้า (PHQ-9 Score)
             </span>
             <div className="flex items-baseline justify-between mt-1">
-              <span className="text-2xl font-bold text-purple-950">
+              <span className="text-2xl font-bold text-amber-950">
                 {latestLog ? `${latestLog.phq9Score} / 27` : '-'}
               </span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${phq9Info.color}`}>
@@ -113,51 +113,51 @@ export const PsychologistTab: React.FC<PsychologistTabProps> = ({
       </div>
 
       {/* Psychological Notes Timeline */}
-      <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5 space-y-3">
+      <div className="bg-white rounded-2xl shadow-sm border border-rose-100 p-5 space-y-3">
         <h4 className="font-bold text-xs text-slate-800 flex items-center gap-2">
           <span>ประวัติบันทึกการปรึกษาทางจิตวิทยา (Counseling & Psychotherapy Progress)</span>
-          <span className="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded-full font-normal">
+          <span className="text-[10px] bg-amber-100 text-amber-900 border border-amber-200/80 px-2 py-0.5 rounded-full font-medium">
             {patientPsychLogs.length} บันทึก
           </span>
         </h4>
 
         {patientPsychLogs.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 text-xs bg-pink-50/20 rounded-xl border border-dashed border-pink-100">
-            <Brain className="w-8 h-8 mx-auto text-purple-300 mb-2" />
+          <div className="p-8 text-center text-slate-400 text-xs bg-rose-50/20 rounded-xl border border-dashed border-rose-100">
+            <Brain className="w-8 h-8 mx-auto text-amber-300 mb-2" />
             <p>ยังไม่มีบันทึกการประเมินทางจิตวิทยาสำหรับผู้ป่วยรายนี้</p>
             <p className="text-[11px] text-slate-400 mt-1">กด "บันทึกผลประเมิน / CBT ใหม่" ด้านบนเพื่อเริ่มบันทึกคะแนน PHQ-9 และการบำบัด</p>
           </div>
         ) : (
           <div className="space-y-3">
             {patientPsychLogs.map((log) => (
-              <div key={log.id} className="p-3.5 rounded-xl border border-purple-100 bg-purple-50/20 space-y-2 text-xs">
-                <div className="flex items-center justify-between text-[11px] font-medium text-slate-600 pb-1 border-b border-purple-100">
-                  <span className="font-bold text-purple-900 flex items-center gap-1.5">
-                    <Calendar className="w-3 h-3 text-purple-600" /> วันที่: {log.date}
+              <div key={log.id} className="p-3.5 rounded-xl border border-amber-200/70 bg-amber-50/30 space-y-2 text-xs">
+                <div className="flex items-center justify-between text-[11px] font-medium text-slate-600 pb-1 border-b border-amber-100">
+                  <span className="font-bold text-amber-950 flex items-center gap-1.5">
+                    <Calendar className="w-3 h-3 text-amber-700" /> วันที่: {log.date}
                   </span>
-                  <span className="text-purple-700 font-semibold">{log.psychologistName}</span>
+                  <span className="text-amber-800 font-semibold">{log.psychologistName}</span>
                 </div>
 
                 <div className="flex flex-wrap gap-2 text-[11px]">
-                  <span className="bg-white px-2.5 py-1 rounded-lg border border-purple-100 font-medium">
+                  <span className="bg-white px-2.5 py-1 rounded-lg border border-amber-100 font-medium">
                     <strong>PHQ-9:</strong> {log.phq9Score} คะแนน
                   </span>
-                  <span className="bg-white px-2.5 py-1 rounded-lg border border-purple-100 font-medium">
+                  <span className="bg-white px-2.5 py-1 rounded-lg border border-amber-100 font-medium">
                     <strong>8Q Suicide:</strong> {log.suicideRisk8q}
                   </span>
                   {log.gad7Score !== undefined && (
-                    <span className="bg-white px-2.5 py-1 rounded-lg border border-purple-100 font-medium">
+                    <span className="bg-white px-2.5 py-1 rounded-lg border border-amber-100 font-medium">
                       <strong>GAD-7:</strong> {log.gad7Score} คะแนน
                     </span>
                   )}
-                  <span className="bg-purple-100 text-purple-800 px-2.5 py-1 rounded-lg font-medium">
+                  <span className="bg-amber-100 text-amber-900 border border-amber-200/70 px-2.5 py-1 rounded-lg font-medium">
                     {log.therapyType} ({log.sessionNumber})
                   </span>
                 </div>
 
                 <div>
                   <strong className="text-slate-800 block text-[11px] mb-0.5">บันทึกการให้คำปรึกษาและแผนการดูแล (Counseling Notes):</strong>
-                  <p className="text-slate-700 text-[11px] leading-relaxed bg-white/60 p-2.5 rounded-xl border border-purple-50">
+                  <p className="text-slate-700 text-[11px] leading-relaxed bg-white/60 p-2.5 rounded-xl border border-amber-100">
                     {log.counselingNotes}
                   </p>
                 </div>

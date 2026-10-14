@@ -47,8 +47,8 @@ export const AddDtpModal: React.FC<AddDtpModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-pink-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between pb-3 border-b border-pink-100 mb-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div className="flex items-center justify-between pb-3 border-b border-rose-100 mb-4">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-amber-100 text-amber-700 rounded-xl">
               <AlertTriangle className="w-5 h-5" />
@@ -65,20 +65,32 @@ export const AddDtpModal: React.FC<AddDtpModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">ประเภทปัญหา DTP (Domain):</label>
+            <label className="block font-bold text-slate-700 mb-1">
+              หัวข้อปัญหาจากการใช้ยา (DRPs) *
+            </label>
+            {/* Scrollable / Select list of 6 standard DRP topics */}
             <select
               value={domain}
               onChange={(e) => setDomain(e.target.value as any)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 font-medium"
             >
-              <option value="Non-adherence">Non-adherence (ขาดยา / ลืมทานยา / หยุดยาเอง)</option>
-              <option value="Adverse Drug Reaction / EPS">Adverse Drug Reaction / EPS (อาการข้างเคียง / สั่นเกร็ง)</option>
-              <option value="Drug Interaction">Drug Interaction (ปฏิกิริยาระหว่างยา เช่น Lithium + NSAIDs)</option>
-              <option value="Subtherapeutic Dose">Subtherapeutic Dose (ขนาดยาต่ำเกินไป อาการยังไม่คุม)</option>
-              <option value="Overdosage">Overdosage (ขนาดยาเกินขนาด / เสี่ยงต่อพิษ)</option>
-              <option value="Unnecessary Drug Therapy">Unnecessary Drug Therapy (ยาซ้ำซ้อน / ไม่มีข้อบ่งชี้)</option>
-              <option value="Need Additional Therapy">Need Additional Therapy (ต้องการยาเพิ่มเติม)</option>
-              <option value="Safety Monitoring">Safety Monitoring (ต้องตรวจ Lab ติดตามความปลอดภัย เช่น CBC/ANC)</option>
+              <optgroup label="2.1 - 2.4 กลุ่ม Non adherence (ความร่วมมือการใช้ยา)">
+                <option value="Non adherence - ลืมกินยา">2.1 Non adherence - ลืมกินยา</option>
+                <option value="Non adherence - กินยาผิดขนาด มากกว่าแพทย์สั่ง">2.2 Non adherence - กินยาผิดขนาด มากกว่าแพทย์สั่ง</option>
+                <option value="Non adherence - กินยาผิดขนาด น้อยกว่าแพทย์สั่ง">2.3 Non adherence - กินยาผิดขนาด น้อยกว่าแพทย์สั่ง</option>
+                <option value="Non adherence - หยุดกินยาเอง">2.4 Non adherence - หยุดกินยาเอง</option>
+              </optgroup>
+              <optgroup label="2.5 - 2.6 อาการไม่พึงประสงค์ & อันตรกิริยา">
+                <option value="เกิด ADR ได้แก่ EPS สั่น เกร็ง">2.5 เกิด ADR ได้แก่ EPS สั่น เกร็ง</option>
+                <option value="เกิด Drug interaction (DI)">2.6 เกิด Drug interaction (DI)</option>
+              </optgroup>
+              <optgroup label="หัวข้อ DRPs อื่นๆ">
+                <option value="Subtherapeutic Dose">Subtherapeutic Dose (ขนาดยาต่ำกว่าเกณฑ์การรักษา)</option>
+                <option value="Overdosage">Overdosage (ขนาดยาเกินขนาด)</option>
+                <option value="Unnecessary Drug Therapy">Unnecessary Drug Therapy (ยาซ้ำซ้อน / ไม่มีข้อบ่งชี้)</option>
+                <option value="Need Additional Therapy">Need Additional Therapy (ต้องการยาเพิ่มเติม)</option>
+                <option value="Safety Monitoring">Safety Monitoring (เฝ้าระวังความปลอดภัย เช่น CBC, ANC, Lab)</option>
+              </optgroup>
             </select>
           </div>
 
@@ -101,7 +113,7 @@ export const AddDtpModal: React.FC<AddDtpModalProps> = ({
               placeholder="ระบุเหตุการณ์ อาการ หรือความเสี่ยงที่พบจากการซักประวัติ/ตรวจ Lab..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
@@ -113,7 +125,7 @@ export const AddDtpModal: React.FC<AddDtpModalProps> = ({
               placeholder="เช่น ปรึกษาแพทย์ปรับลดขนาดยา, ให้สุขศึกษาการทานยาพร้อมอาหาร, ส่งต่อทีมพยาบาล..."
               value={intervention}
               onChange={(e) => setIntervention(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
@@ -123,7 +135,7 @@ export const AddDtpModal: React.FC<AddDtpModalProps> = ({
               type="text"
               value={recordedBy}
               onChange={(e) => setRecordedBy(e.target.value)}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 

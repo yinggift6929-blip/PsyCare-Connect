@@ -58,6 +58,14 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
     // Sub-tags
     if (filterTag === 'all') return true;
     if (filterTag === 'due_today') return p.nextAppointment === todayStr;
+    if (filterTag === 'dc_refer') {
+      return p.name.toLowerCase().includes('d/c') || 
+             p.name.toLowerCase().includes('refer') || 
+             p.name.includes('จำหน่าย') || 
+             p.name.includes('ส่งต่อ') || 
+             p.statusTag.toLowerCase().includes('d/c') || 
+             p.statusTag.toLowerCase().includes('refer');
+    }
     if (filterTag === 'high-risk') return p.riskLevel === 'high';
     if (filterTag === 'clozapine') return p.statusTag.toLowerCase().includes('clozapine') || p.diagnosis.toLowerCase().includes('clozapine');
     if (filterTag === 'bipolar') return p.diagnosis.toLowerCase().includes('bipolar');
@@ -87,7 +95,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
     }
     return (
       <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-rose-50 text-rose-800 px-2 py-0.2 rounded-md border border-rose-200">
-        <Building2 className="w-2.5 h-2.5 text-rose-500" /> คลินิก/DTP
+        <Building2 className="w-2.5 h-2.5 text-rose-500" /> คลินิก/DRPs
       </span>
     );
   };
@@ -167,7 +175,7 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
             }`}
           >
             <Building2 className="w-3 h-3" />
-            <span>คลินิก/DTP</span>
+            <span>คลินิก/DRPs</span>
           </button>
         </div>
 
@@ -195,34 +203,14 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
             <span>นัดวันนี้</span>
           </button>
           <button
-            onClick={() => onFilterTagChange('clozapine')}
-            className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition ${
-              filterTag === 'clozapine'
+            onClick={() => onFilterTagChange('dc_refer')}
+            className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition flex items-center gap-1 ${
+              filterTag === 'dc_refer'
                 ? 'bg-amber-600 text-white'
-                : 'bg-white text-slate-600 hover:bg-amber-50 border border-slate-200'
+                : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'
             }`}
           >
-            Clozapine
-          </button>
-          <button
-            onClick={() => onFilterTagChange('high-risk')}
-            className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition ${
-              filterTag === 'high-risk'
-                ? 'bg-rose-600 text-white'
-                : 'bg-white text-slate-600 hover:bg-rose-50 border border-slate-200'
-            }`}
-          >
-            เสี่ยงสูง
-          </button>
-          <button
-            onClick={() => onFilterTagChange('bipolar')}
-            className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition ${
-              filterTag === 'bipolar'
-                ? 'bg-teal-600 text-white'
-                : 'bg-white text-slate-600 hover:bg-teal-50 border border-slate-200'
-            }`}
-          >
-            Bipolar
+            <span>D/C & Refer</span>
           </button>
         </div>
       </div>
@@ -257,6 +245,16 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
                       <h4 className="font-bold text-xs text-slate-900 truncate">
                         {patient.name}
                       </h4>
+                      {(patient.name.toLowerCase().includes('d/c') || patient.statusTag.toLowerCase().includes('d/c') || patient.name.includes('จำหน่าย')) && (
+                        <span className="text-[9px] bg-amber-100 text-amber-950 font-bold px-1.5 py-0.2 rounded border border-amber-300">
+                          D/C
+                        </span>
+                      )}
+                      {(patient.name.toLowerCase().includes('refer') || patient.statusTag.toLowerCase().includes('refer') || patient.name.includes('ส่งต่อ')) && (
+                        <span className="text-[9px] bg-purple-100 text-purple-950 font-bold px-1.5 py-0.2 rounded border border-purple-300">
+                          Refer
+                        </span>
+                      )}
                       {getGroupBadge(patient.trackingGroup)}
                     </div>
                     <p className="text-[11px] text-slate-500 mt-0.5">

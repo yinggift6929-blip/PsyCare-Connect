@@ -30,8 +30,8 @@ export const NurseCareTab: React.FC<NurseCareTabProps> = ({
   return (
     <div className="space-y-5">
       {/* Overview Vital Signs & Quick Indicators */}
-      <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5">
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-pink-50">
+      <div className="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-rose-50">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-teal-100 text-teal-700 rounded-xl">
               <Stethoscope className="w-4 h-4" />
@@ -125,7 +125,7 @@ export const NurseCareTab: React.FC<NurseCareTabProps> = ({
       </div>
 
       {/* Nursing History Logs Timeline */}
-      <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5 space-y-3">
+      <div className="bg-white rounded-2xl shadow-sm border border-rose-100 p-5 space-y-3">
         <h4 className="font-bold text-xs text-slate-800 flex items-center gap-2">
           <span>ประวัติบันทึกการพยาบาลและการประเมินสภาวะจิต (MSE)</span>
           <span className="text-[10px] bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full font-normal">
@@ -134,7 +134,7 @@ export const NurseCareTab: React.FC<NurseCareTabProps> = ({
         </h4>
 
         {patientNurseLogs.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 text-xs bg-pink-50/20 rounded-xl border border-dashed border-pink-100">
+          <div className="p-8 text-center text-slate-400 text-xs bg-rose-50/20 rounded-xl border border-dashed border-rose-100">
             <Stethoscope className="w-8 h-8 mx-auto text-teal-300 mb-2" />
             <p>ยังไม่มีประวัติบันทึกการพยาบาลสำหรับผู้ป่วยรายนี้</p>
             <p className="text-[11px] text-slate-400 mt-1">กด "บันทึกการพยาบาลใหม่" ด้านบนเพื่อบันทึกสัญญาณชีพและการสังเกตพฤติกรรม</p>

@@ -210,13 +210,13 @@ export const DailyDueFollowupModal: React.FC<DailyDueFollowupModalProps> = ({
           {/* 3. กลุ่มคลินิกจิตเวช / พบปัญหาจากยา */}
           {clinicDue.length > 0 && (
             <div className="space-y-2">
-              <h4 className="font-bold text-xs text-pink-950 flex items-center gap-1.5 pb-1 border-b border-pink-100">
-                <Building2 className="w-4 h-4 text-pink-600" />
-                รายชื่อนัดคลินิกจิตเวช / ติดตามปัญหาการใช้ยา ({clinicDue.length} ราย)
+              <h4 className="font-bold text-xs text-rose-900 flex items-center gap-1.5 pb-1 border-b border-rose-100">
+                <Building2 className="w-4 h-4 text-rose-500" />
+                รายชื่อนัดกลุ่มคลินิก/DRPs ({clinicDue.length} ราย)
               </h4>
               <div className="space-y-2">
                 {clinicDue.map(p => (
-                  <div key={p.id} className="p-3.5 bg-pink-50/30 rounded-2xl border border-pink-100 flex items-center justify-between gap-3 hover:bg-pink-50/60 transition text-xs">
+                  <div key={p.id} className="p-3.5 bg-rose-50/30 rounded-2xl border border-rose-100 flex items-center justify-between gap-3 hover:bg-rose-50/60 transition text-xs">
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-slate-900 text-sm">{p.name}</span>
@@ -235,7 +235,7 @@ export const DailyDueFollowupModal: React.FC<DailyDueFollowupModalProps> = ({
                         onSelectPatient(p.id, 'clinic');
                         onClose();
                       }}
-                      className="bg-pink-600 hover:bg-pink-700 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1 shrink-0 shadow-2xs"
+                      className="bg-rose-400 hover:bg-rose-500 text-white font-semibold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1 shrink-0 shadow-2xs"
                     >
                       <span>เปิดดูเคสนี้</span>
                       <ChevronRight className="w-3.5 h-3.5" />

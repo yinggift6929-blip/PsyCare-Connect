@@ -3,6 +3,7 @@ import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { initialClinicData } from './src/data/seedData.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -40,12 +41,21 @@ if (fs.existsSync(TOKEN_FILE)) {
   }
 }
 
-// Preload clinic data from disk into memory
+// Preload clinic data from disk into memory, or initialize with initialClinicData
 if (fs.existsSync(DATA_FILE)) {
   try {
     cachedClinicData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
   } catch (e) {
     console.error('Error reading clinic data file:', e);
+    cachedClinicData = initialClinicData;
+  }
+} else {
+  // Initialize with initial clinic data immediately so all devices share the exact same state
+  cachedClinicData = initialClinicData;
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(cachedClinicData, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error writing initial seed clinic data file:', e);
   }
 }
 

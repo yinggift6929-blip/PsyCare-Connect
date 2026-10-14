@@ -58,7 +58,7 @@ export const TelemedTab: React.FC<TelemedTabProps> = ({
       {/* History Logs */}
       <div className="space-y-3.5">
         {patientTelemedLogs.length === 0 ? (
-          <div className="bg-white p-12 rounded-2xl border border-pink-100 text-center text-slate-400 text-xs space-y-2">
+          <div className="bg-white p-12 rounded-2xl border border-rose-100 text-center text-slate-400 text-xs space-y-2">
             <PhoneCall className="w-10 h-10 mx-auto text-teal-200" />
             <p className="font-medium text-slate-600">ยังไม่มีประวัติการติดตาม Telemed สำหรับผู้ป่วยรายนี้</p>
             <p className="text-[11px] text-slate-400">
@@ -67,13 +67,13 @@ export const TelemedTab: React.FC<TelemedTabProps> = ({
           </div>
         ) : (
           patientTelemedLogs.map((log) => (
-            <div key={log.id} className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5 space-y-3 text-xs">
-              <div className="flex items-center justify-between pb-2 border-b border-pink-50 flex-wrap gap-2">
+            <div key={log.id} className="bg-white rounded-2xl shadow-sm border border-rose-100 p-5 space-y-3 text-xs">
+              <div className="flex items-center justify-between pb-2 border-b border-rose-50 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-teal-950 text-sm flex items-center gap-1.5">
                     <Calendar className="w-4 h-4 text-teal-600" /> วันที่ติดต่อ: {log.date}
                   </span>
-                  <span className="text-[10px] bg-teal-50 text-teal-700 px-2 py-0.5 rounded-full border border-teal-200 font-semibold">
+                  <span className="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded-full border border-teal-200 font-semibold">
                     {log.channel}
                   </span>
                   <span className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">
@@ -102,8 +102,8 @@ export const TelemedTab: React.FC<TelemedTabProps> = ({
                 </div>
               </div>
 
-              <div className="bg-pink-50/30 p-3 rounded-xl border border-pink-100">
-                <strong className="text-pink-900 block mb-0.5 font-bold">คำแนะนำทางเภสัชกรรม (Counseling Provided):</strong>
+              <div className="bg-rose-50/30 p-3 rounded-xl border border-rose-100">
+                <strong className="text-rose-900 block mb-0.5 font-bold">คำแนะนำทางเภสัชกรรม (Counseling Provided):</strong>
                 <p className="text-slate-700 text-[11px] leading-relaxed">{log.counselingProvided}</p>
               </div>
 

@@ -72,9 +72,9 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-pink-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-rose-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-pink-100">
+        <div className="flex items-center justify-between pb-3 border-b border-rose-100">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-teal-100 text-teal-800 rounded-xl">
               <ClipboardCheck className="w-5 h-5" />
@@ -94,8 +94,8 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
         </div>
 
         {/* Instruction Banner */}
-        <div className="bg-pink-50/50 p-3 rounded-xl border border-pink-100 text-xs text-slate-700 leading-relaxed">
-          <p className="font-semibold text-pink-900 mb-0.5">คำชี้แจง:</p>
+        <div className="bg-rose-50/30 p-3 rounded-xl border border-rose-100 text-xs text-slate-700 leading-relaxed">
+          <p className="font-semibold text-slate-800 mb-0.5">คำชี้แจง:</p>
           <p>
             ใช้ประเมินพฤติกรรมการความร่วมมือในการใช้ยาของผู้ป่วย (Adherence) ผ่านคำถาม 5 ข้อ ให้ผู้ป่วยตอบตามความเป็นจริง (คะแนนเต็ม 25 คะแนน)
             โดย 1 = ทำเป็นประจำ, 2 = ทำบ่อยๆ, 3 = ทำบางครั้ง, 4 = ทำนานๆ ครั้ง, 5 = ไม่เคยทำเลย
@@ -184,7 +184,7 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
               type="checkbox"
               checked={autoUpdatePatientScore}
               onChange={(e) => setAutoUpdatePatientScore(e.target.checked)}
-              className="rounded text-pink-600 focus:ring-pink-500 w-4 h-4"
+              className="rounded text-rose-500 focus:ring-rose-400 w-4 h-4"
             />
             <span>
               อัปเดตค่าความร่วมมือในการใช้ยา (Adherence Score: <strong>{adherencePercent}%</strong>) ในเวชระเบียนของผู้ป่วยอัตโนมัติ
@@ -200,7 +200,7 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
                 placeholder="เช่น ผู้ป่วยลืมทานเฉพาะมื้อกลางวัน, มีคนช่วยจัดยา..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
             <div>
@@ -209,7 +209,7 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
                 type="text"
                 value={evaluatedBy}
                 onChange={(e) => setEvaluatedBy(e.target.value)}
-                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
           </div>

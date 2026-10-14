@@ -2,7 +2,7 @@ export type RoleType = 'pharmacist' | 'nurse' | 'psychologist';
 
 export type RiskLevel = 'low' | 'moderate' | 'high';
 
-// 3 Patient Tracking Groups: Home Visit, Telemed, Clinic DTP
+// 3 Patient Tracking Groups: เยี่ยมบ้าน (Home Visit), Telemed (Telepsychiatry), คลินิก/DRPs (Clinic & DRPs)
 export type PatientTrackingGroup = 'home_visit' | 'telemed' | 'clinic_dtp';
 
 export interface Patient {
@@ -39,6 +39,12 @@ export interface Medication {
 }
 
 export type DtpDomain = 
+  | 'Non adherence - ลืมกินยา'
+  | 'Non adherence - กินยาผิดขนาด มากกว่าแพทย์สั่ง'
+  | 'Non adherence - กินยาผิดขนาด น้อยกว่าแพทย์สั่ง'
+  | 'Non adherence - หยุดกินยาเอง'
+  | 'เกิด ADR ได้แก่ EPS สั่น เกร็ง'
+  | 'เกิด Drug interaction (DI)'
   | 'Non-adherence'
   | 'Adverse Drug Reaction / EPS'
   | 'Drug Interaction'
@@ -46,7 +52,8 @@ export type DtpDomain =
   | 'Overdosage'
   | 'Unnecessary Drug Therapy'
   | 'Need Additional Therapy'
-  | 'Safety Monitoring';
+  | 'Safety Monitoring'
+  | string;
 
 export interface DtpRecord {
   id: string;

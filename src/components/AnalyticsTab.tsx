@@ -69,8 +69,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
   return (
     <div className="space-y-5">
       {/* 1. Header & Progression Visualizer */}
-      <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5">
-        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-pink-50">
+      <div className="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
+        <div className="flex items-center gap-2 mb-4 pb-2 border-b border-rose-50">
           <div className="p-1.5 bg-sky-100 text-sky-700 rounded-xl">
             <TrendingUp className="w-4 h-4" />
           </div>
@@ -85,17 +85,17 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
         </div>
 
         {/* Visual Comparison Bars */}
-        <div className="bg-gradient-to-b from-pink-50/30 to-purple-50/20 p-4 rounded-2xl border border-pink-100 space-y-4">
+        <div className="bg-gradient-to-b from-rose-50/30 to-purple-50/20 p-4 rounded-2xl border border-rose-100 space-y-4">
           <div className="flex items-center justify-between text-xs font-semibold text-slate-700">
             <span className="flex items-center gap-2">
               <span className="w-3 h-3 rounded bg-teal-500"></span> Adherence การรับประทานยา (%)
             </span>
             <span className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded bg-pink-500"></span> คะแนนอาการจิตเวช / PHQ-9 (คะแนน)
+              <span className="w-3 h-3 rounded bg-rose-400"></span> คะแนนอาการจิตเวช / PHQ-9 (คะแนน)
             </span>
           </div>
 
-          <div className="grid grid-cols-4 gap-3 pt-4 border-t border-pink-100">
+          <div className="grid grid-cols-4 gap-3 pt-4 border-t border-rose-100">
             {trendPoints.map((pt, i) => (
               <div key={i} className="flex flex-col items-center space-y-2">
                 <div className="h-40 w-full flex items-end justify-center gap-2 bg-white/70 p-2 rounded-xl border border-slate-100 shadow-2xs">
@@ -108,11 +108,11 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
                     />
                   </div>
 
-                  {/* Symptom Bar (Pink) */}
+                  {/* Symptom Bar (Rose) */}
                   <div className="w-5 sm:w-8 flex flex-col items-center">
-                    <span className="text-[10px] font-bold text-pink-700 mb-1">{pt.phq9}</span>
+                    <span className="text-[10px] font-bold text-rose-700 mb-1">{pt.phq9}</span>
                     <div 
-                      className="w-full bg-gradient-to-t from-pink-600 to-pink-400 rounded-t-lg transition-all duration-500"
+                      className="w-full bg-gradient-to-t from-rose-400 to-rose-300 rounded-t-lg transition-all duration-500"
                       style={{ height: `${(pt.phq9 / 27) * 110}px` }}
                     />
                   </div>
@@ -131,8 +131,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
       {/* 2. Specialized Clinical Scales Grid: MARS-5 & DIEPSS History */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* MARS-5 Adherence History */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-pink-100 space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-pink-50">
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-rose-100 space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-rose-50">
             <span className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
               <ClipboardCheck className="w-4 h-4 text-teal-600" />
               ประวัติการประเมิน MARS-5 ({patientMars5.length} ครั้ง)
@@ -161,8 +161,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
         </div>
 
         {/* DIEPSS Movement Disorder / ADR History */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-pink-100 space-y-3">
-          <div className="flex items-center justify-between pb-2 border-b border-pink-50">
+        <div className="bg-white p-5 rounded-2xl shadow-sm border border-rose-100 space-y-3">
+          <div className="flex items-center justify-between pb-2 border-b border-rose-50">
             <span className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
               <Activity className="w-4 h-4 text-amber-600" />
               ประวัติการประเมิน DIEPSS ({patientDiepss.length} ครั้ง)
@@ -194,8 +194,8 @@ export const AnalyticsTab: React.FC<AnalyticsTabProps> = ({
       </div>
 
       {/* 3. Metabolic Syndrome Monitoring History & Risk */}
-      <div className="bg-white p-5 rounded-2xl shadow-sm border border-pink-100 space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-pink-50">
+      <div className="bg-white p-5 rounded-2xl shadow-sm border border-rose-100 space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-rose-50">
           <span className="font-bold text-xs text-slate-800 flex items-center gap-1.5">
             <HeartPulse className="w-4 h-4 text-rose-600" />
             การติดตาม Metabolic Syndrome ({patientMetabolic.length} บันทึก)

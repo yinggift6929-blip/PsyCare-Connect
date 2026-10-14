@@ -50,10 +50,10 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-pink-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between pb-3 border-b border-pink-100 mb-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div className="flex items-center justify-between pb-3 border-b border-rose-100 mb-4">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-purple-100 text-purple-700 rounded-xl">
+            <div className="p-2 bg-amber-100 text-amber-800 rounded-xl">
               <Brain className="w-5 h-5" />
             </div>
             <div>
@@ -77,7 +77,7 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
                 required
                 value={phq9Score}
                 onChange={(e) => setPhq9Score(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 font-mono"
               />
             </div>
             <div>
@@ -89,7 +89,7 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
                 placeholder="ไม่บังคับ"
                 value={gad7Score}
                 onChange={(e) => setGad7Score(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400 font-mono"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 font-mono"
               />
             </div>
           </div>
@@ -99,7 +99,7 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
             <select
               value={suicideRisk8q}
               onChange={(e) => setSuicideRisk8q(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             >
               <option value="0 (ไม่มีความเสี่ยง)">0 (ไม่มีความเสี่ยง)</option>
               <option value="ต่ำ (8Q = 1-8)">ต่ำ (8Q = 1-8 คะแนน)</option>
@@ -114,7 +114,7 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
               <select
                 value={therapyType}
                 onChange={(e) => setTherapyType(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               >
                 <option value="CBT (การปรับความคิดและพฤติกรรม)">CBT (การปรับความคิดและพฤติกรรม)</option>
                 <option value="Motivational Interviewing (MI)">Motivational Interviewing (MI)</option>
@@ -130,7 +130,7 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
                 placeholder="เช่น ครั้งที่ 2 / 6"
                 value={sessionNumber}
                 onChange={(e) => setSessionNumber(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
           </div>
@@ -143,7 +143,7 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
               placeholder="บันทึกประเด็นความคิดลบอัตโนมัติ การมอบหมายการบ้าน การฝึกผ่อนคลาย หรือ Safety Plan..."
               value={counselingNotes}
               onChange={(e) => setCounselingNotes(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
@@ -153,7 +153,7 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
               type="text"
               value={psychologistName}
               onChange={(e) => setPsychologistName(e.target.value)}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
@@ -167,7 +167,7 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl shadow-xs transition"
+              className="px-5 py-2 bg-amber-300 hover:bg-amber-400 text-amber-950 font-bold rounded-xl shadow-xs border border-amber-400/50 transition"
             >
               บันทึกผลประเมิน & ซิงค์ Sheet
             </button>

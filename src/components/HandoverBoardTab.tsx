@@ -67,17 +67,17 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
   };
 
   const getRoleBadge = (role: string) => {
-    if (role === 'pharmacist') return <span className="bg-pink-100 text-pink-800 px-2 py-0.5 rounded-md font-medium text-[10px]">💊 เภสัชกร</span>;
+    if (role === 'pharmacist') return <span className="bg-rose-100/70 text-rose-800 px-2 py-0.5 rounded-md font-medium text-[10px]">💊 เภสัชกร</span>;
     if (role === 'nurse') return <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded-md font-medium text-[10px]">🩺 พยาบาล</span>;
-    if (role === 'psychologist') return <span className="bg-purple-100 text-purple-800 px-2 py-0.5 rounded-md font-medium text-[10px]">🧠 นักจิตวิทยา</span>;
+    if (role === 'psychologist') return <span className="bg-amber-100 text-amber-900 border border-amber-200/80 px-2 py-0.5 rounded-md font-medium text-[10px]">🧠 นักจิตวิทยา</span>;
     return <span className="bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md font-medium text-[10px]">👥 ทีมสหวิชาชีพ</span>;
   };
 
   return (
     <div className="space-y-5">
       {/* 1. Create New Handover Note Form */}
-      <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5">
-        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-pink-50">
+      <div className="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
+        <div className="flex items-center gap-2 mb-3 pb-2 border-b border-rose-50">
           <div className="p-1.5 bg-amber-100 text-amber-700 rounded-xl">
             <MessageSquare className="w-4 h-4" />
           </div>
@@ -91,7 +91,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3 bg-pink-50/20 p-3.5 rounded-xl border border-pink-100">
+        <form onSubmit={handleSubmit} className="space-y-3 bg-rose-50/20 p-3.5 rounded-xl border border-rose-100">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">
@@ -100,7 +100,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
               <select
                 value={targetRole}
                 onChange={(e) => setTargetRole(e.target.value as any)}
-                className="w-full text-xs p-2 bg-white border border-pink-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:outline-none"
+                className="w-full text-xs p-2 bg-white border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:outline-none"
               >
                 <option value="all">@ ทีมสหวิชาชีพทั้งหมด (All Team)</option>
                 <option value="pharmacist">@ เภสัชกร (Pharmacist)</option>
@@ -116,7 +116,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as any)}
-                className="w-full text-xs p-2 bg-white border border-pink-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:outline-none"
+                className="w-full text-xs p-2 bg-white border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:outline-none"
               >
                 <option value="normal">ปกติ (Routine Care)</option>
                 <option value="urgent">เร่งด่วน (Urgent / High Risk)</option>
@@ -133,7 +133,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
                 placeholder="เช่น ขอติดตาม Adherence / เฝ้าระวัง EPS"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full text-xs p-2 bg-white border border-pink-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:outline-none"
+                className="w-full text-xs p-2 bg-white border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:outline-none"
               />
             </div>
           </div>
@@ -147,7 +147,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
               placeholder="พิมพ์รายละเอียดที่ต้องการให้ทีมสหวิชาชีพช่วยติดตามดูแล เช่น ผลข้างเคียงจากยา, นัดฉีดยา Depot, หรือประเด็นความเครียด..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full text-xs p-2.5 bg-white border border-pink-200 rounded-xl focus:ring-2 focus:ring-pink-400 focus:outline-none"
+              className="w-full text-xs p-2.5 bg-white border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:outline-none"
             />
           </div>
 
@@ -157,7 +157,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
             </span>
             <button
               type="submit"
-              className="bg-pink-600 hover:bg-pink-700 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition"
+              className="bg-rose-400 hover:bg-rose-500 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition transform active:scale-95"
             >
               <Send className="w-3.5 h-3.5" /> ส่งโน้ตประสานงาน
             </button>
@@ -166,18 +166,18 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
       </div>
 
       {/* 2. Handover History List */}
-      <div className="bg-white rounded-2xl shadow-sm border border-pink-100 p-5 space-y-3">
-        <div className="flex items-center justify-between pb-2 border-b border-pink-50">
+      <div className="bg-white rounded-2xl shadow-sm border border-rose-100 p-5 space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-rose-50">
           <h4 className="font-bold text-xs text-slate-800 flex items-center gap-2">
             <span>ประวัติการส่งต่อเคสของ {patient.name}</span>
-            <span className="text-[10px] bg-pink-100 text-pink-800 px-2 py-0.5 rounded-full font-normal">
+            <span className="text-[10px] bg-rose-100/70 text-rose-800 px-2 py-0.5 rounded-full font-normal">
               {patientHandovers.length} ข้อความ
             </span>
           </h4>
         </div>
 
         {patientHandovers.length === 0 ? (
-          <div className="p-8 text-center text-slate-400 text-xs bg-pink-50/20 rounded-xl border border-dashed border-pink-100">
+          <div className="p-8 text-center text-slate-400 text-xs bg-rose-50/20 rounded-xl border border-dashed border-rose-100">
             <MessageSquare className="w-8 h-8 mx-auto text-slate-300 mb-2" />
             <p>ยังไม่มีข้อความส่งต่อสหวิชาชีพสำหรับผู้ป่วยรายนี้</p>
             <p className="text-[11px] text-slate-400 mt-1">ใช้แบบฟอร์มด้านบนเพื่อสื่อสารและวางแผนการดูแลร่วมกัน</p>
@@ -197,7 +197,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
                       ? 'bg-rose-50/60 border-rose-300 ring-1 ring-rose-200'
                       : h.priority === 'urgent'
                       ? 'bg-amber-50/60 border-amber-300'
-                      : 'bg-white border-pink-100 shadow-2xs'
+                      : 'bg-white border-rose-100 shadow-2xs'
                   }`}
                 >
                   <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -260,7 +260,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
                             placeholder="พิมพ์ข้อความตอบกลับหรือการดำเนินการ..."
                             value={responseNote}
                             onChange={(e) => setResponseNote(e.target.value)}
-                            className="flex-1 text-xs p-1.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-pink-400"
+                            className="flex-1 text-xs p-1.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-rose-300"
                           />
                           <button
                             onClick={() => handleConfirmResolve(h.id)}

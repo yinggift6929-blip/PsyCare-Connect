@@ -56,8 +56,8 @@ export const AddNurseLogModal: React.FC<AddNurseLogModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-pink-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between pb-3 border-b border-pink-100 mb-4">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div className="flex items-center justify-between pb-3 border-b border-rose-100 mb-4">
           <div className="flex items-center gap-2">
             <div className="p-2 bg-teal-100 text-teal-700 rounded-xl">
               <Stethoscope className="w-5 h-5" />
@@ -163,7 +163,7 @@ export const AddNurseLogModal: React.FC<AddNurseLogModalProps> = ({
               placeholder="บันทึกการสบตา การพูดคุย อารมณ์ ท่าทาง ความร่วมมือในการสนทนา..."
               value={mseObservation}
               onChange={(e) => setMseObservation(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
@@ -174,7 +174,7 @@ export const AddNurseLogModal: React.FC<AddNurseLogModalProps> = ({
               placeholder="เช่น ปกติ ไม่มีพฤติกรรมก้าวร้าว หรือ วุ่นวายสับสน"
               value={riskBehavior}
               onChange={(e) => setRiskBehavior(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
@@ -184,7 +184,7 @@ export const AddNurseLogModal: React.FC<AddNurseLogModalProps> = ({
               type="text"
               value={nurseName}
               onChange={(e) => setNurseName(e.target.value)}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-pink-400"
+              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
             />
           </div>
 
