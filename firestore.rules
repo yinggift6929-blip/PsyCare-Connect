@@ -1,0 +1,14 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny catch-all for unmatched documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Clinic Data synchronization collection for all hospital devices (PC, tablet, mobile, Vercel, GitHub deployments)
+    match /clinic_data/{documentId} {
+      allow read, write: if true;
+    }
+  }
+}

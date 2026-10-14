@@ -1,0 +1,82 @@
+{
+  "entities": {
+    "ClinicData": {
+      "title": "ClinicData",
+      "description": "Comprehensive psychiatric clinic records synchronized across hospital devices",
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "number",
+          "description": "Timestamp version identifier for synchronization"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "User or role that performed the update"
+        },
+        "patients": {
+          "type": "array",
+          "description": "List of active psychiatric clinic patients"
+        },
+        "medications": {
+          "type": "array",
+          "description": "List of patient prescriptions and medication profiles"
+        },
+        "dtps": {
+          "type": "array",
+          "description": "List of drug therapy problems and pharmacist interventions"
+        },
+        "soapNotes": {
+          "type": "array",
+          "description": "List of SOAP progress notes"
+        },
+        "safetyLogs": {
+          "type": "array",
+          "description": "List of lab and drug safety surveillance logs"
+        },
+        "nurseRecords": {
+          "type": "array",
+          "description": "List of psychiatric nurse care and depot injection records"
+        },
+        "psychRecords": {
+          "type": "array",
+          "description": "List of psychologist assessments and counseling records"
+        },
+        "handovers": {
+          "type": "array",
+          "description": "List of interdisciplinary handover messages"
+        },
+        "mars5Records": {
+          "type": "array",
+          "description": "List of MARS-5 medication adherence assessments"
+        },
+        "diepssRecords": {
+          "type": "array",
+          "description": "List of DIEPSS extrapyramidal side effect assessments"
+        },
+        "homeVisits": {
+          "type": "array",
+          "description": "List of multidisciplinary home visit records"
+        },
+        "telemedRecords": {
+          "type": "array",
+          "description": "List of telepsychiatry and remote monitoring records"
+        },
+        "metabolicRecords": {
+          "type": "array",
+          "description": "List of metabolic syndrome surveillance evaluations"
+        }
+      },
+      "required": ["version", "updatedAt", "patients"]
+    }
+  },
+  "firestore": {
+    "/clinic_data/{documentId}": {
+      "schema": "ClinicData",
+      "description": "Persistent shared clinic data repository synced across all devices and hosting platforms (Vercel, GitHub, AI Studio)"
+    }
+  }
+}

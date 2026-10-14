@@ -96,7 +96,12 @@ import { HomeVisitModal } from './components/assessments/HomeVisitModal.tsx';
 import { TelemedModal } from './components/assessments/TelemedModal.tsx';
 import { MetabolicMonitoringModal } from './components/assessments/MetabolicMonitoringModal.tsx';
 import { MonthlyPharmacyCareDashboard } from './components/MonthlyPharmacyCareDashboard.tsx';
-import { MultiDeviceLinkModal } from './components/modals/MultiDeviceLinkModal.tsx';
+import { 
+  subscribeToClinicData, 
+  saveFirestoreClinicData, 
+  fetchFirestoreClinicData,
+  testFirestoreConnection 
+} from './services/firebaseSync.ts';
 
 export default function App() {
   // Authentication & Google Sheet State
@@ -137,7 +142,6 @@ export default function App() {
   const [isMetabolicOpen, setIsMetabolicOpen] = useState(false);
   const [isSheetSettingsOpen, setIsSheetSettingsOpen] = useState(false);
   const [isMonthlyDashboardOpen, setIsMonthlyDashboardOpen] = useState(false);
-  const [isDeviceSyncOpen, setIsDeviceSyncOpen] = useState(false);
   const [activeDevicesCount, setActiveDevicesCount] = useState<number>(1);
   const [crossDeviceToast, setCrossDeviceToast] = useState<{ message: string; timestamp: string } | null>(null);
 
@@ -169,18 +173,21 @@ export default function App() {
       // 1. Persist locally to browser storage
       saveLocalClinicData(nextData);
 
-      // 2. Persist to Central Backend Database immediately (auto-sync across all devices without email login)
-      saveServerClinicData(nextData).then((res) => {
+      // 2. Persist to Firestore Cloud Database (auto-sync across Vercel, GitHub, and all devices)
+      saveFirestoreClinicData(nextData, user?.displayName || currentRole).then((res) => {
         if (res.success && res.version) {
           lastKnownVersionRef.current = res.version;
-          setSyncStatusMessage('✓ บันทึกข้อมูลและซิงค์ตรงกันทุกอุปกรณ์เรียบร้อยแล้ว');
+          setSyncStatusMessage('✓ ซิงค์ข้อมูลขึ้น Cloud เชื่อมต่อทุกอุปกรณ์เรียบร้อย');
           setTimeout(() => setSyncStatusMessage(null), 3500);
         }
       }).catch(err => {
-        console.warn('Central database auto-save notice:', err);
+        console.warn('Firestore cloud auto-save notice:', err);
       });
 
-      // 3. Async sync to Google Sheets if access token is available (either from active login or shared backend)
+      // 3. Persist to Central Backend Database immediately (mirroring for server environment)
+      saveServerClinicData(nextData).catch(() => {});
+
+      // 4. Async sync to Google Sheets if access token is available (either from active login or shared backend)
       getAccessToken().then(async (token) => {
         if (token && spreadsheetId) {
           try {
@@ -200,13 +207,32 @@ export default function App() {
 
       return nextData;
     });
-  }, [spreadsheetId]);
+  }, [spreadsheetId, user, currentRole]);
 
-  // Initial Data Load on Mount, Real-time Cross-Device SSE Stream & Fast Polling
+  // Initial Data Load on Mount, Real-time Cross-Device Cloud Sync via Firestore
   useEffect(() => {
     let isMounted = true;
 
-    // Pull latest data from central server if updated on another device
+    // Test Firestore connection on boot per Skill requirement
+    testFirestoreConnection().catch(() => {});
+
+    // 1. Real-time Cloud Sync from Firebase Firestore (works everywhere: Vercel, GitHub, and all devices)
+    const unsubscribeFirestore = subscribeToClinicData((remoteData, version) => {
+      if (!isMounted) return;
+      if (version > lastKnownVersionRef.current) {
+        lastKnownVersionRef.current = version;
+        setClinicData(remoteData);
+        saveLocalClinicData(remoteData);
+        const timeStr = new Date().toLocaleTimeString('th-TH');
+        setCrossDeviceToast({
+          message: '⚡ ข้อมูลซิงค์อัตโนมัติจากอุปกรณ์อื่นแบบ Real-Time (Cloud Sync)',
+          timestamp: timeStr
+        });
+        setTimeout(() => setCrossDeviceToast(null), 4000);
+      }
+    });
+
+    // Pull latest data from central server if updated on another device (for local node dev)
     const checkAndPullUpdates = async () => {
       if (isSyncingCentralRef.current) return;
       try {
@@ -235,7 +261,7 @@ export default function App() {
       }
     };
 
-    // 1. Instant Push Stream via Server-Sent Events (SSE)
+    // 2. Instant Push Stream via Server-Sent Events (SSE) for Node backend
     const disconnectStream = connectClinicDataStream(
       (remoteData, version, timestamp) => {
         if (!isMounted) return;
@@ -260,19 +286,27 @@ export default function App() {
       }
     );
 
-    // 2. Initial load from server (No login needed!)
-    fetchServerClinicData().then((serverData) => {
-      if (isMounted && serverData && serverData.patients && serverData.patients.length > 0) {
-        setClinicData(serverData);
-        saveLocalClinicData(serverData);
-        setSelectedPatientId((prev) => prev || serverData.patients[0]?.id || '');
+    // 3. Initial load from Firestore Cloud / Server
+    fetchFirestoreClinicData().then((cloudData) => {
+      if (isMounted && cloudData && Array.isArray(cloudData.patients) && cloudData.patients.length > 0) {
+        setClinicData(cloudData);
+        saveLocalClinicData(cloudData);
+        setSelectedPatientId((prev) => prev || cloudData.patients[0]?.id || '');
       } else {
-        // If server has no data yet, push local clinic data immediately so all devices have shared data
-        const initial = loadLocalClinicData();
-        saveServerClinicData(initial).then(res => {
-          if (res.version) lastKnownVersionRef.current = res.version;
-        }).catch((e) => {
-          console.warn('Initial server seed warning:', e);
+        // Fallback to server if cloud document is initial
+        fetchServerClinicData().then((serverData) => {
+          if (isMounted && serverData && serverData.patients && serverData.patients.length > 0) {
+            setClinicData(serverData);
+            saveLocalClinicData(serverData);
+            setSelectedPatientId((prev) => prev || serverData.patients[0]?.id || '');
+          } else {
+            // Seed cloud and server with local clinic data
+            const initial = loadLocalClinicData();
+            saveFirestoreClinicData(initial, 'Initial Setup');
+            saveServerClinicData(initial).then(res => {
+              if (res.version) lastKnownVersionRef.current = res.version;
+            }).catch(() => {});
+          }
         });
       }
     });
@@ -300,11 +334,12 @@ export default function App() {
     window.addEventListener('focus', handleFocus);
     document.addEventListener('visibilitychange', handleVisibility);
 
-    // Fast polling every 2.5 seconds to guarantee all devices see the exact same data in real time
-    const interval = setInterval(checkAndPullUpdates, 2500);
+    // Light background poll to verify connectivity
+    const interval = setInterval(checkAndPullUpdates, 3000);
 
     return () => {
       isMounted = false;
+      unsubscribeFirestore();
       disconnectStream();
       clearInterval(interval);
       window.removeEventListener('focus', handleFocus);
@@ -952,10 +987,19 @@ export default function App() {
     }));
   };
 
-  // Manual Live Refresh from Server (cross-device live sync)
+  // Manual Live Refresh from Cloud & Server (cross-device live sync)
   const handleManualRefreshServer = async () => {
     setIsSyncing(true);
     try {
+      const cloudData = await fetchFirestoreClinicData();
+      if (cloudData && Array.isArray(cloudData.patients) && cloudData.patients.length > 0) {
+        setClinicData(cloudData);
+        saveLocalClinicData(cloudData);
+        lastKnownVersionRef.current = Date.now();
+        setSyncStatusMessage('✓ ดึงข้อมูลล่าสุดจาก Cloud ซิงค์ตรงกันทุกเครื่องเรียบร้อย');
+        setTimeout(() => setSyncStatusMessage(null), 3000);
+        return;
+      }
       const remote = await fetchServerClinicData();
       const ver = await checkServerDataVersion();
       if (ver?.version) lastKnownVersionRef.current = ver.version;
@@ -999,7 +1043,6 @@ export default function App() {
         onSyncNow={handleSyncNow}
         onRefreshServerData={handleManualRefreshServer}
         onOpenSettings={() => setIsSheetSettingsOpen(true)}
-        onOpenDeviceSync={() => setIsDeviceSyncOpen(true)}
         activeDevicesCount={activeDevicesCount}
       />
 
@@ -1432,15 +1475,6 @@ export default function App() {
         onSyncNow={handleSyncNow}
       />
 
-      {/* Multi-Device Link & QR Code Modal */}
-      <MultiDeviceLinkModal
-        isOpen={isDeviceSyncOpen}
-        onClose={() => setIsDeviceSyncOpen(false)}
-        activeDevicesCount={activeDevicesCount}
-        lastSyncTimestamp={lastSync}
-        onForceSync={handleManualRefreshServer}
-        isSyncing={isSyncing}
-      />
 
       {/* Destructive Operation Confirmation Dialog (Mandatory) */}
       <ConfirmDialog
