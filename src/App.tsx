@@ -49,9 +49,10 @@ import {
 import { 
   fetchServerClinicData, 
   saveServerClinicData, 
-  checkServerDataVersion,
+  checkServerDataVersion, 
   fetchSharedGoogleToken, 
-  saveSharedGoogleToken 
+  saveSharedGoogleToken,
+  connectClinicDataStream
 } from './services/apiSync.ts';
 
 import { 
@@ -95,6 +96,7 @@ import { HomeVisitModal } from './components/assessments/HomeVisitModal.tsx';
 import { TelemedModal } from './components/assessments/TelemedModal.tsx';
 import { MetabolicMonitoringModal } from './components/assessments/MetabolicMonitoringModal.tsx';
 import { MonthlyPharmacyCareDashboard } from './components/MonthlyPharmacyCareDashboard.tsx';
+import { MultiDeviceLinkModal } from './components/modals/MultiDeviceLinkModal.tsx';
 
 export default function App() {
   // Authentication & Google Sheet State
@@ -135,6 +137,9 @@ export default function App() {
   const [isMetabolicOpen, setIsMetabolicOpen] = useState(false);
   const [isSheetSettingsOpen, setIsSheetSettingsOpen] = useState(false);
   const [isMonthlyDashboardOpen, setIsMonthlyDashboardOpen] = useState(false);
+  const [isDeviceSyncOpen, setIsDeviceSyncOpen] = useState(false);
+  const [activeDevicesCount, setActiveDevicesCount] = useState<number>(1);
+  const [crossDeviceToast, setCrossDeviceToast] = useState<{ message: string; timestamp: string } | null>(null);
 
   // Confirmation Dialog State
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -197,7 +202,7 @@ export default function App() {
     });
   }, [spreadsheetId]);
 
-  // Initial Data Load on Mount and Real-time Cross-Device Polling
+  // Initial Data Load on Mount, Real-time Cross-Device SSE Stream & Fast Polling
   useEffect(() => {
     let isMounted = true;
 
@@ -206,6 +211,9 @@ export default function App() {
       if (isSyncingCentralRef.current) return;
       try {
         const ver = await checkServerDataVersion();
+        if (ver?.activeDevices) {
+          setActiveDevicesCount(ver.activeDevices);
+        }
         if (ver && ver.version && ver.version > lastKnownVersionRef.current) {
           isSyncingCentralRef.current = true;
           const remote = await fetchServerClinicData();
@@ -213,6 +221,12 @@ export default function App() {
             lastKnownVersionRef.current = ver.version;
             setClinicData(remote);
             saveLocalClinicData(remote);
+            const timeStr = ver.timestamp ? new Date(ver.timestamp).toLocaleTimeString('th-TH') : new Date().toLocaleTimeString('th-TH');
+            setCrossDeviceToast({
+              message: '🔄 ข้อมูลได้รับการอัปเดตจากอุปกรณ์อื่นเรียบร้อยแล้ว',
+              timestamp: timeStr
+            });
+            setTimeout(() => setCrossDeviceToast(null), 4000);
           }
           isSyncingCentralRef.current = false;
         }
@@ -221,7 +235,32 @@ export default function App() {
       }
     };
 
-    // Initial load from server (No login needed!)
+    // 1. Instant Push Stream via Server-Sent Events (SSE)
+    const disconnectStream = connectClinicDataStream(
+      (remoteData, version, timestamp) => {
+        if (!isMounted) return;
+        if (version > lastKnownVersionRef.current) {
+          lastKnownVersionRef.current = version;
+          setClinicData(remoteData);
+          saveLocalClinicData(remoteData);
+          const timeStr = timestamp ? new Date(timestamp).toLocaleTimeString('th-TH') : new Date().toLocaleTimeString('th-TH');
+          setCrossDeviceToast({
+            message: '⚡ ข้อมูลได้รับการอัปเดตจากอุปกรณ์อื่นแบบ Real-time',
+            timestamp: timeStr
+          });
+          setTimeout(() => setCrossDeviceToast(null), 4000);
+        }
+      },
+      (info) => {
+        if (!isMounted) return;
+        if (info.activeDevices) setActiveDevicesCount(info.activeDevices);
+        if (info.version && info.version > lastKnownVersionRef.current) {
+          lastKnownVersionRef.current = info.version;
+        }
+      }
+    );
+
+    // 2. Initial load from server (No login needed!)
     fetchServerClinicData().then((serverData) => {
       if (isMounted && serverData && serverData.patients && serverData.patients.length > 0) {
         setClinicData(serverData);
@@ -241,6 +280,7 @@ export default function App() {
     // Check version right away
     checkServerDataVersion().then(v => {
       if (v?.version) lastKnownVersionRef.current = v.version;
+      if (v?.activeDevices) setActiveDevicesCount(v.activeDevices);
     });
 
     // Check if a shared Google token / spreadsheet ID exists
@@ -265,6 +305,7 @@ export default function App() {
 
     return () => {
       isMounted = false;
+      disconnectStream();
       clearInterval(interval);
       window.removeEventListener('focus', handleFocus);
       document.removeEventListener('visibilitychange', handleVisibility);
@@ -958,7 +999,26 @@ export default function App() {
         onSyncNow={handleSyncNow}
         onRefreshServerData={handleManualRefreshServer}
         onOpenSettings={() => setIsSheetSettingsOpen(true)}
+        onOpenDeviceSync={() => setIsDeviceSyncOpen(true)}
+        activeDevicesCount={activeDevicesCount}
       />
+
+      {/* Real-time Multi-Device Sync Toast Banner */}
+      {crossDeviceToast && (
+        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white text-xs px-4 py-2 flex items-center justify-between shadow-md animate-in slide-in-from-top duration-300">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+            <span className="font-bold">{crossDeviceToast.message}</span>
+            <span className="text-[11px] opacity-90">({crossDeviceToast.timestamp})</span>
+          </div>
+          <button 
+            onClick={() => setCrossDeviceToast(null)}
+            className="text-white/80 hover:text-white text-xs underline font-medium cursor-pointer"
+          >
+            รับทราบ
+          </button>
+        </div>
+      )}
 
       {/* Sync Status Banner Notification if any */}
       {syncStatusMessage && (
@@ -1370,6 +1430,16 @@ export default function App() {
           setActiveTab('rx');
         }}
         onSyncNow={handleSyncNow}
+      />
+
+      {/* Multi-Device Link & QR Code Modal */}
+      <MultiDeviceLinkModal
+        isOpen={isDeviceSyncOpen}
+        onClose={() => setIsDeviceSyncOpen(false)}
+        activeDevicesCount={activeDevicesCount}
+        lastSyncTimestamp={lastSync}
+        onForceSync={handleManualRefreshServer}
+        isSyncing={isSyncing}
       />
 
       {/* Destructive Operation Confirmation Dialog (Mandatory) */}

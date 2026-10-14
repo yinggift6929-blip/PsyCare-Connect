@@ -33,6 +33,8 @@ interface HeaderProps {
   onSyncNow: () => void;
   onRefreshServerData?: () => void;
   onOpenSettings: () => void;
+  onOpenDeviceSync?: () => void;
+  activeDevicesCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -50,7 +52,9 @@ export const Header: React.FC<HeaderProps> = ({
   onLogout,
   onSyncNow,
   onRefreshServerData,
-  onOpenSettings
+  onOpenSettings,
+  onOpenDeviceSync,
+  activeDevicesCount
 }) => {
   const sheetEditUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
 
@@ -143,6 +147,19 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               )}
             </button>
+
+            {/* Multi-Device Link & QR Code Button */}
+            {onOpenDeviceSync && (
+              <button
+                onClick={onOpenDeviceSync}
+                title="เชื่อมโยงข้อมูลกับมือถือ/อุปกรณ์อื่น (สแกน QR Code)"
+                className="px-2.5 sm:px-3 py-1.5 bg-white hover:bg-rose-50 text-rose-800 rounded-xl border border-rose-200 transition flex items-center gap-1.5 shadow-2xs text-xs font-bold active:scale-95 cursor-pointer"
+              >
+                <Smartphone className="w-3.5 h-3.5 text-rose-600" />
+                <span className="hidden sm:inline">เชื่อมต่อมือถือ</span>
+                <span className="sm:hidden">มือถือ</span>
+              </button>
+            )}
 
             {/* Quick Refresh from Server across all devices */}
             {onRefreshServerData && (
@@ -245,10 +262,19 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Soft Status Sub-bar */}
         <div className="py-1.5 border-t border-rose-200/50 flex flex-wrap items-center justify-between text-[11px] text-slate-600">
           <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1.5 text-emerald-700 font-semibold bg-emerald-50/80 px-2 py-0.5 rounded-md border border-emerald-200">
+            <button
+              onClick={onOpenDeviceSync}
+              className="flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-50/90 hover:bg-emerald-100/90 px-2.5 py-0.5 rounded-lg border border-emerald-300 transition cursor-pointer text-[11px]"
+              title="คลิกเพื่อสแกน QR Code หรือเปิดระบบบนมือถือ/แท็บเล็ต"
+            >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              ซิงค์ตรงกันทุกอุปกรณ์อัตโนมัติ (กรอกผ่านมือถือหรือคอม ข้อมูลไม่หาย)
-            </span>
+              <span>🟢 ซิงค์ตรงกันทุกอุปกรณ์อัตโนมัติ (คลิกเพื่อเชื่อมต่อ)</span>
+              {activeDevicesCount !== undefined && activeDevicesCount > 0 && (
+                <span className="bg-emerald-200 text-emerald-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">
+                  {activeDevicesCount} เครื่อง
+                </span>
+              )}
+            </button>
 
             {user && (
               <>

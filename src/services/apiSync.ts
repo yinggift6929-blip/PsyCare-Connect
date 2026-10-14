@@ -3,7 +3,7 @@ import { AppClinicData } from '../types.ts';
 /**
  * Checks current server data version for ultra-fast light polling
  */
-export async function checkServerDataVersion(): Promise<{ version: number; timestamp: string } | null> {
+export async function checkServerDataVersion(): Promise<{ version: number; timestamp: string; activeDevices?: number } | null> {
   try {
     const res = await fetch('/api/clinic-data/version', { cache: 'no-store' });
     if (res.ok) {
@@ -13,6 +13,58 @@ export async function checkServerDataVersion(): Promise<{ version: number; times
     // quiet network fallback
   }
   return null;
+}
+
+/**
+ * Connects to Server-Sent Events (SSE) for instant cross-device broadcast
+ * Fires immediately whenever ANY device modifies patient data, meds, notes, DRPs, etc.
+ */
+export function connectClinicDataStream(
+  onDataUpdate: (data: AppClinicData, version: number, timestamp: string) => void,
+  onConnected?: (info: { version: number; activeDevices?: number }) => void
+): () => void {
+  let eventSource: EventSource | null = null;
+  let isClosed = false;
+
+  const connect = () => {
+    if (isClosed || typeof window === 'undefined' || typeof EventSource === 'undefined') return;
+    try {
+      eventSource = new EventSource('/api/clinic-data/stream');
+
+      eventSource.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          if (payload.type === 'connected') {
+            onConnected?.({ version: payload.version, activeDevices: payload.activeDevices });
+          } else if (payload.type === 'data_update' && payload.data) {
+            onDataUpdate(payload.data, payload.version, payload.timestamp);
+          }
+        } catch (e) {
+          console.warn('Error parsing SSE event:', e);
+        }
+      };
+
+      eventSource.onerror = () => {
+        eventSource?.close();
+        if (!isClosed) {
+          // Reconnect with exponential or fixed backoff
+          setTimeout(connect, 3500);
+        }
+      };
+    } catch (err) {
+      console.warn('SSE connection initiation notice:', err);
+    }
+  };
+
+  connect();
+
+  return () => {
+    isClosed = true;
+    if (eventSource) {
+      eventSource.close();
+      eventSource = null;
+    }
+  };
 }
 
 /**

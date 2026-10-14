@@ -59,11 +59,57 @@ if (fs.existsSync(DATA_FILE)) {
   }
 }
 
+// Connected SSE Clients for instantaneous multi-device updates
+const sseClients = new Set<express.Response>();
+
+function broadcastDataUpdate(data: any, version: number, timestamp: string) {
+  const payload = JSON.stringify({
+    type: 'data_update',
+    version,
+    timestamp,
+    data,
+    activeDevices: sseClients.size
+  });
+  for (const client of sseClients) {
+    try {
+      client.write(`data: ${payload}\n\n`);
+    } catch (e) {
+      sseClients.delete(client);
+    }
+  }
+}
+
+// API: SSE Stream for real-time live sync across devices
+app.get('/api/clinic-data/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  if (typeof (res as any).flushHeaders === 'function') {
+    (res as any).flushHeaders();
+  }
+
+  sseClients.add(res);
+
+  // Send initial handshake with current version
+  res.write(`data: ${JSON.stringify({ 
+    type: 'connected', 
+    version: dataVersion, 
+    timestamp: lastSyncTimestamp, 
+    activeDevices: sseClients.size 
+  })}\n\n`);
+
+  req.on('close', () => {
+    sseClients.delete(res);
+  });
+});
+
 // API: Check Current Data Version (Ultra-fast polling across devices)
 app.get('/api/clinic-data/version', (req, res) => {
   res.json({
     version: dataVersion,
-    timestamp: lastSyncTimestamp
+    timestamp: lastSyncTimestamp,
+    activeDevices: sseClients.size
   });
 });
 
@@ -103,10 +149,14 @@ app.post('/api/clinic-data', (req, res) => {
     // Persist to disk
     fs.writeFileSync(DATA_FILE, JSON.stringify(incoming, null, 2), 'utf-8');
 
+    // Broadcast immediately to all connected devices in real time
+    broadcastDataUpdate(incoming, dataVersion, lastSyncTimestamp);
+
     return res.json({ 
       success: true, 
       version: dataVersion, 
-      timestamp: lastSyncTimestamp 
+      timestamp: lastSyncTimestamp,
+      activeDevices: sseClients.size
     });
   } catch (error: any) {
     console.error('Error saving clinic data:', error);
