@@ -14,6 +14,8 @@ import {
   Plus
 } from 'lucide-react';
 import { HomeVisitRecord, Patient } from '../../types.ts';
+import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
+
 
 interface HomeVisitModalProps {
   isOpen: boolean;
@@ -146,29 +148,19 @@ export const HomeVisitModal: React.FC<HomeVisitModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-3xl w-full p-5 sm:p-7 shadow-2xl border border-pink-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-pink-100">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 bg-indigo-100 text-indigo-800 rounded-2xl">
-              <Home className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-base leading-tight">
-                แบบบันทึกการเยี่ยมบ้านทีมสหวิชาชีพ (Home Visit Record)
-              </h3>
-              <p className="text-xs text-slate-500">
-                ผู้ป่วย: {patient.name} (HN: {patient.hn}) • {patient.address || 'ในเขตรับผิดชอบ'}
-              </p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <PsychiatricModalFrame
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-3xl"
+      icon={<Home className="w-5 h-5 sm:w-6 sm:h-6 text-white" />}
+      title="แบบบันทึกการเยี่ยมบ้านทีมสหวิชาชีพ (Home Visit Record)"
+      subtitle={`ผู้ป่วย: ${patient.name} (HN: ${patient.hn}) • ที่อยู่: ${patient.address || 'ในเขตรับผิดชอบ'}`}
+      badgeText="Home Visit"
+      badgeColor="indigo"
+      confidentialNotice={`บันทึกการเยี่ยมบ้านเวชระเบียนชุมชน HN: ${patient.hn} (${patient.name})`}
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-bold text-slate-700 mb-1">วันที่เยี่ยมบ้าน: *</label>
@@ -433,13 +425,13 @@ export const HomeVisitModal: React.FC<HomeVisitModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-xs transition"
+              className="px-5 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-bold rounded-xl shadow-xs transition cursor-pointer"
             >
               บันทึกการเยี่ยมบ้าน & ซิงค์ข้อมูล
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </PsychiatricModalFrame>
   );
 };
+

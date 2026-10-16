@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { UserPlus, X, Home, PhoneCall, Building2, Calendar } from 'lucide-react';
+import { UserPlus, Home, PhoneCall, Building2, Calendar } from 'lucide-react';
 import { Patient, RiskLevel, PatientTrackingGroup } from '../../types.ts';
+import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 
 interface AddPatientModalProps {
   isOpen: boolean;
@@ -63,24 +64,19 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between pb-3 border-b border-rose-100 mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-rose-100/70 text-rose-700 rounded-xl">
-              <UserPlus className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-base">เพิ่มผู้ป่วยจิตเวชรายใหม่</h3>
-              <p className="text-xs text-slate-500">บันทึกเวชระเบียนคลินิกจิตเวชและเชื่อมโยง Google Sheet</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <PsychiatricModalFrame
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-xl"
+      icon={<UserPlus className="w-5 h-5 text-white" />}
+      title="เพิ่มผู้ป่วยจิตเวชรายใหม่"
+      subtitle="บันทึกเวชระเบียนคลินิกสุขภาพจิตชุมชนและเชื่อมโยง Google Sheet"
+      badgeText="OPD Registry"
+      badgeColor="rose"
+      confidentialNotice="การบันทึกเวชระเบียนผู้ป่วยจิตเวชรายใหม่ (New Patient Intake)"
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
 
-        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           {/* Tracking Group Selector */}
           <div className="bg-rose-50/30 p-3 rounded-xl border border-rose-100 space-y-1.5">
             <label className="block font-bold text-slate-800">
@@ -331,13 +327,13 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-rose-400 hover:bg-rose-500 text-white font-semibold rounded-xl shadow-xs transition transform active:scale-95"
+              className="px-5 py-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold rounded-xl shadow-xs transition transform active:scale-95 cursor-pointer"
             >
               บันทึกผู้ป่วย & ซิงค์อัตโนมัติ
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </PsychiatricModalFrame>
   );
 };
+

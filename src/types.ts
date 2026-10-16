@@ -251,6 +251,20 @@ export interface MetabolicRecord {
   recordedBy: string;
 }
 
+export interface NotificationSettings {
+  telegramEnabled: boolean;
+  telegramBotToken: string;
+  telegramChatId: string;
+  lineEnabled: boolean;
+  lineChannelAccessToken: string;
+  lineTargetId: string; // User ID หรือ Group ID
+  notifyOnNewPatient: boolean;
+  notifyOnHandover: boolean;
+  notifyOnDtpCrisis: boolean;
+  notifyOnHomeVisit: boolean;
+  notifyOnDailyDue: boolean;
+}
+
 export interface AppClinicData {
   patients: Patient[];
   medications: Medication[];
@@ -265,4 +279,6 @@ export interface AppClinicData {
   homeVisits: HomeVisitRecord[];
   telemedRecords: TelemedRecord[];
   metabolicRecords: MetabolicRecord[];
+  notificationSettings?: NotificationSettings;
 }
+

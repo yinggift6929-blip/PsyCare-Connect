@@ -91,6 +91,60 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
           </div>
         </div>
 
+        {/* Quick Presets: Forward drug problems to Pharmacist */}
+        <div className="mb-3 p-3 bg-gradient-to-r from-rose-50 via-pink-50 to-amber-50/50 rounded-xl border border-rose-200/90 space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
+            <span className="font-bold text-slate-800 flex items-center gap-1.5">
+              <span>💊 ทางลัดส่งต่อปัญหาการใช้ยาถึงเภสัชกร (สหวิชาชีพ ➔ เภสัชกร):</span>
+            </span>
+            <span className="text-[10px] font-semibold bg-sky-100 text-sky-800 px-2.5 py-0.5 rounded-full border border-sky-300 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+              <span>แจ้งเตือน Telegram กลุ่ม: -5506194529</span>
+            </span>
+          </div>
+          <p className="text-[11px] text-slate-600">
+            คลิกเลือกประเภทปัญหาเพื่อส่งต่อด่วน เภสัชกรและทีมในกลุ่มจะได้รับการแจ้งเตือนทาง Telegram ทันที
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => {
+                setTargetRole('pharmacist');
+                setPriority('urgent');
+                setSubject('พบปัญหาการใช้ยา / ขอคำปรึกษาทางเภสัชกรรม');
+                setContent('ผู้ป่วยมีปัญหาเกี่ยวกับการใช้ยา ขอความกรุณาเภสัชกรช่วยตรวจสอบ ปรับขนาดยา หรือให้คำปรึกษาเพิ่มเติม');
+              }}
+              className="text-[11px] font-medium bg-white hover:bg-rose-50 text-rose-800 px-2.5 py-1 rounded-lg border border-rose-200 transition shadow-2xs cursor-pointer"
+            >
+              💊 ปัญหาการใช้ยา / ปรึกษาเภสัชกร
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTargetRole('pharmacist');
+                setPriority('urgent');
+                setSubject('พบอาการข้างเคียงจากยาจิตเวช (EPS / สั่น เกร็ง / น้ำลายยืด)');
+                setContent('จากการสังเกต/ติดตามอาการ พบผู้ป่วยมีอาการข้างเคียงที่สงสัยว่าเกิดจากยา เช่น เดินเซ มือสั่น ตัวเกร็ง หรือน้ำลายยืดเลอะหมอน ขอส่งต่อให้เภสัชกรประเมิน');
+              }}
+              className="text-[11px] font-medium bg-white hover:bg-amber-50 text-amber-900 px-2.5 py-1 rounded-lg border border-amber-200 transition shadow-2xs cursor-pointer"
+            >
+              ⚠️ เกิดอาการไม่พึงประสงค์ (ADR / EPS)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTargetRole('pharmacist');
+                setPriority('urgent');
+                setSubject('ผู้ป่วยไม่รับประทานยาตามสั่ง (Non-Adherence / ขาดยา)');
+                setContent('ญาติ/ผู้ป่วยรายงานว่าหยุดยาเอง หรือลืมรับประทานยาบ่อยครั้ง เม็ดยาเหลือจำนวนมาก ขอส่งต่อเภสัชกรเพื่อวางแผนการปรับพฤติกรรมการใช้ยา');
+              }}
+              className="text-[11px] font-medium bg-white hover:bg-purple-50 text-purple-800 px-2.5 py-1 rounded-lg border border-purple-200 transition shadow-2xs cursor-pointer"
+            >
+              🛑 ขาดยา / หยุดยาเอง (Non-Adherence)
+            </button>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-3 bg-rose-50/20 p-3.5 rounded-xl border border-rose-100">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
@@ -102,10 +156,10 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
                 onChange={(e) => setTargetRole(e.target.value as any)}
                 className="w-full text-xs p-2 bg-white border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:outline-none"
               >
-                <option value="all">@ ทีมสหวิชาชีพทั้งหมด (All Team)</option>
-                <option value="pharmacist">@ เภสัชกร (Pharmacist)</option>
-                <option value="nurse">@ พยาบาล (Nurse)</option>
-                <option value="psychologist">@ นักจิตวิทยา (Psychologist)</option>
+                <option value="pharmacist">💊 @ เภสัชกร (Pharmacist) - แจ้งเตือน Telegram กลุ่ม</option>
+                <option value="all">👥 @ ทีมสหวิชาชีพทั้งหมด (All Team)</option>
+                <option value="nurse">🩺 @ พยาบาล (Nurse)</option>
+                <option value="psychologist">🧠 @ นักจิตวิทยา (Psychologist)</option>
               </select>
             </div>
 
@@ -151,15 +205,22 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
             />
           </div>
 
-          <div className="flex justify-between items-center pt-1">
-            <span className="text-[11px] text-slate-500">
-              ผู้ส่งข้อความ: {getRoleBadge(currentRole)}
-            </span>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-1">
+            <div className="flex items-center gap-2 text-[11px] text-slate-600">
+              <span>ผู้ส่งข้อความ: {getRoleBadge(currentRole)}</span>
+              {targetRole === 'pharmacist' && (
+                <span className="text-[10px] text-sky-700 font-semibold bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200">
+                  📲 แจ้งเตือนเข้า Telegram กลุ่ม: -5506194529
+                </span>
+              )}
+            </div>
+
             <button
               type="submit"
-              className="bg-rose-400 hover:bg-rose-500 text-white text-xs font-semibold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition transform active:scale-95"
+              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition transform active:scale-95 cursor-pointer"
             >
-              <Send className="w-3.5 h-3.5" /> ส่งโน้ตประสานงาน
+              <Send className="w-3.5 h-3.5" />
+              <span>{targetRole === 'pharmacist' ? '🚀 ส่งต่อถึงเภสัชกร (แจ้งเตือนกลุ่ม)' : 'ส่งโน้ตประสานงาน'}</span>
             </button>
           </div>
         </form>

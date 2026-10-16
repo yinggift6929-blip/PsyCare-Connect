@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Brain, X } from 'lucide-react';
+import { Brain } from 'lucide-react';
 import { PsychRecord, Patient } from '../../types.ts';
+import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 
 interface AddPsychLogModalProps {
   isOpen: boolean;
@@ -49,131 +50,128 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between pb-3 border-b border-rose-100 mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-amber-100 text-amber-800 rounded-xl">
-              <Brain className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-base">บันทึกผลประเมินจิตวิทยา / CBT</h3>
-              <p className="text-xs text-slate-500">สำหรับผู้ป่วย {patient.name} (HN: {patient.hn})</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100">
-            <X className="w-5 h-5" />
+    <PsychiatricModalFrame
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-xl"
+      icon={<Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white" />}
+      title="บันทึกผลการบำบัดทางจิตวิทยา (Psychological Therapy &amp; CBT)"
+      subtitle={`ผู้ป่วย: ${patient.name} (HN: ${patient.hn}) • วินิจฉัย: ${patient.diagnosis}`}
+      badgeText="Psychology"
+      badgeColor="amber"
+      confidentialNotice="เวชระเบียนการประเมินจิตวิทยาคลินิกและการบำบัดรายบุคคล (Psychological Counseling Record)"
+      footer={
+        <div className="flex items-center justify-end w-full gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-5 py-2 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+          >
+            บันทึกผลจิตวิทยา &amp; ซิงค์ข้อมูล
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">คะแนน PHQ-9 (0-27):</label>
-              <input
-                type="number"
-                min="0"
-                max="27"
-                required
-                value={phq9Score}
-                onChange={(e) => setPhq9Score(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 font-mono"
-              />
-            </div>
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">คะแนนวิตกกังวล GAD-7 (0-21):</label>
-              <input
-                type="number"
-                min="0"
-                max="21"
-                placeholder="ไม่บังคับ"
-                value={gad7Score}
-                onChange={(e) => setGad7Score(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 font-mono"
-              />
-            </div>
-          </div>
-
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">ระดับความเสี่ยงฆ่าตัวตาย (8Q / 9Q):</label>
+            <label className="block font-bold text-slate-700 mb-1">คะแนนคัดกรองซึมเศร้า (PHQ-9):</label>
+            <input
+              type="number"
+              min="0"
+              max="27"
+              placeholder="0-27"
+              value={phq9Score}
+              onChange={(e) => setPhq9Score(e.target.value)}
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
+            />
+          </div>
+          <div>
+            <label className="block font-bold text-slate-700 mb-1">ความเสี่ยงฆ่าตัวตาย (8Q):</label>
             <select
               value={suicideRisk8q}
               onChange={(e) => setSuicideRisk8q(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
             >
               <option value="0 (ไม่มีความเสี่ยง)">0 (ไม่มีความเสี่ยง)</option>
-              <option value="ต่ำ (8Q = 1-8)">ต่ำ (8Q = 1-8 คะแนน)</option>
-              <option value="ปานกลาง (8Q = 9-16)">ปานกลาง (8Q = 9-16 คะแนน)</option>
-              <option value="รุนแรง (8Q ≥ 17)">รุนแรง (8Q ≥ 17 คะแนน - Safety Alert)</option>
+              <option value="1-8 (ความเสี่ยงน้อย)">1-8 (ความเสี่ยงน้อย)</option>
+              <option value="9-16 (ความเสี่ยงปานกลาง)">9-16 (ความเสี่ยงปานกลาง)</option>
+              <option value=">=17 (ความเสี่ยงรุนแรง)">>=17 (ความเสี่ยงรุนแรง)</option>
             </select>
           </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">รูปแบบการบำบัดทางจิต:</label>
-              <select
-                value={therapyType}
-                onChange={(e) => setTherapyType(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              >
-                <option value="CBT (การปรับความคิดและพฤติกรรม)">CBT (การปรับความคิดและพฤติกรรม)</option>
-                <option value="Motivational Interviewing (MI)">Motivational Interviewing (MI)</option>
-                <option value="Psychoeducation & Relapse Prevention">Psychoeducation & ป้องกันกำเริบ</option>
-                <option value="Supportive Counseling">Supportive Counseling</option>
-                <option value="Family Psychoeducation">Family Psychoeducation</option>
-              </select>
-            </div>
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">ครั้งที่บำบัด (Session):</label>
-              <input
-                type="text"
-                placeholder="เช่น ครั้งที่ 2 / 6"
-                value={sessionNumber}
-                onChange={(e) => setSessionNumber(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              />
-            </div>
-          </div>
-
+        <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block font-bold text-slate-700 mb-1">บันทึกการให้คำปรึกษา / เทคนิคที่ใช้: *</label>
-            <textarea
-              rows={3}
-              required
-              placeholder="บันทึกประเด็นความคิดลบอัตโนมัติ การมอบหมายการบ้าน การฝึกผ่อนคลาย หรือ Safety Plan..."
-              value={counselingNotes}
-              onChange={(e) => setCounselingNotes(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+            <label className="block font-bold text-slate-700 mb-1">คะแนนวิตกกังวล (GAD-7):</label>
+            <input
+              type="number"
+              min="0"
+              max="21"
+              placeholder="0-21 (ไม่บังคับ)"
+              value={gad7Score}
+              onChange={(e) => setGad7Score(e.target.value)}
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 font-mono"
             />
           </div>
-
           <div>
-            <label className="block font-bold text-slate-700 mb-1">นักจิตวิทยาผู้บันทึก:</label>
+            <label className="block font-bold text-slate-700 mb-1">ครั้งที่บำบัด:</label>
             <input
               type="text"
-              value={psychologistName}
-              onChange={(e) => setPsychologistName(e.target.value)}
-              className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+              placeholder="ครั้งที่ 1"
+              value={sessionNumber}
+              onChange={(e) => setSessionNumber(e.target.value)}
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
             />
           </div>
+        </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition"
-            >
-              ยกเลิก
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 bg-amber-300 hover:bg-amber-400 text-amber-950 font-bold rounded-xl shadow-xs border border-amber-400/50 transition"
-            >
-              บันทึกผลประเมิน & ซิงค์ Sheet
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div>
+          <label className="block font-bold text-slate-700 mb-1">รูปแบบการบำบัด (Therapy Modality):</label>
+          <select
+            value={therapyType}
+            onChange={(e) => setTherapyType(e.target.value)}
+            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+          >
+            <option value="CBT (การปรับความคิดและพฤติกรรม)">CBT (การปรับความคิดและพฤติกรรม)</option>
+            <option value="Motivational Interviewing (MI)">Motivational Interviewing (MI - สร้างแรงจูงใจ)</option>
+            <option value="Supportive Psychotherapy">Supportive Psychotherapy (ประคับประคองจิตใจ)</option>
+            <option value="Psychoeducation">Psychoeducation (จิตศึกษาแก่ผู้ป่วยและครอบครัว)</option>
+            <option value="Behavioral Activation">Behavioral Activation (กระตุ้นพฤติกรรมเชิงบวก)</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block font-bold text-slate-700 mb-1">
+            บันทึกการปรึกษา / ประเด็นหลัก (Counseling Notes): <span className="text-rose-500">*</span>
+          </label>
+          <textarea
+            rows={3}
+            required
+            placeholder="ประเด็นปัญหา ความคิดอัตโนมัติ กลไกทางจิต แผนการมอบหมายงาน (Homework)..."
+            value={counselingNotes}
+            onChange={(e) => setCounselingNotes(e.target.value)}
+            className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+          />
+        </div>
+
+        <div>
+          <label className="block font-bold text-slate-700 mb-1">นักจิตวิทยาผู้บันทึก:</label>
+          <input
+            type="text"
+            value={psychologistName}
+            onChange={(e) => setPsychologistName(e.target.value)}
+            className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+          />
+        </div>
+      </form>
+    </PsychiatricModalFrame>
   );
 };

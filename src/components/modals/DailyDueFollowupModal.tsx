@@ -9,25 +9,32 @@ import {
   CheckCircle2, 
   Calendar, 
   ChevronRight, 
-  X,
   Phone,
   UserCheck
 } from 'lucide-react';
 import { Patient, PatientTrackingGroup } from '../../types.ts';
+import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 
 interface DailyDueFollowupModalProps {
   isOpen: boolean;
   onClose: () => void;
   patients: Patient[];
   onSelectPatient: (patientId: string, groupAction?: 'home_visit' | 'telemed' | 'clinic') => void;
+  onSendDailyNotification?: (dueToday: Patient[], overdue: Patient[]) => Promise<void> | void;
+  isNotificationEnabled?: boolean;
 }
 
 export const DailyDueFollowupModal: React.FC<DailyDueFollowupModalProps> = ({
   isOpen,
   onClose,
   patients,
-  onSelectPatient
+  onSelectPatient,
+  onSendDailyNotification,
+  isNotificationEnabled
 }) => {
+  const [isSendingNotif, setIsSendingNotif] = React.useState(false);
+  const [sendNotifSuccess, setSendNotifSuccess] = React.useState(false);
+
   if (!isOpen) return null;
 
   // Format today's date in YYYY-MM-DD
@@ -55,37 +62,68 @@ export const DailyDueFollowupModal: React.FC<DailyDueFollowupModalProps> = ({
   const totalDueToday = dueTodayPatients.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-3xl w-full p-5 sm:p-7 shadow-xl border border-rose-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-5">
-        {/* Header Alert Banner */}
-        <div className="flex items-start justify-between gap-3 pb-3 border-b border-rose-100">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-400 to-pink-400 flex items-center justify-center text-white shadow-xs shrink-0">
-              <Bell className="w-6 h-6 animate-bounce" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base sm:text-lg font-bold text-slate-800 leading-tight">
-                  แจ้งเตือนผู้ป่วยที่ต้องติดตามวันนี้ (Daily Follow-up Alert)
-                </h3>
-                <span className="text-xs bg-rose-50 text-rose-700 font-bold px-2.5 py-0.5 rounded-full border border-rose-200">
-                  {totalDueToday} รายการ
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-rose-500" />
-                ประจำวัน: <strong className="text-slate-700">{todayDisplay}</strong>
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <PsychiatricModalFrame
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-3xl"
+      icon={<Bell className="w-5 h-5 sm:w-6 sm:h-6 text-white animate-bounce" />}
+      title="แจ้งเตือนผู้ป่วยที่ต้องติดตามวันนี้ (Daily Follow-up Alert)"
+      subtitle={
+        <div className="flex items-center gap-1.5 mt-0.5">
+          <Calendar className="w-3.5 h-3.5 text-rose-500" />
+          <span>ประจำวัน: <strong className="text-slate-800">{todayDisplay}</strong></span>
         </div>
+      }
+      badgeText={`${totalDueToday} รายการ`}
+      badgeColor="rose"
+      confidentialNotice="เวชระเบียนคลินิกสุขภาพจิตและจิตเวชชุมชน (Confidential Mental Health Record)"
+      footer={
+        <button
+          onClick={onClose}
+          type="button"
+          className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-xs transition transform active:scale-95 cursor-pointer"
+        >
+          เข้าสู่หน้าจอหลัก (Enter Clinic)
+        </button>
+      }
+    >
+
+
+        {/* Action Button: Send summary to LINE / Telegram */}
+        {onSendDailyNotification && (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 p-3 bg-gradient-to-r from-sky-50/80 via-indigo-50/60 to-rose-50/50 rounded-2xl border border-sky-100 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-sky-500 text-white rounded-lg">
+                <Bell className="w-3.5 h-3.5" />
+              </span>
+              <div>
+                <span className="font-bold text-slate-800">ส่งแจ้งเตือนสรุปนัดหมายวันนี้เข้า LINE / Telegram</span>
+                <p className="text-[11px] text-slate-500">
+                  {isNotificationEnabled ? 'พร้อมส่งเข้ากลุ่มบุคลากรทันที' : 'ยังไม่ได้เปิดใช้งานแจ้งเตือน (ตั้งค่าได้ที่ปุ่มด้านบน)'}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              disabled={isSendingNotif}
+              onClick={async () => {
+                setIsSendingNotif(true);
+                try {
+                  await onSendDailyNotification(dueTodayPatients, overduePatients);
+                  setSendNotifSuccess(true);
+                  setTimeout(() => setSendNotifSuccess(false), 3000);
+                } finally {
+                  setIsSendingNotif(false);
+                }
+              }}
+              className="bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer shrink-0"
+            >
+              <span>{isSendingNotif ? 'กำลังส่งแจ้งเตือน...' : sendNotifSuccess ? '✅ ส่งข้อความสำเร็จแล้ว!' : '📲 ส่งสรุปเข้า LINE / Telegram'}</span>
+            </button>
+          </div>
+        )}
+
 
         {/* 3 Tracking Groups Overview Tabs / Counters */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -278,20 +316,7 @@ export const DailyDueFollowupModal: React.FC<DailyDueFollowupModalProps> = ({
             </div>
           )}
         </div>
-
-        {/* Footer Dismiss Button */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-          <span className="text-[11px] text-slate-400">
-            สามารถกดปุ่มกระดิ่ง 🔔 บนแถบเมนูด้านบน เพื่อเปิดดูหน้านี้ใหม่ได้ตลอดเวลา
-          </span>
-          <button
-            onClick={onClose}
-            className="bg-rose-400 hover:bg-rose-500 text-white font-bold text-xs px-6 py-2.5 rounded-xl shadow-xs transition transform active:scale-95"
-          >
-            เข้าสู่หน้าจอหลัก (Enter App)
-          </button>
-        </div>
-      </div>
-    </div>
+    </PsychiatricModalFrame>
   );
 };
+

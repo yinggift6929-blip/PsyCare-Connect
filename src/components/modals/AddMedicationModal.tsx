@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Pill, X, Sparkles, Check } from 'lucide-react';
 import { Medication, Patient } from '../../types.ts';
+import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 
 interface AddMedicationModalProps {
   isOpen: boolean;
@@ -146,28 +147,37 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-rose-100 mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2.5 bg-rose-100 text-rose-700 rounded-2xl shadow-2xs">
-              <Pill className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-base">เพิ่มรายการยาผู้ป่วย</h3>
-              <p className="text-xs text-slate-500">สำหรับ {patient.name} (HN: {patient.hn})</p>
-            </div>
-          </div>
-          <button 
-            onClick={onClose} 
-            className="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100 transition"
+    <PsychiatricModalFrame
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-xl"
+      icon={<Pill className="w-5 h-5 sm:w-6 sm:h-6 text-white" />}
+      title="เพิ่มรายการยาจิตเวชผู้ป่วย (Prescription)"
+      subtitle={`ผู้ป่วย: ${patient.name} (HN: ${patient.hn}) • วินิจฉัย: ${patient.diagnosis}`}
+      badgeText="Psychopharmacology"
+      badgeColor="rose"
+      confidentialNotice="เวชระเบียนใบสั่งยาและการใช้ยาทางจิตเวช (Psychiatric Prescription Record)"
+      footer={
+        <div className="flex items-center justify-end w-full gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            ยกเลิก
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-5 py-2.5 text-xs bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 cursor-pointer"
+          >
+            <Pill className="w-3.5 h-3.5" />
+            <span>บันทึกรายการยา</span>
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Requirement 3: 3 Drug Groups Dropdown / Scrollable selector */}
           <div className="space-y-1.5">
             <label className="block font-bold text-slate-800 flex items-center justify-between">
@@ -403,24 +413,7 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition font-medium"
-            >
-              ยกเลิก
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-xs transition flex items-center gap-1.5"
-            >
-              <Pill className="w-4 h-4" />
-              <span>บันทึกรายการยา</span>
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
+    </PsychiatricModalFrame>
   );
 };

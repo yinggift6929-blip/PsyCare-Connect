@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { ClipboardCheck, X, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react';
+import { ClipboardCheck, CheckCircle2, AlertTriangle, Sparkles } from 'lucide-react';
 import { Mars5Assessment, Patient } from '../../types.ts';
+import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 
 interface Mars5AssessmentModalProps {
   isOpen: boolean;
@@ -63,38 +64,45 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
       q5,
       totalScore,
       interpretation: interpretationText,
-      evaluatedBy: evaluatedBy.trim() || 'เภสัชกร',
-      notes: notes.trim() || undefined
+      evaluatedBy: evaluatedBy.trim() || 'เภสัชกร/พยาบาล'
     }, autoUpdatePatientScore ? adherencePercent : undefined);
 
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-rose-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-rose-100">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-teal-100 text-teal-800 rounded-xl">
-              <ClipboardCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-base leading-tight">
-                แบบประเมิน MARS-5 (Medication Adherence Report Scale)
-              </h3>
-              <p className="text-xs text-slate-500">
-                ประเมินพฤติกรรมความร่วมมือในการใช้ยาของผู้ป่วย: {patient.name} (HN: {patient.hn})
-              </p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100">
-            <X className="w-5 h-5" />
+    <PsychiatricModalFrame
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-2xl"
+      icon={<ClipboardCheck className="w-5 h-5 sm:w-6 sm:h-6 text-white" />}
+      title="แบบประเมิน MARS-5 (Medication Adherence Report Scale)"
+      subtitle={`ประเมินพฤติกรรมความร่วมมือในการใช้ยาของผู้ป่วย: ${patient.name} (HN: ${patient.hn})`}
+      badgeText="Adherence Scale"
+      badgeColor="emerald"
+      confidentialNotice="เวชระเบียนประเมินพฤติกรรมความร่วมมือในการใช้ยาจิตเวช (Medication Adherence Record)"
+      footer={
+        <div className="flex items-center justify-end w-full gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-5 py-2 text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+          >
+            บันทึกผล MARS-5 &amp; ซิงค์ข้อมูล
           </button>
         </div>
-
+      }
+    >
+      <div className="space-y-4">
         {/* Instruction Banner */}
-        <div className="bg-rose-50/30 p-3 rounded-xl border border-rose-100 text-xs text-slate-700 leading-relaxed">
+        <div className="bg-rose-50/50 p-3 rounded-xl border border-rose-100 text-xs text-slate-700 leading-relaxed">
           <p className="font-semibold text-slate-800 mb-0.5">คำชี้แจง:</p>
           <p>
             ใช้ประเมินพฤติกรรมการความร่วมมือในการใช้ยาของผู้ป่วย (Adherence) ผ่านคำถาม 5 ข้อ ให้ผู้ป่วยตอบตามความเป็นจริง (คะแนนเต็ม 25 คะแนน)
@@ -117,7 +125,7 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 bg-white">
                 {questions.map((q) => (
                   <tr key={q.id} className="hover:bg-pink-50/20 transition">
                     <td className="p-3 font-medium text-slate-800">{q.text}</td>
@@ -130,7 +138,7 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
                             value={opt.score}
                             checked={q.value === opt.score}
                             onChange={() => q.setter(opt.score)}
-                            className="w-4 h-4 text-pink-600 focus:ring-pink-400 cursor-pointer"
+                            className="text-teal-600 focus:ring-teal-500 cursor-pointer"
                           />
                         </label>
                       </td>
@@ -141,60 +149,47 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
             </table>
           </div>
 
-          {/* Real-time Score & Interpretation Result Box */}
-          <div className={`p-4 rounded-xl border transition ${
-            isGoodAdherence ? 'bg-emerald-50/70 border-emerald-200' : 'bg-amber-50/70 border-amber-200'
+          {/* Real-time Score Preview Card */}
+          <div className={`p-4 rounded-xl border flex items-center justify-between transition ${
+            isGoodAdherence ? 'bg-teal-50/70 border-teal-200' : 'bg-rose-50/70 border-rose-200'
           }`}>
-            <div className="flex items-center justify-between flex-wrap gap-2">
-              <div className="flex items-center gap-2">
-                {isGoodAdherence ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-                ) : (
-                  <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
-                )}
-                <div>
-                  <h4 className="font-bold text-xs text-slate-900">
-                    ผลการประเมิน: <span className={isGoodAdherence ? 'text-emerald-700' : 'text-amber-800'}>
-                      {totalScore} / 25 คะแนน ({adherencePercent}%)
-                    </span>
-                  </h4>
-                  <p className="text-[11px] text-slate-600 mt-0.5">
-                    {isGoodAdherence 
-                      ? 'เกณฑ์: ได้คะแนน ≥ 23-24 คะแนนขึ้นไป ถือว่ามี Adherence อยู่ในเกณฑ์ดี (High Adherence)'
-                      : 'เกณฑ์: ได้คะแนน < 23 คะแนน มีความร่วมมือในการใช้ยาต่ำ-ปานกลาง เสี่ยงต่ออาการกำเริบ'}
-                  </p>
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-xl text-white ${isGoodAdherence ? 'bg-teal-500' : 'bg-rose-500'}`}>
+                {isGoodAdherence ? <CheckCircle2 className="w-5 h-5" /> : <AlertTriangle className="w-5 h-5" />}
+              </div>
+              <div>
+                <div className="font-bold text-sm text-slate-900">
+                  ผลรวมคะแนน MARS-5: {totalScore} / 25 คะแนน
+                </div>
+                <div className="text-xs text-slate-600 mt-0.5">
+                  การแปลผล: <strong className={isGoodAdherence ? 'text-teal-700' : 'text-rose-700'}>
+                    {isGoodAdherence ? 'ความร่วมมือดี (High Adherence >= 23)' : 'ความร่วมมือต่ำ/ปานกลาง (Non-adherence < 23)'}
+                  </strong>
                 </div>
               </div>
+            </div>
 
-              <div className="text-right">
-                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold border ${
-                  isGoodAdherence 
-                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
-                    : 'bg-amber-100 text-amber-800 border-amber-300'
-                }`}>
-                  {isGoodAdherence ? '✓ Adherence ดีเยี่ยม' : '⚠️ ต้องเสริมสร้าง Adherence'}
-                </span>
-              </div>
+            <div className="text-right">
+              <span className={`text-xl font-bold font-mono ${isGoodAdherence ? 'text-teal-600' : 'text-rose-600'}`}>
+                {adherencePercent}%
+              </span>
+              <span className="block text-[10px] text-slate-500">Adherence Score</span>
             </div>
           </div>
 
-          {/* Auto update toggle */}
-          <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+          <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-700 font-medium">
             <input
               type="checkbox"
               checked={autoUpdatePatientScore}
               onChange={(e) => setAutoUpdatePatientScore(e.target.checked)}
-              className="rounded text-rose-500 focus:ring-rose-400 w-4 h-4"
+              className="rounded text-teal-600 focus:ring-teal-500"
             />
-            <span>
-              อัปเดตค่าความร่วมมือในการใช้ยา (Adherence Score: <strong>{adherencePercent}%</strong>) ในเวชระเบียนของผู้ป่วยอัตโนมัติ
-            </span>
+            <span>อัปเดตเปอร์เซ็นต์ Adherence ในโปรไฟล์ผู้ป่วยโดยอัตโนมัติ ({adherencePercent}%)</span>
           </label>
 
-          {/* Notes & Evaluator */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">หมายเหตุเพิ่มเติม / ข้อสังเกต:</label>
+              <label className="block font-bold text-slate-700 mb-1">บันทึกเพิ่มเติม / สาเหตุ:</label>
               <input
                 type="text"
                 placeholder="เช่น ผู้ป่วยลืมทานเฉพาะมื้อกลางวัน, มีคนช่วยจัดยา..."
@@ -213,24 +208,8 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
               />
             </div>
           </div>
-
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition"
-            >
-              ยกเลิก
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-xs transition"
-            >
-              บันทึกผล MARS-5 & ซิงค์ Google Sheet
-            </button>
-          </div>
         </form>
       </div>
-    </div>
+    </PsychiatricModalFrame>
   );
 };

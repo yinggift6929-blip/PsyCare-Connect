@@ -24,7 +24,8 @@ import {
   CheckCircle2,
   CalendarClock,
   Sparkles,
-  Info
+  Info,
+  Send
 } from 'lucide-react';
 import { Patient, DtpRecord, HandoverMessage, Medication, PatientTrackingGroup } from '../types.ts';
 
@@ -162,8 +163,23 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons: Edit, Delete, Toggle */}
-        <div className="flex items-center gap-1.5 self-end md:self-center shrink-0">
+        {/* Action Buttons: Forward to Pharmacist, Edit, Delete */}
+        <div className="flex items-center gap-1.5 self-end md:self-center shrink-0 flex-wrap justify-end">
+          {onNavigateTab && (
+            <button
+              onClick={() => onNavigateTab('handover')}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-xl border border-sky-300 transition cursor-pointer shadow-2xs active:scale-95"
+              title="ส่งต่อเพื่อให้เภสัชกรรับทราบปัญหาการใช้ยาของผู้ป่วยจากทีมสหวิชาชีพ (แจ้งเตือนผ่านกลุ่ม Telegram: -5506194529)"
+            >
+              <Send className="w-3.5 h-3.5 text-sky-600" />
+              <span className="hidden sm:inline">ส่งต่อปัญหาการใช้ยาถึงเภสัชกร</span>
+              <span className="sm:hidden">ส่งต่อเภสัชกร</span>
+              <span className="text-[10px] bg-sky-200/90 text-sky-900 px-1.5 py-0.2 rounded-md font-mono">
+                กลุ่ม -5506194529
+              </span>
+            </button>
+          )}
+
           <button
             onClick={() => onEditPatient(patient)}
             className="inline-flex items-center gap-1 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-xl border border-rose-200 transition cursor-pointer shadow-2xs"
@@ -176,7 +192,7 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
           <button
             onClick={() => onDeletePatient(patient)}
             title="ลบข้อมูลผู้ป่วย (พร้อมยืนยัน)"
-            className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-xl transition border border-transparent hover:border-rose-150"
+            className="text-slate-400 hover:text-rose-600 hover:bg-rose-50 p-2 rounded-xl transition border border-transparent hover:border-rose-150 cursor-pointer"
           >
             <Trash2 className="w-4 h-4" />
           </button>

@@ -6,12 +6,12 @@ import {
   RefreshCw, 
   Upload, 
   Download, 
-  X, 
   Layers, 
   HelpCircle,
   Database
 } from 'lucide-react';
 import { REQUIRED_TABS } from '../services/googleSheets.ts';
+import { PsychiatricModalFrame } from './common/PsychiatricModalFrame.tsx';
 
 interface SheetSettingsModalProps {
   isOpen: boolean;
@@ -51,30 +51,19 @@ export const SheetSettingsModal: React.FC<SheetSettingsModalProps> = ({
   const sheetUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto custom-scrollbar space-y-5">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-rose-100">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
-              <FileSpreadsheet className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-base leading-tight">
-                ศูนย์จัดการ Google Sheet ซิงค์ข้อมูลข้ามอุปกรณ์
-              </h3>
-              <p className="text-xs text-slate-500">
-                เชื่อมต่อและจัดเก็บข้อมูลการบริบาลจิตเวชแบบถาวร ไม่สูญหายเมื่อเปิดบนอุปกรณ์ใดๆ
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <PsychiatricModalFrame
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-xl"
+      icon={<FileSpreadsheet className="w-5 h-5 text-white" />}
+      title="ศูนย์จัดการ Google Sheet ซิงค์ข้อมูลข้ามอุปกรณ์"
+      subtitle="เชื่อมต่อและจัดเก็บข้อมูลการบริบาลจิตเวชแบบถาวร ไม่สูญหายเมื่อเปิดบนอุปกรณ์ใดๆ"
+      badgeText="Cloud Storage"
+      badgeColor="emerald"
+      confidentialNotice="การเชื่อมโยงฐานข้อมูลภายนอก (Google Cloud & Sheets EMR)"
+    >
+      <div className="space-y-5">
+
 
         {/* Sheet ID Configuration */}
         <div className="space-y-2">
@@ -188,6 +177,7 @@ export const SheetSettingsModal: React.FC<SheetSettingsModalProps> = ({
           </p>
         </div>
       </div>
-    </div>
+    </PsychiatricModalFrame>
   );
 };
+

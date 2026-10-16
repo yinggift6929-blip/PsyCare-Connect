@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { UserCheck, X, Home, PhoneCall, Building2, Calendar, RotateCcw, Hospital, Tag, CheckCircle2 } from 'lucide-react';
+import { UserCheck, Home, PhoneCall, Building2, Calendar, RotateCcw, Hospital, Tag, CheckCircle2 } from 'lucide-react';
 import { Patient, RiskLevel, PatientTrackingGroup } from '../../types.ts';
+import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
+
 
 interface EditPatientModalProps {
   isOpen: boolean;
@@ -125,24 +127,19 @@ export const EditPatientModal: React.FC<EditPatientModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-rose-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
-        <div className="flex items-center justify-between pb-3 border-b border-rose-100 mb-4">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-rose-100/70 text-rose-700 rounded-xl">
-              <UserCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-base">แก้ไขข้อมูลและชื่อผู้ป่วย</h3>
-              <p className="text-xs text-slate-500">ปรับปรุงข้อมูลเวชระเบียน HN: {patient.hn} • ระบุ D/C หรือ Refer ไปรักษาต่อ รพ.อื่น</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <PsychiatricModalFrame
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-xl"
+      icon={<UserCheck className="w-5 h-5 text-white" />}
+      title="แก้ไขข้อมูลและชื่อผู้ป่วยจิตเวช"
+      subtitle={`เวชระเบียน HN: ${patient.hn} • ระบุสถานะ D/C หรือ Refer ไปรักษาต่อ`}
+      badgeText="Edit Record"
+      badgeColor="rose"
+      confidentialNotice={`การแก้ไขข้อมูลเวชระเบียน HN: ${patient.hn} (${patient.name})`}
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
 
-        <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
           {/* Section: Patient Name Editing & D/C / Refer Assistants */}
           <div className="bg-gradient-to-r from-amber-50/70 via-rose-50/40 to-purple-50/40 p-3.5 rounded-2xl border border-amber-200/90 space-y-2.5">
             <div className="flex items-center justify-between">
@@ -477,13 +474,13 @@ export const EditPatientModal: React.FC<EditPatientModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-rose-400 hover:bg-rose-500 text-white font-semibold rounded-xl shadow-xs transition transform active:scale-95"
+              className="px-5 py-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold rounded-xl shadow-xs transition transform active:scale-95 cursor-pointer"
             >
               บันทึกการแก้ไข & ซิงค์อัตโนมัติ
             </button>
           </div>
         </form>
-      </div>
-    </div>
+    </PsychiatricModalFrame>
   );
 };
+

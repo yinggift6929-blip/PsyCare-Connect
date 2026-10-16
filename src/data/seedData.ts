@@ -3,6 +3,21 @@ import { AppClinicData } from '../types.ts';
 export const initialClinicData: AppClinicData = {
   patients: [
     {
+      id: 'P_1791967220397',
+      hn: '12345',
+      name: 'dddd',
+      gender: 'ชาย',
+      age: 50,
+      diagnosis: 'Schizophrenia (โรคจิตเภท)',
+      trackingGroup: 'clinic_dtp',
+      statusTag: 'General Psych',
+      riskLevel: 'low',
+      adherenceScore: 100,
+      lastVisit: '2026-10-14',
+      nextAppointmentType: 'clinic',
+      updatedAt: '14/10/2569 15:40:20'
+    },
+    {
       id: 'P101',
       hn: '66-00124',
       name: 'นายสมชาย ใจดี',
@@ -563,5 +578,19 @@ export const initialClinicData: AppClinicData = {
       pharmacistAdvice: 'ยังไม่เข้าเกณฑ์ Metabolic Syndrome (2/5 ข้อ) แต่น้ำหนักเกิน (BMI 27.4) แนะนำคุมอาหารและชั่งน้ำหนักทุกสัปดาห์',
       recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)'
     }
-  ]
+  ],
+  notificationSettings: {
+    telegramEnabled: true,
+    telegramBotToken: '8489161754',
+    telegramChatId: '-5506194529',
+    lineEnabled: false,
+    lineChannelAccessToken: '',
+    lineTargetId: '',
+    notifyOnNewPatient: false,
+    notifyOnHandover: true,
+    notifyOnDtpCrisis: true,
+    notifyOnHomeVisit: false,
+    notifyOnDailyDue: false
+  }
 };
+

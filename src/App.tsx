@@ -36,8 +36,10 @@ import {
   HomeVisitRecord,
   TelemedRecord,
   MetabolicRecord,
+  NotificationSettings,
   AppClinicData 
 } from './types.ts';
+
 
 import { 
   initAuth, 
@@ -96,12 +98,24 @@ import { HomeVisitModal } from './components/assessments/HomeVisitModal.tsx';
 import { TelemedModal } from './components/assessments/TelemedModal.tsx';
 import { MetabolicMonitoringModal } from './components/assessments/MetabolicMonitoringModal.tsx';
 import { MonthlyPharmacyCareDashboard } from './components/MonthlyPharmacyCareDashboard.tsx';
+import { NotificationSettingsModal } from './components/NotificationSettingsModal.tsx';
+import { 
+  notifyNewPatientCreated, 
+  notifyHandoverPosted, 
+  notifyDtpRecorded, 
+  notifyHomeVisitRecorded, 
+  notifyDailyDueSummary, 
+  getLocalNotificationSettings, 
+  saveLocalNotificationSettings,
+  DEFAULT_NOTIFICATION_SETTINGS
+} from './services/notificationService.ts';
 import { 
   subscribeToClinicData, 
   saveFirestoreClinicData, 
   fetchFirestoreClinicData,
   testFirestoreConnection 
 } from './services/firebaseSync.ts';
+
 
 export default function App() {
   // Authentication & Google Sheet State
@@ -141,9 +155,15 @@ export default function App() {
   const [isTelemedOpen, setIsTelemedOpen] = useState(false);
   const [isMetabolicOpen, setIsMetabolicOpen] = useState(false);
   const [isSheetSettingsOpen, setIsSheetSettingsOpen] = useState(false);
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(() => {
+    const local = loadLocalClinicData();
+    return local.notificationSettings || getLocalNotificationSettings();
+  });
   const [isMonthlyDashboardOpen, setIsMonthlyDashboardOpen] = useState(false);
   const [activeDevicesCount, setActiveDevicesCount] = useState<number>(1);
   const [crossDeviceToast, setCrossDeviceToast] = useState<{ message: string; timestamp: string } | null>(null);
+
 
   // Confirmation Dialog State
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -223,6 +243,10 @@ export default function App() {
         lastKnownVersionRef.current = version;
         setClinicData(remoteData);
         saveLocalClinicData(remoteData);
+        if (remoteData.notificationSettings) {
+          setNotificationSettings(remoteData.notificationSettings);
+          saveLocalNotificationSettings(remoteData.notificationSettings);
+        }
         const timeStr = new Date().toLocaleTimeString('th-TH');
         setCrossDeviceToast({
           message: '⚡ ข้อมูลซิงค์อัตโนมัติจากอุปกรณ์อื่นแบบ Real-Time (Cloud Sync)',
@@ -544,6 +568,13 @@ export default function App() {
       patients: [patientObj, ...prev.patients]
     }));
     setSelectedPatientId(patientObj.id);
+
+    // Broadcast instant alert to Telegram / LINE
+    notifyNewPatientCreated(
+      notificationSettings,
+      patientObj,
+      user?.displayName || (currentRole === 'pharmacist' ? 'เภสัชกร' : currentRole === 'nurse' ? 'พยาบาล' : 'นักจิตวิทยา')
+    ).catch(e => console.warn('Notification notice:', e));
   };
 
   // Action: Edit Patient
@@ -638,6 +669,8 @@ export default function App() {
       ...prev,
       dtps: [dtpObj, ...prev.dtps]
     }));
+
+    notifyDtpRecorded(notificationSettings, dtpObj, activePatient.name).catch(() => {});
   };
 
   // Action: Toggle DTP Status
@@ -857,6 +890,8 @@ export default function App() {
         homeVisits: [homeVisitObj, ...(prev.homeVisits || [])]
       };
     });
+
+    notifyHomeVisitRecorded(notificationSettings, homeVisitObj, activePatient.name).catch(() => {});
   };
 
   // Action: Save Telemed Record
@@ -964,7 +999,37 @@ export default function App() {
       ...prev,
       handovers: [handoverObj, ...prev.handovers]
     }));
+
+    notifyHandoverPosted(notificationSettings, handoverObj).then((result) => {
+      if (result?.telegram?.success) {
+        setCrossDeviceToast({
+          message: `📲 ส่งแจ้งเตือนปัญหาการใช้ยาของ ${activePatient.name} เข้า Telegram กลุ่ม (${notificationSettings.telegramChatId || '-5506194529'}) เรียบร้อยแล้ว`,
+          timestamp: new Date().toLocaleTimeString('th-TH')
+        });
+      } else if (result?.telegram?.error) {
+        setCrossDeviceToast({
+          message: `⚠️ บันทึกการส่งต่อสำเร็จ (Telegram: ${result.telegram.error})`,
+          timestamp: new Date().toLocaleTimeString('th-TH')
+        });
+      } else {
+        setCrossDeviceToast({
+          message: `📋 บันทึกส่งต่อปัญหาการใช้ยาถึง ${h.targetRole === 'pharmacist' ? 'เภสัชกร' : h.targetRole} เรียบร้อยแล้ว`,
+          timestamp: new Date().toLocaleTimeString('th-TH')
+        });
+      }
+    }).catch(() => {});
   };
+
+  // Action: Save & Sync Notification Settings across all devices
+  const handleSaveNotificationSettings = async (newSettings: NotificationSettings) => {
+    setNotificationSettings(newSettings);
+    saveLocalNotificationSettings(newSettings);
+    updateDataAndSync((prev) => ({
+      ...prev,
+      notificationSettings: newSettings
+    }));
+  };
+
 
   // Action: Resolve Handover Note
   const handleResolveHandover = (handoverId: string, responseNote?: string) => {
@@ -1038,6 +1103,8 @@ export default function App() {
         dueTodayCount={dueTodayCount}
         onOpenDailyAlert={() => setIsDailyAlertOpen(true)}
         onOpenMonthlyDashboard={() => setIsMonthlyDashboardOpen(true)}
+        onOpenNotificationSettings={() => setIsNotificationModalOpen(true)}
+        isNotificationActive={Boolean(notificationSettings.telegramEnabled || notificationSettings.lineEnabled)}
         onLogin={handleLogin}
         onLogout={handleLogout}
         onSyncNow={handleSyncNow}
@@ -1416,6 +1483,10 @@ export default function App() {
           else if (groupAction === 'telemed') setActiveTab('telemed');
           else if (groupAction === 'clinic') setActiveTab('rx');
         }}
+        onSendDailyNotification={async (dueToday, overdue) => {
+          await notifyDailyDueSummary(notificationSettings, dueToday, overdue);
+        }}
+        isNotificationEnabled={Boolean(notificationSettings.telegramEnabled || notificationSettings.lineEnabled)}
       />
 
       {/* Monthly Clinic Jit-Dee Pharmacy Care Dashboard Modal */}
@@ -1453,27 +1524,14 @@ export default function App() {
         lastSyncTime={lastSync}
       />
 
-      {/* Monthly Pharmacy Care Dashboard Modal (Requirement 3) */}
-      <MonthlyPharmacyCareDashboard
-        isOpen={isMonthlyDashboardOpen}
-        onClose={() => setIsMonthlyDashboardOpen(false)}
-        patients={clinicData.patients}
-        dtps={clinicData.dtps}
-        medications={clinicData.medications}
-        homeVisits={clinicData.homeVisits}
-        telemedRecords={clinicData.telemedRecords}
-        nurseRecords={clinicData.nurseRecords}
-        psychRecords={clinicData.psychRecords}
-        safetyLogs={clinicData.safetyLogs}
-        mars5Records={clinicData.mars5Records}
-        diepssRecords={clinicData.diepssRecords}
-        metabolicRecords={clinicData.metabolicRecords}
-        onSelectPatient={(patientId) => {
-          setSelectedPatientId(patientId);
-          setActiveTab('rx');
-        }}
-        onSyncNow={handleSyncNow}
+      {/* LINE & Telegram Notification Hub Modal */}
+      <NotificationSettingsModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        settings={notificationSettings}
+        onSaveSettings={handleSaveNotificationSettings}
       />
+
 
 
       {/* Destructive Operation Confirmation Dialog (Mandatory) */}

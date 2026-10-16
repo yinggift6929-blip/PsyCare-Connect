@@ -12,7 +12,8 @@ import {
   Settings2,
   Sparkles,
   Bell,
-  BarChart3
+  BarChart3,
+  Send
 } from 'lucide-react';
 import { RoleType } from '../types.ts';
 
@@ -27,7 +28,10 @@ interface HeaderProps {
   dueTodayCount: number;
   onOpenDailyAlert: () => void;
   onOpenMonthlyDashboard?: () => void;
+  onOpenNotificationSettings?: () => void;
+  isNotificationActive?: boolean;
   onLogin: () => void;
+
   onLogout: () => void;
   onSyncNow: () => void;
   onRefreshServerData?: () => void;
@@ -47,6 +51,8 @@ export const Header: React.FC<HeaderProps> = ({
   dueTodayCount,
   onOpenDailyAlert,
   onOpenMonthlyDashboard,
+  onOpenNotificationSettings,
+  isNotificationActive,
   onLogin,
   onLogout,
   onSyncNow,
@@ -147,7 +153,24 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </button>
 
-
+            {/* Notification Settings (LINE & Telegram) */}
+            {onOpenNotificationSettings && (
+              <button
+                onClick={onOpenNotificationSettings}
+                title="ตั้งค่าการแจ้งเตือน LINE & Telegram (รับเคสผู้ป่วย / ส่งเวร / นัดหมายเข้ามือถือ)"
+                className={`p-2 rounded-xl border transition flex items-center gap-1.5 shadow-2xs ${
+                  isNotificationActive
+                    ? 'bg-sky-50 text-sky-700 border-sky-300 hover:bg-sky-100'
+                    : 'bg-white hover:bg-rose-50 text-slate-700 border-rose-200'
+                }`}
+              >
+                <Send className={`w-3.5 h-3.5 ${isNotificationActive ? 'text-sky-600' : 'text-slate-500'}`} />
+                <span className="hidden lg:inline text-xs font-semibold">แจ้งเตือน LINE/Telegram</span>
+                {isNotificationActive && (
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="เปิดใช้งานแจ้งเตือนอยู่"></span>
+                )}
+              </button>
+            )}
 
             {/* Quick Refresh from Server across all devices */}
             {onRefreshServerData && (
@@ -250,9 +273,12 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Soft Status Sub-bar */}
         <div className="py-1.5 border-t border-rose-200/50 flex flex-wrap items-center justify-between text-[11px] text-slate-600">
           <div className="flex items-center gap-3">
-            <div
-              className="flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-50/90 px-2.5 py-0.5 rounded-lg border border-emerald-300 text-[11px]"
-              title="ระบบเชื่อมต่อคลาวด์อัตโนมัติ รองรับ Vercel, GitHub และเชื่อมโยงทุกอุปกรณ์ตรงกันทันที"
+            <button
+              type="button"
+              onClick={onRefreshServerData}
+              disabled={isSyncing}
+              className="flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-50/90 hover:bg-emerald-100/90 px-2.5 py-0.5 rounded-lg border border-emerald-300 text-[11px] transition cursor-pointer"
+              title="ระบบเชื่อมต่อคลาวด์อัตโนมัติ รองรับ Vercel, GitHub และเชื่อมโยงทุกอุปกรณ์ตรงกันทันที (คลิกเพื่ออัปเดตข้อมูล)"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span>🟢 ซิงค์อัตโนมัติ Cloud Real-Time (เชื่อมต่อทุก Device)</span>
@@ -261,7 +287,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {activeDevicesCount} เครื่อง
                 </span>
               )}
-            </div>
+            </button>
 
             {user && (
               <>

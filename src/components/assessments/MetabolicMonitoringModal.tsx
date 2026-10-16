@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
 import { HeartPulse, X, AlertTriangle, ShieldCheck, CheckCircle2, Flame, Scale } from 'lucide-react';
 import { MetabolicRecord, Patient, Medication } from '../../types.ts';
+import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 
 interface MetabolicMonitoringModalProps {
   isOpen: boolean;
@@ -111,29 +111,36 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-rose-100 max-h-[92vh] overflow-y-auto custom-scrollbar space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-rose-100">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-rose-100 text-rose-800 rounded-xl">
-              <HeartPulse className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-slate-900 text-base leading-tight">
-                แบบบันทึกการติดตาม Metabolic ที่เกี่ยวข้องกับยาจิตเวช
-              </h3>
-              <p className="text-xs text-slate-500">
-                ประเมินเกณฑ์กลุ่มอาการเมแทบอลิก (NCEP ATP III): {patient.name} (HN: {patient.hn})
-              </p>
-            </div>
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100">
-            <X className="w-5 h-5" />
+    <PsychiatricModalFrame
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-2xl"
+      icon={<HeartPulse className="w-5 h-5 sm:w-6 sm:h-6 text-white" />}
+      title="แบบบันทึกการติดตาม Metabolic ที่เกี่ยวข้องกับยาจิตเวช"
+      subtitle={`ประเมินเกณฑ์กลุ่มอาการเมแทบอลิก (NCEP ATP III): ${patient.name} (HN: ${patient.hn})`}
+      badgeText="Metabolic Monitoring"
+      badgeColor="rose"
+      confidentialNotice="เวชระเบียนติดตามความเสี่ยงเมแทบอลิกและสุขภาพหัวใจหลอดเลือด (Metabolic Syndrome Evaluation)"
+      footer={
+        <div className="flex items-center justify-end w-full gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
+          >
+            ยกเลิก
+          </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            className="px-5 py-2 text-xs bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl shadow-xs transition active:scale-95 cursor-pointer"
+          >
+            บันทึกผล Metabolic &amp; ซิงค์ข้อมูล
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
           {/* Antipsychotic Drug & Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-rose-50/30 p-3 rounded-xl border border-rose-100">
             <div>
@@ -416,23 +423,7 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition"
-            >
-              ยกเลิก
-            </button>
-            <button
-              type="submit"
-              className="px-5 py-2 bg-rose-500 hover:bg-rose-600 text-white font-semibold rounded-xl shadow-xs transition"
-            >
-              บันทึกผล Metabolic & ซิงค์ Google Sheet
-            </button>
-          </div>
         </form>
-      </div>
-    </div>
+    </PsychiatricModalFrame>
   );
 };

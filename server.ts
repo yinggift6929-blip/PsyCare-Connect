@@ -3,6 +3,8 @@ import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore, doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { initialClinicData } from './src/data/seedData.ts';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -17,6 +19,20 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'clinic-data.json');
 const TOKEN_FILE = path.join(DATA_DIR, 'shared-token.json');
+const CONFIG_FILE = path.join(__dirname, 'firebase-applet-config.json');
+
+// Initialize Firebase Firestore for cloud persistence across Vercel and local server
+let firestoreDb: any = null;
+if (fs.existsSync(CONFIG_FILE)) {
+  try {
+    const firebaseConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+    const fbApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+    firestoreDb = getFirestore(fbApp, firebaseConfig.firestoreDatabaseId);
+    console.log('Server connected to Cloud Firestore:', firebaseConfig.firestoreDatabaseId);
+  } catch (err) {
+    console.warn('Firebase init in server.ts notice:', err);
+  }
+}
 
 // Ensure data folder exists
 if (!fs.existsSync(DATA_DIR)) {
@@ -57,6 +73,58 @@ if (fs.existsSync(DATA_FILE)) {
   } catch (e) {
     console.error('Error writing initial seed clinic data file:', e);
   }
+}
+
+// Bi-directional Cloud Sync with Firestore
+if (firestoreDb) {
+  // 1. Initial sync with Cloud Firestore
+  getDoc(doc(firestoreDb, 'clinic_data', 'current')).then((snap) => {
+    if (snap.exists()) {
+      const remote = snap.data();
+      if (remote && Array.isArray(remote.patients) && remote.patients.length > 0) {
+        const remoteVer = remote.version || 0;
+        if (remoteVer >= dataVersion) {
+          cachedClinicData = remote;
+          dataVersion = remoteVer;
+          lastSyncTimestamp = remote.updatedAt || new Date().toISOString();
+          fs.writeFileSync(DATA_FILE, JSON.stringify(remote, null, 2), 'utf-8');
+          console.log(`Server synced ${remote.patients.length} patients from Firestore cloud.`);
+        }
+      }
+    } else if (cachedClinicData) {
+      // Cloud document doesn't exist yet, seed with local cached data
+      setDoc(doc(firestoreDb, 'clinic_data', 'current'), {
+        ...cachedClinicData,
+        version: dataVersion,
+        updatedAt: lastSyncTimestamp,
+        updatedBy: 'AI Studio Seed'
+      }).catch(() => {});
+    }
+  }).catch((err) => {
+    console.warn('Initial Firestore sync check notice:', err);
+  });
+
+  // 2. Real-time Firestore snapshot listener (receives changes from Vercel & other devices)
+  onSnapshot(doc(firestoreDb, 'clinic_data', 'current'), (snap) => {
+    if (snap.exists()) {
+      const remote = snap.data();
+      if (remote && Array.isArray(remote.patients) && remote.patients.length > 0) {
+        const remoteVer = remote.version || 0;
+        if (remoteVer > dataVersion) {
+          cachedClinicData = remote;
+          dataVersion = remoteVer;
+          lastSyncTimestamp = remote.updatedAt || new Date().toISOString();
+          try {
+            fs.writeFileSync(DATA_FILE, JSON.stringify(remote, null, 2), 'utf-8');
+          } catch {}
+          broadcastDataUpdate(remote, dataVersion, lastSyncTimestamp);
+          console.log(`Real-time update from Cloud Firestore applied (${remote.patients.length} patients).`);
+        }
+      }
+    }
+  }, (err) => {
+    console.warn('Server Firestore onSnapshot notice:', err);
+  });
 }
 
 // Connected SSE Clients for instantaneous multi-device updates
@@ -149,8 +217,20 @@ app.post('/api/clinic-data', (req, res) => {
     // Persist to disk
     fs.writeFileSync(DATA_FILE, JSON.stringify(incoming, null, 2), 'utf-8');
 
-    // Broadcast immediately to all connected devices in real time
+    // Broadcast immediately to all connected devices in real time via SSE
     broadcastDataUpdate(incoming, dataVersion, lastSyncTimestamp);
+
+    // Persist to Cloud Firestore so Vercel and external devices receive updates
+    if (firestoreDb) {
+      setDoc(doc(firestoreDb, 'clinic_data', 'current'), {
+        ...incoming,
+        version: dataVersion,
+        updatedAt: lastSyncTimestamp,
+        updatedBy: 'AI Studio Node Server'
+      }).catch((err) => {
+        console.warn('Server Firestore sync error:', err);
+      });
+    }
 
     return res.json({ 
       success: true, 
@@ -185,10 +265,124 @@ app.post('/api/sync-token', (req, res) => {
   }
 });
 
+// API: Telegram notification proxy
+app.post('/api/notifications/telegram', async (req, res) => {
+  try {
+    const { botToken, chatId, text } = req.body;
+    if (!botToken || !chatId || !text) {
+      return res.status(400).json({ error: 'Missing botToken, chatId, or text' });
+    }
+
+    const cleanToken = String(botToken).trim();
+    let targetChatId = String(chatId).trim();
+
+    if (!cleanToken.includes(':')) {
+      return res.status(400).json({
+        error: `⚠️ รหัส ${cleanToken} คือ Bot ID ของ Telegram ในการส่งแจ้งเตือนผ่าน API ต้องใช้ Bot Token ฉบับเต็ม (เช่น ${cleanToken}:AAHxxx... ที่ได้รับจาก @BotFather) กรุณานำ Token ฉบับเต็มมากรอกในช่องตั้งค่าครับ`
+      });
+    }
+
+    let tgRes = await fetch(`https://api.telegram.org/bot${cleanToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: targetChatId,
+        text,
+        parse_mode: 'HTML',
+        disable_web_page_preview: true
+      })
+    });
+
+    let data = await tgRes.json();
+
+    // Auto-handle Telegram Supergroup migration if migrated
+    if (!data.ok && data.parameters?.migrate_to_chat_id) {
+      targetChatId = String(data.parameters.migrate_to_chat_id);
+      tgRes = await fetch(`https://api.telegram.org/bot${cleanToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: targetChatId,
+          text,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true
+        })
+      });
+      data = await tgRes.json();
+    } else if (!data.ok && targetChatId.startsWith('-') && !targetChatId.startsWith('-100')) {
+      // Try with -100 prefix for supergroups
+      const supergroupId = `-100${targetChatId.slice(1)}`;
+      const retryRes = await fetch(`https://api.telegram.org/bot${cleanToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: supergroupId,
+          text,
+          parse_mode: 'HTML',
+          disable_web_page_preview: true
+        })
+      });
+      const retryData = await retryRes.json();
+      if (retryData.ok) {
+        data = retryData;
+        targetChatId = supergroupId;
+      }
+    }
+
+    if (data.ok) {
+      return res.json({ 
+        success: true, 
+        message: `ส่งแจ้งเตือน Telegram สำเร็จ (กลุ่ม: ${targetChatId})`,
+        deliveredChatId: targetChatId
+      });
+    } else {
+      return res.status(400).json({ error: data.description || 'Telegram API Error' });
+    }
+  } catch (err: any) {
+    console.error('Error in Telegram notification route:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// API: LINE Messaging API proxy
+app.post('/api/notifications/line', async (req, res) => {
+  try {
+    const { channelAccessToken, targetId, text } = req.body;
+    if (!channelAccessToken || !targetId || !text) {
+      return res.status(400).json({ error: 'Missing channelAccessToken, targetId, or text' });
+    }
+
+    const lineRes = await fetch('https://api.line.me/v2/bot/message/push', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${channelAccessToken}`
+      },
+      body: JSON.stringify({
+        to: targetId,
+        messages: [{ type: 'text', text }]
+      })
+    });
+
+    if (lineRes.ok) {
+      return res.json({ success: true, message: 'ส่งแจ้งเตือน LINE สำเร็จ' });
+    } else {
+      const errData = await lineRes.json().catch(() => ({}));
+      return res.status(lineRes.status).json({ 
+        error: errData.message || `LINE API returned HTTP ${lineRes.status}` 
+      });
+    }
+  } catch (err: any) {
+    console.error('Error in LINE notification route:', err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // API: Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', serverTime: new Date().toISOString() });
 });
+
 
 async function startServer() {
   const isProduction = process.env.NODE_ENV === 'production';
