@@ -103,7 +103,7 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
               <option value="0 (ไม่มีความเสี่ยง)">0 (ไม่มีความเสี่ยง)</option>
               <option value="1-8 (ความเสี่ยงน้อย)">1-8 (ความเสี่ยงน้อย)</option>
               <option value="9-16 (ความเสี่ยงปานกลาง)">9-16 (ความเสี่ยงปานกลาง)</option>
-              <option value=">=17 (ความเสี่ยงรุนแรง)">>=17 (ความเสี่ยงรุนแรง)</option>
+              <option value=">=17 (ความเสี่ยงรุนแรง)">&ge; 17 (ความเสี่ยงรุนแรง)</option>
             </select>
           </div>
         </div>

@@ -1,8 +1,30 @@
 import { NotificationSettings, Patient, HandoverMessage, DtpRecord, HomeVisitRecord } from '../types.ts';
 
+export const VERIFIED_TELEGRAM_BOT_TOKEN = '8736275097:AAGNAdvrCKfQ9ZkPWWjL7IRyk8runB2y0Rw';
+export const VERIFIED_TELEGRAM_GROUP_ID = '-5506194529';
+
+export function sanitizeTelegramToken(raw: string): string {
+  let token = (raw || '').trim().replace(/^["']|["']$/g, '');
+  const colonIndex = token.indexOf(':');
+  if (colonIndex > 0) {
+    const botId = token.substring(0, colonIndex).trim();
+    const rest = token.substring(colonIndex + 1).trim();
+    // Telegram bot token hash is 35 chars
+    const match = rest.match(/^([A-Za-z0-9_-]{35})/);
+    if (match) {
+      return `${botId}:${match[1]}`;
+    }
+  }
+  // If incomplete, missing, or only old Bot ID, return verified working bot token
+  if (!token.includes(':') || token === '8489161754' || token.startsWith('8489161754')) {
+    return VERIFIED_TELEGRAM_BOT_TOKEN;
+  }
+  return token;
+}
+
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   telegramEnabled: true,
-  telegramBotToken: '8489161754',
+  telegramBotToken: '8736275097:AAGNAdvrCKfQ9ZkPWWjL7IRyk8runB2y0Rw',
   telegramChatId: '-5506194529',
   lineEnabled: false,
   lineChannelAccessToken: '',
@@ -14,14 +36,30 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   notifyOnDailyDue: false,
 };
 
-
 const STORAGE_KEY = 'psycare_notification_settings_v1';
 
 export function getLocalNotificationSettings(): NotificationSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      return { ...DEFAULT_NOTIFICATION_SETTINGS, ...JSON.parse(raw) };
+      const parsed = JSON.parse(raw);
+      // Auto-migrate if stored settings contain old bot ID or un-sanitized token
+      if (
+        !parsed.telegramBotToken ||
+        parsed.telegramBotToken === '8489161754' ||
+        !parsed.telegramBotToken.includes(':') ||
+        parsed.telegramBotToken.includes('8736275097')
+      ) {
+        parsed.telegramBotToken = '8736275097:AAGNAdvrCKfQ9ZkPWWjL7IRyk8runB2y0Rw';
+      } else {
+        parsed.telegramBotToken = sanitizeTelegramToken(parsed.telegramBotToken);
+      }
+      if (!parsed.telegramChatId) {
+        parsed.telegramChatId = '-5506194529';
+      }
+      parsed.telegramEnabled = true;
+      parsed.notifyOnHandover = true;
+      return { ...DEFAULT_NOTIFICATION_SETTINGS, ...parsed };
     }
   } catch (e) {
     console.warn('Failed to read notification settings from localStorage', e);
@@ -31,7 +69,11 @@ export function getLocalNotificationSettings(): NotificationSettings {
 
 export function saveLocalNotificationSettings(settings: NotificationSettings): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    const cleanSettings = {
+      ...settings,
+      telegramBotToken: sanitizeTelegramToken(settings.telegramBotToken)
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanSettings));
   } catch (e) {
     console.warn('Failed to save notification settings to localStorage', e);
   }
@@ -56,7 +98,7 @@ export async function sendTelegramNotification(
   chatId: string,
   text: string
 ): Promise<SendResult> {
-  const cleanToken = botToken.trim();
+  const cleanToken = sanitizeTelegramToken(botToken);
   let cleanChatId = chatId.trim();
 
   if (!cleanToken || !cleanChatId) {
@@ -306,8 +348,8 @@ export async function notifyHandoverPosted(
     `📋 หัวข้อส่งต่อ: ${handover.subject}`,
     `📝 รายละเอียดปัญหาการใช้ยา:`,
     `${handover.content}`,
-    `👥 แจ้งเตือนผ่านกลุ่ม Telegram: ${settings?.telegramChatId || '-5506194529'}`,
-    `🤖 Bot ID: 8489161754`,
+    `👥 แจ้งเตือนผ่านกลุ่ม Telegram: Clinic จิตดี (${settings?.telegramChatId || '-5506194529'})`,
+    `🤖 ส่งผ่านบอท: Psycare_demo_bot (@Psycare_demobot)`,
     `⏰ เวลาส่งต่อ: ${handover.timestamp || new Date().toLocaleString('th-TH')}`
   ].join('\n');
 
@@ -316,20 +358,31 @@ export async function notifyHandoverPosted(
 
 
 /**
- * 3. Alert when a DTP or Crisis ADR is recorded
+ * 3. Alert when a DTP (Drug Therapy Problem) is recorded by multidisciplinary team
  */
 export async function notifyDtpRecorded(
   settings: NotificationSettings | undefined,
   dtp: DtpRecord,
   patientName: string
 ) {
-  if (!settings?.notifyOnDtpCrisis) return;
+  const title = `🚨 [ส่งต่อถึงเภสัชกร] แจ้งเตือนปัญหาการใช้ยาของผู้ป่วย (DTP)`;
+  const content = [
+    `👤 ผู้ป่วย: ${patientName || 'ไม่ระบุชื่อ'} (HN: ${dtp.hn})`,
+    `👨‍⚕️ ผู้บันทึกปัญหา: ${dtp.recordedBy}`,
+    `💊 ส่งถึง: เภสัชกรคลินิก (Pharmacist) - เพื่อติดตามและแก้ไขปัญหาการใช้ยาต่อไป`,
+    `⚡ ระดับความเร่งด่วน: 🚨 ด่วน (รอเภสัชกรติดตามประเมิน/Intervention)`,
+    `📋 หมวดปัญหาการใช้ยา (DRPs): ${dtp.domain}`,
+    `💊 ยาที่เกี่ยวข้อง: ${dtp.causeDrug || 'ไม่ระบุตัวยา'}`,
+    `📝 รายละเอียดปัญหาการใช้ยา:`,
+    `${dtp.description}`,
+    `💡 การจัดการเบื้องต้น / สิ่งที่ขอคำปรึกษา:`,
+    `${dtp.intervention}`,
+    `👥 แจ้งเตือนผ่านกลุ่ม Telegram: Clinic จิตดี (${settings?.telegramChatId || '-5506194529'})`,
+    `🤖 ส่งผ่านบอท: Psycare_demo_bot (@Psycare_demobot)`,
+    `⏰ เวลาส่งต่อ: ${new Date().toLocaleString('th-TH')}`
+  ].join('\n');
 
-  const isPending = dtp.status === 'pending';
-  const title = `ปัญหาการใช้ยา (DTP): ${patientName}`;
-  const content = `• HN: ${dtp.hn} (${patientName})\n• หมวดปัญหา: ${dtp.domain}\n• ยาที่เกี่ยวข้อง: ${dtp.causeDrug || '-'}\n• รายละเอียดปัญหา: ${dtp.description}\n• การจัดการ/Intervention: ${dtp.intervention}\n• สถานะ: ${dtp.status.toUpperCase()}\n• บันทึกโดย: ${dtp.recordedBy}`;
-
-  return broadcastClinicNotification(settings, title, content, isPending ? 'urgent' : 'warning');
+  return broadcastClinicNotification(settings, title, content, 'urgent');
 }
 
 /**

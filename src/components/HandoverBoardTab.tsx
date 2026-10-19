@@ -11,12 +11,14 @@ import {
   CornerDownRight,
   Filter
 } from 'lucide-react';
-import { Patient, HandoverMessage, RoleType } from '../types.ts';
+import { Patient, HandoverMessage, RoleType, NotificationSettings } from '../types.ts';
 
 interface HandoverBoardTabProps {
   patient: Patient;
   handovers: HandoverMessage[];
   currentRole: RoleType;
+  notificationSettings?: NotificationSettings;
+  onOpenNotificationSettings?: () => void;
   onSubmitHandover: (handover: {
     targetRole: RoleType | 'all';
     priority: 'normal' | 'urgent' | 'stat';
@@ -30,6 +32,8 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
   patient,
   handovers,
   currentRole,
+  notificationSettings,
+  onOpenNotificationSettings,
   onSubmitHandover,
   onResolveHandover
 }) => {
@@ -99,7 +103,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
             </span>
             <span className="text-[10px] font-semibold bg-sky-100 text-sky-800 px-2.5 py-0.5 rounded-full border border-sky-300 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
-              <span>แจ้งเตือน Telegram กลุ่ม: -5506194529</span>
+              <span>แจ้งเตือน Telegram กลุ่ม: Clinic จิตดี (-5506194529)</span>
             </span>
           </div>
           <p className="text-[11px] text-slate-600">
@@ -205,22 +209,26 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
             />
           </div>
 
+          {targetRole === 'pharmacist' && (
+            <div className="bg-sky-50/90 p-2.5 rounded-xl border border-sky-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 text-sky-900 font-semibold text-[11px]">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>ส่งแจ้งเตือนเข้า Telegram กลุ่ม: <b>Clinic จิตดี (-5506194529)</b> ผ่านบอท <b>@Psycare_demobot</b></span>
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pt-1">
             <div className="flex items-center gap-2 text-[11px] text-slate-600">
               <span>ผู้ส่งข้อความ: {getRoleBadge(currentRole)}</span>
-              {targetRole === 'pharmacist' && (
-                <span className="text-[10px] text-sky-700 font-semibold bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200">
-                  📲 แจ้งเตือนเข้า Telegram กลุ่ม: -5506194529
-                </span>
-              )}
             </div>
 
             <button
               type="submit"
-              className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition transform active:scale-95 cursor-pointer"
+              className="bg-gradient-to-r from-sky-500 via-rose-500 to-pink-500 hover:from-sky-600 hover:to-pink-600 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-xs transition transform active:scale-95 cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>{targetRole === 'pharmacist' ? '🚀 ส่งต่อถึงเภสัชกร (แจ้งเตือนกลุ่ม)' : 'ส่งโน้ตประสานงาน'}</span>
+              <span>{targetRole === 'pharmacist' ? '🚀 ส่งต่อถึงเภสัชกร (แจ้งเตือนกลุ่ม -5506194529)' : 'ส่งโน้ตประสานงาน'}</span>
             </button>
           </div>
         </form>

@@ -15,7 +15,7 @@ import {
   Users
 } from 'lucide-react';
 import { NotificationSettings } from '../types.ts';
-import { sendTelegramNotification, sendLineNotification } from '../services/notificationService.ts';
+import { sendTelegramNotification, sendLineNotification, sanitizeTelegramToken } from '../services/notificationService.ts';
 import { PsychiatricModalFrame } from './common/PsychiatricModalFrame.tsx';
 
 interface NotificationSettingsModalProps {
@@ -43,18 +43,30 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
   if (!isOpen) return null;
 
   const handleTestTelegram = async () => {
-    if (!settings.telegramBotToken.trim() || !settings.telegramChatId.trim()) {
+    const cleanToken = sanitizeTelegramToken(settings.telegramBotToken);
+    const cleanChatId = settings.telegramChatId.trim();
+
+    if (!cleanToken || !cleanChatId) {
       setTelegramStatus({ success: false, message: 'กรุณากรอก Telegram Bot Token และ Chat ID ก่อนทดสอบครับ' });
       return;
     }
+
+    if (!cleanToken.includes(':')) {
+      setTelegramStatus({
+        success: false,
+        message: `⚠️ รหัสที่ระบุ (${cleanToken}) คือ Bot ID ของ Telegram สำหรับการส่งข้อความเข้ากลุ่ม Telegram API ต้องการ Bot Token ฉบับเต็ม เช่น ${cleanToken}:AAHxxx... ที่ได้รับจาก @BotFather กรุณานำ Token ฉบับเต็มมากรอกในช่องด้านบนครับ`
+      });
+      return;
+    }
+
     setTestingTelegram(true);
     setTelegramStatus(null);
-    const testMsg = `<b>🔔 ทดสอบการแจ้งเตือนจากระบบ PsyCare</b>\n\nการเชื่อมต่อระหว่างระบบดูแลผู้ป่วยจิตเวชชุมชนและ Telegram สำเร็จเรียบร้อยแล้วครับ!\n\n<i>พร้อมรับการแจ้งเตือนเคสผู้ป่วย นัดหมาย และการส่งเวรแบบ Real-Time</i>`;
-    const res = await sendTelegramNotification(settings.telegramBotToken, settings.telegramChatId, testMsg);
+    const testMsg = `<b>🔔 ทดสอบการแจ้งเตือนจากระบบ PsyCare</b>\n\nการเชื่อมต่อระหว่างระบบดูแลผู้ป่วยจิตเวชชุมชนและ Telegram สำเร็จเรียบร้อยแล้วครับ!\n\n<i>พร้อมรับการแจ้งเตือนปัญหาการใช้ยา ส่งต่อถึงเภสัชกร และเคสผู้ป่วยแบบ Real-Time</i>\n\n👥 <i>กลุ่ม: Clinic จิตดี (${cleanChatId})</i>\n🤖 <i>บอท: @Psycare_demobot</i>`;
+    const res = await sendTelegramNotification(cleanToken, cleanChatId, testMsg);
     setTestingTelegram(false);
     setTelegramStatus({
       success: res.success,
-      message: res.success ? '✅ ส่งข้อความทดสอบสำเร็จ! ตรวจสอบใน Telegram ของท่านได้เลยครับ' : `❌ ${res.error}`,
+      message: res.success ? `✅ ส่งข้อความทดสอบเข้ากลุ่ม Telegram Clinic จิตดี (${cleanChatId}) สำเร็จเรียบร้อย! ตรวจสอบในกลุ่มได้เลยครับ` : `❌ ${res.error}`,
     });
   };
 
@@ -77,7 +89,11 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await onSaveSettings(settings);
+      const cleanSettings = {
+        ...settings,
+        telegramBotToken: sanitizeTelegramToken(settings.telegramBotToken)
+      };
+      await onSaveSettings(cleanSettings);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2500);
     } finally {
@@ -208,16 +224,18 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
               <div className="bg-sky-50/60 p-3 rounded-xl border border-sky-200/80 space-y-1.5 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-sky-900 flex items-center gap-1.5">
-                    <span>🤖 Telegram Bot ID ของคุณ:</span>
-                    <code className="bg-white px-2 py-0.5 rounded font-mono text-sky-700 border border-sky-300">8489161754</code>
+                    <span>🤖 Telegram Bot:</span>
+                    <span className="font-semibold text-slate-800">Psycare_demo_bot (@Psycare_demobot)</span>
+                    <code className="bg-white px-2 py-0.5 rounded font-mono text-sky-700 border border-sky-300">8736275097</code>
                   </span>
                   <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold">
-                    ตั้งค่าพร้อมใช้งาน
+                    เชื่อมต่อแล้ว
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-sky-900 flex items-center gap-1.5">
-                    <span>👥 ส่งเข้ากลุ่ม Telegram ID:</span>
+                    <span>👥 ส่งเข้ากลุ่ม:</span>
+                    <span className="font-semibold text-slate-800">Clinic จิตดี</span>
                     <code className="bg-white px-2 py-0.5 rounded font-mono text-sky-700 border border-sky-300">-5506194529</code>
                   </span>
                   <span className="text-[10px] bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full font-semibold">
@@ -230,20 +248,33 @@ export const NotificationSettingsModal: React.FC<NotificationSettingsModalProps>
                 <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
                   <span>1. Telegram Bot Token <span className="text-rose-500">*</span></span>
                   <span className="text-[10px] text-slate-400 font-normal">
-                    (รหัส API ฉบับเต็มจาก @BotFather รูปแบบ 8489161754:AAHxxx...)
+                    (รหัส API ฉบับเต็มจาก @BotFather)
                   </span>
                 </label>
                 <input
                   type="text"
                   value={settings.telegramBotToken}
                   onChange={(e) => setSettings({ ...settings, telegramBotToken: e.target.value })}
-                  placeholder="เช่น 8489161754:AAHkL71eG18z..."
+                  placeholder="เช่น 8736275097:AAGNAdvrCKfQ9ZkPWWjL7IRyk8runB2y0Rw..."
                   className="w-full text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-400"
                 />
                 {!settings.telegramBotToken.includes(':') && settings.telegramBotToken.trim().length > 0 && (
-                  <p className="text-[11px] text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-200 mt-1.5 leading-relaxed">
-                    💡 <b>คำแนะนำ:</b> รหัสที่ระบุคือ <b>Bot ID (8489161754)</b> หากต้องการส่งข้อความผ่าน Bot API กรุณานำ <b>HTTP API Token ฉบับเต็ม</b> ที่ได้รับจาก @BotFather (เช่น <code>8489161754:AAHxxx...</code>) มากดวางในช่องนี้ครับ
-                  </p>
+                  <div className="bg-amber-50 p-2.5 rounded-xl border border-amber-200 mt-1.5 space-y-1.5 text-[11px] text-amber-900 leading-relaxed">
+                    <p>
+                      💡 <b>คำแนะนำ:</b> รหัสที่ระบุคือ <b>Bot ID</b> ซึ่ง Telegram API ต้องการ <b>Bot Token ฉบับเต็ม</b> (เช่น <code>8736275097:AAGN...</code>)
+                    </p>
+                    <div className="flex items-center justify-between pt-0.5">
+                      <span className="text-slate-600">พิมพ์ <code>/token</code> ใน @BotFather เพื่อคัดลอกรหัส</span>
+                      <button
+                        type="button"
+                        onClick={() => window.open('https://t.me/BotFather', '_blank')}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-700 bg-white hover:bg-sky-50 px-2 py-0.5 rounded-lg border border-sky-300 shadow-2xs transition cursor-pointer"
+                      >
+                        <span>เปิด @BotFather</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
 

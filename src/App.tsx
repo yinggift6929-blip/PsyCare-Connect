@@ -99,6 +99,7 @@ import { TelemedModal } from './components/assessments/TelemedModal.tsx';
 import { MetabolicMonitoringModal } from './components/assessments/MetabolicMonitoringModal.tsx';
 import { MonthlyPharmacyCareDashboard } from './components/MonthlyPharmacyCareDashboard.tsx';
 import { NotificationSettingsModal } from './components/NotificationSettingsModal.tsx';
+import { QuickDrugReferralModal } from './components/modals/QuickDrugReferralModal.tsx';
 import { 
   notifyNewPatientCreated, 
   notifyHandoverPosted, 
@@ -156,9 +157,9 @@ export default function App() {
   const [isMetabolicOpen, setIsMetabolicOpen] = useState(false);
   const [isSheetSettingsOpen, setIsSheetSettingsOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isQuickDrugReferralOpen, setIsQuickDrugReferralOpen] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(() => {
-    const local = loadLocalClinicData();
-    return local.notificationSettings || getLocalNotificationSettings();
+    return getLocalNotificationSettings();
   });
   const [isMonthlyDashboardOpen, setIsMonthlyDashboardOpen] = useState(false);
   const [activeDevicesCount, setActiveDevicesCount] = useState<number>(1);
@@ -1003,12 +1004,12 @@ export default function App() {
     notifyHandoverPosted(notificationSettings, handoverObj).then((result) => {
       if (result?.telegram?.success) {
         setCrossDeviceToast({
-          message: `📲 ส่งแจ้งเตือนปัญหาการใช้ยาของ ${activePatient.name} เข้า Telegram กลุ่ม (${notificationSettings.telegramChatId || '-5506194529'}) เรียบร้อยแล้ว`,
+          message: `📲 ส่งแจ้งเตือนปัญหาการใช้ยาของ ${activePatient.name} เข้า Telegram กลุ่ม (${notificationSettings.telegramChatId || '-5506194529'}) สำเร็จเรียบร้อยแล้ว`,
           timestamp: new Date().toLocaleTimeString('th-TH')
         });
       } else if (result?.telegram?.error) {
         setCrossDeviceToast({
-          message: `⚠️ บันทึกการส่งต่อสำเร็จ (Telegram: ${result.telegram.error})`,
+          message: `📋 บันทึกส่งต่อปัญหาการใช้ยาถึงเภสัชกรสำเร็จ (Telegram: ${result.telegram.error})`,
           timestamp: new Date().toLocaleTimeString('th-TH')
         });
       } else {
@@ -1115,18 +1116,35 @@ export default function App() {
 
       {/* Real-time Multi-Device Sync Toast Banner */}
       {crossDeviceToast && (
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white text-xs px-4 py-2 flex items-center justify-between shadow-md animate-in slide-in-from-top duration-300">
+        <div className={`text-white text-xs px-4 py-2 flex items-center justify-between shadow-md animate-in slide-in-from-top duration-300 ${
+          crossDeviceToast.message.includes('⚠️') 
+            ? 'bg-gradient-to-r from-amber-600 via-rose-600 to-pink-600' 
+            : 'bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700'
+        }`}>
           <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
             <span className="font-bold">{crossDeviceToast.message}</span>
             <span className="text-[11px] opacity-90">({crossDeviceToast.timestamp})</span>
           </div>
-          <button 
-            onClick={() => setCrossDeviceToast(null)}
-            className="text-white/80 hover:text-white text-xs underline font-medium cursor-pointer"
-          >
-            รับทราบ
-          </button>
+          <div className="flex items-center gap-2">
+            {crossDeviceToast.message.includes('Token') && (
+              <button
+                onClick={() => {
+                  setCrossDeviceToast(null);
+                  setIsNotificationModalOpen(true);
+                }}
+                className="bg-white text-rose-800 px-2.5 py-0.5 rounded-md font-bold text-[11px] hover:bg-slate-100 transition shadow-2xs cursor-pointer"
+              >
+                ใส่ Bot Token ตอนนี้
+              </button>
+            )}
+            <button 
+              onClick={() => setCrossDeviceToast(null)}
+              className="text-white/80 hover:text-white text-xs underline font-medium cursor-pointer"
+            >
+              รับทราบ
+            </button>
+          </div>
         </div>
       )}
 
@@ -1177,6 +1195,7 @@ export default function App() {
                   onEditPatient={() => setIsEditPatientOpen(true)}
                   onDeletePatient={handleDeletePatient}
                   onNavigateTab={(tab) => setActiveTab(tab)}
+                  onOpenQuickDrugReferral={() => setIsQuickDrugReferralOpen(true)}
                 />
 
                 {/* Multidisciplinary Workplace Navigation Tabs */}
@@ -1354,6 +1373,8 @@ export default function App() {
                     patient={activePatient}
                     handovers={clinicData.handovers}
                     currentRole={currentRole}
+                    notificationSettings={notificationSettings}
+                    onOpenNotificationSettings={() => setIsNotificationModalOpen(true)}
                     onSubmitHandover={handleSubmitHandover}
                     onResolveHandover={handleResolveHandover}
                   />
@@ -1533,6 +1554,20 @@ export default function App() {
       />
 
 
+
+      {/* Quick Pharmacist Drug Safety Referral Modal (Telegram Group Alert) */}
+      {activePatient && (
+        <QuickDrugReferralModal
+          isOpen={isQuickDrugReferralOpen}
+          onClose={() => setIsQuickDrugReferralOpen(false)}
+          patient={activePatient}
+          currentRole={currentRole}
+          medications={clinicData.medications}
+          notificationSettings={notificationSettings}
+          onSaveNotificationSettings={handleSaveNotificationSettings}
+          onSubmitHandover={handleSubmitHandover}
+        />
+      )}
 
       {/* Destructive Operation Confirmation Dialog (Mandatory) */}
       <ConfirmDialog

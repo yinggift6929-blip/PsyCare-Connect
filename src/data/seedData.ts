@@ -581,7 +581,7 @@ export const initialClinicData: AppClinicData = {
   ],
   notificationSettings: {
     telegramEnabled: true,
-    telegramBotToken: '8489161754',
+    telegramBotToken: '8736275097:AAGNAdvrCKfQ9ZkPWWjL7IRyk8runB2y0Rw',
     telegramChatId: '-5506194529',
     lineEnabled: false,
     lineChannelAccessToken: '',

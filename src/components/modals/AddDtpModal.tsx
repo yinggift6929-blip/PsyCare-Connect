@@ -68,7 +68,7 @@ export const AddDtpModal: React.FC<AddDtpModalProps> = ({
               className="rounded text-sky-600 focus:ring-sky-500"
             />
             <Send className="w-3.5 h-3.5 text-sky-600" />
-            <span className="font-semibold">แจ้งเตือนเข้า Telegram กลุ่ม (-5506194529)</span>
+            <span className="font-semibold">แจ้งเตือนเข้า Telegram กลุ่ม Clinic จิตดี (-5506194529)</span>
           </label>
 
           <div className="flex items-center gap-2">

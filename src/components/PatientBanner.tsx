@@ -37,6 +37,7 @@ interface PatientBannerProps {
   onEditPatient: (patient: Patient) => void;
   onDeletePatient: (patient: Patient) => void;
   onNavigateTab?: (tab: 'rx' | 'nurse' | 'psych' | 'homevisit' | 'telemed' | 'handover' | 'analytics') => void;
+  onOpenQuickDrugReferral?: () => void;
 }
 
 type ProfileSection = 'demographics' | 'meds' | 'dtps' | 'appointment' | 'handover' | null;
@@ -48,7 +49,8 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
   medications = [],
   onEditPatient,
   onDeletePatient,
-  onNavigateTab
+  onNavigateTab,
+  onOpenQuickDrugReferral
 }) => {
   // Controlled expandable details section (null = only big icons shown)
   const [expandedSection, setExpandedSection] = useState<ProfileSection>(null);
@@ -165,20 +167,28 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
 
         {/* Action Buttons: Forward to Pharmacist, Edit, Delete */}
         <div className="flex items-center gap-1.5 self-end md:self-center shrink-0 flex-wrap justify-end">
-          {onNavigateTab && (
+          {onOpenQuickDrugReferral ? (
+            <button
+              onClick={onOpenQuickDrugReferral}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r from-sky-500 via-rose-500 to-pink-500 hover:from-sky-600 hover:to-pink-600 px-3.5 py-1.5 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+              title="ส่งต่อเพื่อให้เภสัชกรรับทราบปัญหาการใช้ยาของผู้ป่วยจากทีมสหวิชาชีพ (แจ้งเตือนผ่านกลุ่ม Telegram: Clinic จิตดี -5506194529)"
+            >
+              <Send className="w-3.5 h-3.5 text-white" />
+              <span className="hidden sm:inline">ส่งต่อปัญหาการใช้ยาถึงเภสัชกร</span>
+              <span className="sm:hidden">ส่งต่อเภสัชกร</span>
+              <span className="text-[10px] bg-white/25 text-white px-1.5 py-0.2 rounded-md font-mono">
+                กลุ่ม Clinic จิตดี
+              </span>
+            </button>
+          ) : (onNavigateTab && (
             <button
               onClick={() => onNavigateTab('handover')}
               className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-xl border border-sky-300 transition cursor-pointer shadow-2xs active:scale-95"
-              title="ส่งต่อเพื่อให้เภสัชกรรับทราบปัญหาการใช้ยาของผู้ป่วยจากทีมสหวิชาชีพ (แจ้งเตือนผ่านกลุ่ม Telegram: -5506194529)"
             >
               <Send className="w-3.5 h-3.5 text-sky-600" />
-              <span className="hidden sm:inline">ส่งต่อปัญหาการใช้ยาถึงเภสัชกร</span>
-              <span className="sm:hidden">ส่งต่อเภสัชกร</span>
-              <span className="text-[10px] bg-sky-200/90 text-sky-900 px-1.5 py-0.2 rounded-md font-mono">
-                กลุ่ม -5506194529
-              </span>
+              <span>ส่งต่อเภสัชกร</span>
             </button>
-          )}
+          ))}
 
           <button
             onClick={() => onEditPatient(patient)}

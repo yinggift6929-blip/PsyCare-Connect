@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { HeartPulse, X, AlertTriangle, ShieldCheck, CheckCircle2, Flame, Scale } from 'lucide-react';
 import { MetabolicRecord, Patient, Medication } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
