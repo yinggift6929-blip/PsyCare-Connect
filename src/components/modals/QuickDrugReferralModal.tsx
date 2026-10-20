@@ -242,9 +242,9 @@ export const QuickDrugReferralModal: React.FC<QuickDrugReferralModalProps> = ({
               type="button"
               onClick={handleSubmitAndSend}
               disabled={isSending}
-              className="bg-gradient-to-r from-sky-500 via-rose-500 to-pink-500 hover:from-sky-600 hover:to-pink-600 disabled:opacity-50 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-xs transition flex items-center gap-2 active:scale-95 cursor-pointer"
+              className="bg-gradient-to-r from-[#6B8E23] via-[#759732] to-[#638420] hover:from-[#5e7e1c] hover:via-[#678526] hover:to-[#577218] border border-[#58731d] disabled:opacity-50 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-xs transition flex items-center gap-2 active:scale-95 cursor-pointer"
             >
-              <Send className="w-3.5 h-3.5" />
+              <Send className="w-3.5 h-3.5 text-white" />
               <span>{isSending ? 'กำลังส่งแจ้งเตือนเข้ากลุ่ม...' : '🚀 ยืนยันส่งต่อ & แจ้งเตือน Telegram กลุ่ม'}</span>
             </button>
           </div>

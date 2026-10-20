@@ -1246,8 +1246,8 @@ export default function App() {
                     onClick={() => setActiveTab('rx')}
                     className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
                       activeTab === 'rx'
-                        ? 'bg-rose-700 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-rose-700 hover:bg-rose-50/70'
+                        ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-pink-600 hover:bg-pink-50/70'
                     }`}
                   >
                     <Pill className="w-3.5 h-3.5" />

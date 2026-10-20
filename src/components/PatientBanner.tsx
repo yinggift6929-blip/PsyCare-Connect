@@ -172,22 +172,22 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
           {onOpenQuickDrugReferral ? (
             <button
               onClick={onOpenQuickDrugReferral}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r from-sky-500 via-rose-500 to-pink-500 hover:from-sky-600 hover:to-pink-600 px-3.5 py-1.5 rounded-xl transition cursor-pointer shadow-xs active:scale-95"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-gradient-to-r from-[#6B8E23] via-[#759732] to-[#638420] hover:from-[#5e7e1c] hover:via-[#678526] hover:to-[#577218] px-3.5 py-1.5 rounded-xl transition cursor-pointer shadow-xs border border-[#58731d] active:scale-95"
               title="ส่งต่อเพื่อให้เภสัชกรรับทราบปัญหาการใช้ยาของผู้ป่วยจากทีมสหวิชาชีพ (แจ้งเตือนผ่านกลุ่ม Telegram: Clinic จิตดี -5506194529)"
             >
               <Send className="w-3.5 h-3.5 text-white" />
               <span className="hidden sm:inline">ส่งต่อปัญหาการใช้ยาถึงเภสัชกร</span>
               <span className="sm:hidden">ส่งต่อเภสัชกร</span>
-              <span className="text-[10px] bg-white/25 text-white px-1.5 py-0.2 rounded-md font-mono">
+              <span className="text-[10px] bg-black/15 text-white px-1.5 py-0.2 rounded-md font-mono border border-white/20">
                 กลุ่ม Clinic จิตดี
               </span>
             </button>
           ) : (onNavigateTab && (
             <button
               onClick={() => onNavigateTab('handover')}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-xl border border-sky-300 transition cursor-pointer shadow-2xs active:scale-95"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-[#6B8E23] hover:bg-[#5e7e1c] px-3 py-1.5 rounded-xl border border-[#58731d] transition cursor-pointer shadow-2xs active:scale-95"
             >
-              <Send className="w-3.5 h-3.5 text-sky-600" />
+              <Send className="w-3.5 h-3.5 text-white" />
               <span>ส่งต่อเภสัชกร</span>
             </button>
           ))}
