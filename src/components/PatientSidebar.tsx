@@ -15,6 +15,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { Patient, HandoverMessage, PatientTrackingGroup } from '../types.ts';
+import { PatientGenderAvatar } from './common/GenderIcon.tsx';
 
 interface PatientSidebarProps {
   patients: Patient[];
@@ -239,27 +240,30 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
                     : 'bg-white hover:bg-rose-50/30 border-slate-100 hover:border-rose-200'
                 }`}
               >
-                <div className="flex items-start justify-between gap-1">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <h4 className="font-bold text-xs text-slate-900 truncate">
-                        {patient.name}
-                      </h4>
-                      {(patient.name.toLowerCase().includes('d/c') || patient.statusTag.toLowerCase().includes('d/c') || patient.name.includes('จำหน่าย')) && (
-                        <span className="text-[9px] bg-amber-100 text-amber-950 font-bold px-1.5 py-0.2 rounded border border-amber-300">
-                          D/C
-                        </span>
-                      )}
-                      {(patient.name.toLowerCase().includes('refer') || patient.statusTag.toLowerCase().includes('refer') || patient.name.includes('ส่งต่อ')) && (
-                        <span className="text-[9px] bg-purple-100 text-purple-950 font-bold px-1.5 py-0.2 rounded border border-purple-300">
-                          Refer
-                        </span>
-                      )}
-                      {getGroupBadge(patient.trackingGroup)}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                    <PatientGenderAvatar gender={patient.gender} size="sm" className="mt-0.5" />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4 className="font-bold text-xs text-slate-900 truncate">
+                          {patient.name}
+                        </h4>
+                        {(patient.name.toLowerCase().includes('d/c') || patient.statusTag.toLowerCase().includes('d/c') || patient.name.includes('จำหน่าย')) && (
+                          <span className="text-[9px] bg-amber-100 text-amber-950 font-bold px-1.5 py-0.2 rounded border border-amber-300">
+                            D/C
+                          </span>
+                        )}
+                        {(patient.name.toLowerCase().includes('refer') || patient.statusTag.toLowerCase().includes('refer') || patient.name.includes('ส่งต่อ')) && (
+                          <span className="text-[9px] bg-purple-100 text-purple-950 font-bold px-1.5 py-0.2 rounded border border-purple-300">
+                            Refer
+                          </span>
+                        )}
+                        {getGroupBadge(patient.trackingGroup)}
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        HN: <span className="font-mono font-medium text-slate-700">{patient.hn}</span> • อายุ {patient.age} ปี
+                      </p>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      HN: <span className="font-mono font-medium text-slate-700">{patient.hn}</span> • อายุ {patient.age} ปี
-                    </p>
                   </div>
 
                   {/* Adherence Badge */}

@@ -575,7 +575,19 @@ export default function App() {
       notificationSettings,
       patientObj,
       user?.displayName || (currentRole === 'pharmacist' ? 'เภสัชกร' : currentRole === 'nurse' ? 'พยาบาล' : 'นักจิตวิทยา')
-    ).catch(e => console.warn('Notification notice:', e));
+    ).then((res) => {
+      if (res?.telegram?.success) {
+        setCrossDeviceToast({
+          message: `📲 บันทึกและส่งแจ้งเตือนคนไข้ ${patientObj.name} เข้า Telegram กลุ่ม Clinic จิตดี เรียบร้อยแล้ว`,
+          timestamp: new Date().toLocaleTimeString('th-TH')
+        });
+      } else {
+        setCrossDeviceToast({
+          message: `✅ บันทึกข้อมูลคนไข้ ${patientObj.name} เรียบร้อยแล้ว`,
+          timestamp: new Date().toLocaleTimeString('th-TH')
+        });
+      }
+    }).catch(e => console.warn('Notification notice:', e));
   };
 
   // Action: Edit Patient
@@ -653,6 +665,7 @@ export default function App() {
   // Action: Add DTP
   const handleSaveDtp = (newDtp: Partial<DtpRecord>) => {
     if (!activePatient) return;
+    const recorderName = newDtp.recordedBy || (currentRole === 'nurse' ? 'พยาบาลวิชาชีพ' : (currentRole === 'psychologist' ? 'นักจิตวิทยา' : 'เภสัชกร'));
     const dtpObj: DtpRecord = {
       id: `D_${Date.now()}`,
       patientId: activePatient.id,
@@ -663,15 +676,43 @@ export default function App() {
       causeDrug: newDtp.causeDrug || '',
       intervention: newDtp.intervention || '',
       status: 'pending',
-      recordedBy: newDtp.recordedBy || 'เภสัชกร'
+      recordedBy: recorderName
+    };
+
+    // Auto-create multidisciplinary handover to pharmacist so pharmacist can track and resolve
+    const handoverObj: HandoverMessage = {
+      id: `H_DTP_${Date.now()}`,
+      patientId: activePatient.id,
+      hn: activePatient.hn,
+      patientName: activePatient.name,
+      timestamp: new Date().toLocaleString('th-TH'),
+      senderRole: currentRole,
+      targetRole: 'pharmacist',
+      priority: 'urgent',
+      subject: `[ปัญหาการใช้ยา DTP] ${dtpObj.domain} (${dtpObj.causeDrug || 'ยาทั่วไป'})`,
+      content: `${dtpObj.description}\nการจัดการ/ส่งต่อให้เภสัชกร: ${dtpObj.intervention}`,
+      status: 'open'
     };
 
     updateDataAndSync((prev) => ({
       ...prev,
-      dtps: [dtpObj, ...prev.dtps]
+      dtps: [dtpObj, ...prev.dtps],
+      handovers: [handoverObj, ...(prev.handovers || [])]
     }));
 
-    notifyDtpRecorded(notificationSettings, dtpObj, activePatient.name).catch(() => {});
+    notifyDtpRecorded(notificationSettings, dtpObj, activePatient.name).then((res) => {
+      if (res?.telegram?.success) {
+        setCrossDeviceToast({
+          message: `📲 ส่งแจ้งเตือนปัญหาการใช้ยาของ ${activePatient.name} เข้า Telegram กลุ่ม Clinic จิตดี เรียบร้อยแล้ว`,
+          timestamp: new Date().toLocaleTimeString('th-TH')
+        });
+      } else {
+        setCrossDeviceToast({
+          message: `📋 บันทึกปัญหาการใช้ยา (DTP) และส่งต่อถึงเภสัชกรเรียบร้อยแล้ว`,
+          timestamp: new Date().toLocaleTimeString('th-TH')
+        });
+      }
+    }).catch(() => {});
   };
 
   // Action: Toggle DTP Status
@@ -1205,8 +1246,8 @@ export default function App() {
                     onClick={() => setActiveTab('rx')}
                     className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
                       activeTab === 'rx'
-                        ? 'bg-rose-400 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-rose-600 hover:bg-rose-50/60'
+                        ? 'bg-rose-700 text-white shadow-xs'
+                        : 'text-slate-600 hover:text-rose-700 hover:bg-rose-50/70'
                     }`}
                   >
                     <Pill className="w-3.5 h-3.5" />

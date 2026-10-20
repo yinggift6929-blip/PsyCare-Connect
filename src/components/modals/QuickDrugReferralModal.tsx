@@ -16,6 +16,7 @@ import {
 import { Patient, RoleType, NotificationSettings, HandoverMessage, Medication } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 import { sendTelegramNotification, sanitizeTelegramToken } from '../../services/notificationService.ts';
+import { GenderBadge } from '../common/GenderIcon.tsx';
 
 interface QuickDrugReferralModalProps {
   isOpen: boolean;
@@ -170,7 +171,7 @@ export const QuickDrugReferralModal: React.FC<QuickDrugReferralModalProps> = ({
       `${content.trim()}`,
       ``,
       `👥 <i>แจ้งเตือนผ่านกลุ่ม Telegram: ${targetChatId}</i>`,
-      `<small>📍 ระบบจิตเวชชุมชน PsyCare Multi-Disciplinary</small>`
+      `<i>📍 ระบบจิตเวชชุมชน PsyCare Multi-Disciplinary</i>`
     ].join('\n');
 
     const finalToken = (tokenToUse && tokenToUse.includes(':'))
@@ -257,9 +258,8 @@ export const QuickDrugReferralModal: React.FC<QuickDrugReferralModalProps> = ({
             <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
               <span>{patient.name}</span>
               <span className="text-xs text-slate-500 font-mono font-normal">(HN: {patient.hn})</span>
-              <span className="text-[10px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full font-bold">
-                {patient.gender}, {patient.age} ปี
-              </span>
+              <GenderBadge gender={patient.gender} />
+              <span className="text-xs text-slate-600 font-medium">{patient.age} ปี</span>
             </div>
             <div className="text-slate-600 text-xs mt-0.5">
               <strong>วินิจฉัยหลัก:</strong> {patient.diagnosis}

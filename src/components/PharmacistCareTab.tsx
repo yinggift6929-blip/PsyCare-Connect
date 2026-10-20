@@ -40,6 +40,7 @@ import {
   PatientTrackingGroup
 } from '../types.ts';
 import { STANDARD_DRUG_GROUPS } from './modals/AddMedicationModal.tsx';
+import { GenderBadge } from './common/GenderIcon.tsx';
 
 interface PharmacistCareTabProps {
   patient: Patient;
@@ -400,8 +401,15 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
                   ข้อมูลผู้ป่วย, บัญชียา & ประเมินความร่วมมือ (Patient Profile, Medications & Adherence)
                 </h3>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                ผู้ป่วย: <strong className="text-slate-800">{patient.name}</strong> • HN: <span className="font-mono text-rose-700 font-bold">{patient.hn}</span> • อายุ {patient.age} ปี ({patient.gender}) • บันทึกรายการยาและประเมินความร่วมมือ (Adherence)
+              <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                <span>ผู้ป่วย: <strong className="text-slate-800">{patient.name}</strong></span>
+                <span>•</span>
+                <span>HN: <strong className="font-mono text-rose-700">{patient.hn}</strong></span>
+                <span>•</span>
+                <span>อายุ {patient.age} ปี</span>
+                <GenderBadge gender={patient.gender} />
+                <span>•</span>
+                <span>บันทึกรายการยาและประเมินความร่วมมือ (Adherence)</span>
               </p>
             </div>
           </div>

@@ -28,6 +28,7 @@ import {
   Send
 } from 'lucide-react';
 import { Patient, DtpRecord, HandoverMessage, Medication, PatientTrackingGroup } from '../types.ts';
+import { PatientGenderAvatar, GenderBadge } from './common/GenderIcon.tsx';
 
 interface PatientBannerProps {
   patient: Patient;
@@ -105,10 +106,8 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
       {/* Top Patient Summary Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3.5 border-b border-rose-50">
         <div className="flex items-center gap-3.5">
-          {/* Large Patient Avatar */}
-          <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-rose-100 via-pink-100 to-rose-200 text-rose-700 border border-rose-200 flex items-center justify-center font-bold text-xl shadow-inner shrink-0">
-            {patient.gender === 'ชาย' ? 'ช' : 'ญ'}
-          </div>
+          {/* Large Patient Avatar with Gender Icon (ญ/ช) */}
+          <PatientGenderAvatar gender={patient.gender} size="lg" />
 
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
@@ -152,7 +151,10 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
             <p className="text-xs text-slate-500 flex items-center gap-2 flex-wrap">
               <span><strong>วินิจฉัยหลัก:</strong> {patient.diagnosis}</span>
               <span>•</span>
-              <span>อายุ {patient.age} ปี ({patient.gender})</span>
+              <span className="inline-flex items-center gap-1.5">
+                <span>อายุ {patient.age} ปี</span>
+                <GenderBadge gender={patient.gender} />
+              </span>
               {patient.nextAppointment && (
                 <>
                   <span>•</span>
@@ -431,7 +433,10 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
                     </div>
                     <div>
                       <span className="text-slate-400 block text-[10px]">เพศ / อายุ:</span>
-                      <span className="text-slate-700">{patient.gender} ({patient.age} ปี)</span>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <GenderBadge gender={patient.gender} />
+                        <span className="text-slate-700 text-xs">({patient.age} ปี)</span>
+                      </div>
                     </div>
                     <div>
                       <span className="text-slate-400 block text-[10px]">กลุ่มการดูแล:</span>

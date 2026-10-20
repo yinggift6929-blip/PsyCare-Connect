@@ -294,18 +294,39 @@ app.post('/api/notifications/telegram', async (req, res) => {
       targetChatId = '-5506194529';
     }
 
+    // Clean unsupported HTML tags for Telegram
+    let safeText = String(text)
+      .replace(/<small>/gi, '<i>')
+      .replace(/<\/small>/gi, '</i>')
+      .replace(/<br\s*\/?>/gi, '\n');
+
     let tgRes = await fetch(`https://api.telegram.org/bot${cleanToken}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: targetChatId,
-        text,
+        text: safeText,
         parse_mode: 'HTML',
         disable_web_page_preview: true
       })
     });
 
     let data = await tgRes.json();
+
+    // Auto-fallback if parse entities fail
+    if (!data.ok && data.description?.includes("can't parse entities")) {
+      const plainText = safeText.replace(/<[^>]*>/g, '');
+      tgRes = await fetch(`https://api.telegram.org/bot${cleanToken}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: targetChatId,
+          text: plainText,
+          disable_web_page_preview: true
+        })
+      });
+      data = await tgRes.json();
+    }
 
     // Auto-handle Telegram Supergroup migration if migrated
     if (!data.ok && data.parameters?.migrate_to_chat_id) {
@@ -315,7 +336,7 @@ app.post('/api/notifications/telegram', async (req, res) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: targetChatId,
-          text,
+          text: safeText,
           parse_mode: 'HTML',
           disable_web_page_preview: true
         })
@@ -329,7 +350,7 @@ app.post('/api/notifications/telegram', async (req, res) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: supergroupId,
-          text,
+          text: safeText,
           parse_mode: 'HTML',
           disable_web_page_preview: true
         })

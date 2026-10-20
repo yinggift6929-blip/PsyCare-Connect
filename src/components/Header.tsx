@@ -64,73 +64,73 @@ export const Header: React.FC<HeaderProps> = ({
   const sheetEditUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
 
   return (
-    <header className="bg-gradient-to-r from-rose-50/95 via-pink-50/80 to-white text-slate-800 sticky top-0 z-40 shadow-xs border-b border-rose-200/60 backdrop-blur-md">
+    <header className="bg-gradient-to-r from-rose-800 via-pink-800 to-rose-900 text-white sticky top-0 z-40 shadow-md border-b border-rose-950/50 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Navbar Row */}
         <div className="h-16 flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo & Clinic Title */}
           <div className="flex items-center space-x-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-400 via-pink-400 to-rose-300 flex items-center justify-center text-white shadow-sm border border-rose-200/50 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center text-white shadow-inner shrink-0 backdrop-blur-xs">
               <Brain className="w-5 h-5 text-white" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="font-bold text-base sm:text-lg leading-tight tracking-tight text-slate-800 truncate">
+                <h1 className="font-extrabold text-base sm:text-lg leading-tight tracking-tight text-white truncate drop-shadow-xs">
                   PsyCare Sheet Connect
                 </h1>
-                <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-semibold bg-rose-100/80 text-rose-700 px-2.5 py-0.5 rounded-full border border-rose-200/70">
-                  <Sparkles className="w-3 h-3 text-rose-500" /> สหวิชาชีพจิตเวช
+                <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-bold bg-pink-950/60 text-pink-100 px-2.5 py-0.5 rounded-full border border-pink-400/40 shadow-2xs">
+                  <Sparkles className="w-3 h-3 text-pink-300" /> สหวิชาชีพจิตเวช
                 </span>
               </div>
-              <p className="text-[11px] text-rose-600/80 font-medium truncate">
+              <p className="text-[11px] text-pink-100 font-medium truncate opacity-95">
                 บริบาลเภสัชกรรม • พยาบาล • นักจิตวิทยา • ซิงค์อัตโนมัติทุกเครื่อง
               </p>
             </div>
           </div>
 
-          {/* Role Switcher Center Pill (Soft, clean, comfortable) */}
-          <div className="hidden lg:flex items-center bg-white/90 backdrop-blur-md rounded-2xl p-1 border border-rose-200/70 shadow-2xs">
-            <span className="text-[11px] font-bold text-slate-500 px-2">บทบาท:</span>
+          {/* Role Switcher Center Pill (Sophisticated contrast) */}
+          <div className="hidden lg:flex items-center bg-rose-950/50 backdrop-blur-md rounded-2xl p-1 border border-pink-400/30 shadow-inner">
+            <span className="text-[11px] font-bold text-pink-200 px-2.5">บทบาท:</span>
             <button
               onClick={() => onSelectRole('pharmacist')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 currentRole === 'pharmacist'
-                  ? 'bg-rose-400 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-rose-700 hover:bg-rose-50/70'
+                  ? 'bg-white text-rose-800 shadow-sm'
+                  : 'text-pink-100 hover:text-white hover:bg-white/15'
               }`}
             >
               <Pill className="w-3.5 h-3.5" /> เภสัชกร (Pharmacist)
             </button>
             <button
               onClick={() => onSelectRole('nurse')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 currentRole === 'nurse'
-                  ? 'bg-teal-500 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-teal-700 hover:bg-teal-50/70'
+                  ? 'bg-teal-500 text-white shadow-sm'
+                  : 'text-pink-100 hover:text-white hover:bg-white/15'
               }`}
             >
               <Stethoscope className="w-3.5 h-3.5" /> พยาบาล (Nurse)
             </button>
             <button
               onClick={() => onSelectRole('psychologist')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 currentRole === 'psychologist'
-                  ? 'bg-amber-200 text-amber-950 shadow-xs border border-amber-300'
-                  : 'text-slate-600 hover:text-amber-900 hover:bg-amber-50'
+                  ? 'bg-amber-300 text-amber-950 shadow-sm border border-amber-400'
+                  : 'text-pink-100 hover:text-white hover:bg-white/15'
               }`}
             >
-              <Brain className="w-3.5 h-3.5 text-amber-700" /> นักจิตวิทยา (Psychologist)
+              <Brain className="w-3.5 h-3.5 text-amber-800" /> นักจิตวิทยา (Psychologist)
             </button>
           </div>
 
           {/* Right: Dashboard, Daily Alert Bell, Fast Sync & Google Sheet */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Monthly Clinic Jit-Dee Pharmacy Dashboard Button (Requirement 3) */}
+            {/* Monthly Clinic Jit-Dee Pharmacy Dashboard Button */}
             {onOpenMonthlyDashboard && (
               <button
                 onClick={onOpenMonthlyDashboard}
                 title="แสดง Dashboard สรุปผลการบริบาลเภสัชกรรมผู้ป่วยคลินิกจิตดี เป็นรายเดือน เพื่อดึงสรุปเป็นผลการดำเนินงาน"
-                className="px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white rounded-xl shadow-xs transition flex items-center gap-1.5 text-xs font-bold active:scale-95 cursor-pointer"
+                className="px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white rounded-xl shadow-xs transition flex items-center gap-1.5 text-xs font-bold active:scale-95 cursor-pointer border border-white/20"
               >
                 <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
                 <span className="hidden md:inline">Dashboard สรุปผลงาน</span>
@@ -138,16 +138,16 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             )}
 
-            {/* Daily Due Followup Alert Bell (Requirement 5) */}
+            {/* Daily Due Followup Alert Bell */}
             <button
               onClick={onOpenDailyAlert}
               title="ดูรายชื่อผู้ป่วยที่ต้องติดตามวันนี้ (เยี่ยมบ้าน, Telemed, คลินิก)"
-              className="relative p-2 bg-white hover:bg-rose-50 text-rose-700 rounded-xl border border-rose-200 transition flex items-center gap-1.5 shadow-2xs"
+              className="relative p-2 bg-white/15 hover:bg-white/25 text-white rounded-xl border border-white/30 transition flex items-center gap-1.5 shadow-2xs font-semibold cursor-pointer"
             >
-              <Bell className="w-4 h-4 text-rose-500" />
-              <span className="hidden sm:inline text-xs font-bold">นัดวันนี้</span>
+              <Bell className="w-4 h-4 text-pink-200" />
+              <span className="hidden sm:inline text-xs font-bold text-white">นัดวันนี้</span>
               {dueTodayCount > 0 && (
-                <span className="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full border border-white">
+                <span className="bg-rose-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full border border-white shadow-xs">
                   {dueTodayCount}
                 </span>
               )}
@@ -158,16 +158,16 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={onOpenNotificationSettings}
                 title="ตั้งค่าการแจ้งเตือน LINE & Telegram (รับเคสผู้ป่วย / ส่งเวร / นัดหมายเข้ามือถือ)"
-                className={`p-2 rounded-xl border transition flex items-center gap-1.5 shadow-2xs ${
+                className={`p-2 rounded-xl border transition flex items-center gap-1.5 shadow-2xs cursor-pointer ${
                   isNotificationActive
-                    ? 'bg-sky-50 text-sky-700 border-sky-300 hover:bg-sky-100'
-                    : 'bg-white hover:bg-rose-50 text-slate-700 border-rose-200'
+                    ? 'bg-sky-400/25 text-sky-100 border-sky-300/50 hover:bg-sky-400/35'
+                    : 'bg-white/15 hover:bg-white/25 text-white border-white/30'
                 }`}
               >
-                <Send className={`w-3.5 h-3.5 ${isNotificationActive ? 'text-sky-600' : 'text-slate-500'}`} />
-                <span className="hidden lg:inline text-xs font-semibold">แจ้งเตือน LINE/Telegram</span>
+                <Send className={`w-3.5 h-3.5 ${isNotificationActive ? 'text-sky-300' : 'text-pink-200'}`} />
+                <span className="hidden lg:inline text-xs font-bold">แจ้งเตือน Telegram/LINE</span>
                 {isNotificationActive && (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="เปิดใช้งานแจ้งเตือนอยู่"></span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="เปิดใช้งานแจ้งเตือนอยู่"></span>
                 )}
               </button>
             )}
@@ -178,23 +178,23 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={onRefreshServerData}
                 disabled={isSyncing}
                 title="ดึงข้อมูลล่าสุดจากทุกเครื่องทันที (Live Sync)"
-                className="p-2 bg-white hover:bg-rose-50 text-slate-700 rounded-xl border border-rose-200 transition flex items-center gap-1 shadow-2xs"
+                className="p-2 bg-white/15 hover:bg-white/25 text-white rounded-xl border border-white/30 transition flex items-center gap-1 shadow-2xs cursor-pointer"
               >
-                <RefreshCw className={`w-3.5 h-3.5 text-rose-600 ${isSyncing ? 'animate-spin' : ''}`} />
-                <span className="hidden xl:inline text-xs font-medium text-slate-600">ดึงข้อมูลล่าสุด</span>
+                <RefreshCw className={`w-3.5 h-3.5 text-pink-200 ${isSyncing ? 'animate-spin' : ''}`} />
+                <span className="hidden xl:inline text-xs font-semibold text-pink-100">ดึงข้อมูลล่าสุด</span>
               </button>
             )}
 
             {user ? (
-              <div className="flex items-center gap-2 bg-white/90 p-1 sm:p-1.5 rounded-2xl border border-rose-200 shadow-2xs">
+              <div className="flex items-center gap-2 bg-rose-950/50 p-1 sm:p-1.5 rounded-2xl border border-pink-400/30 shadow-inner">
                 {/* Sync to Sheet Action Button */}
                 <button
                   onClick={onSyncNow}
                   disabled={isSyncing}
                   title="ซิงค์ข้อมูลกับ Google Sheet"
-                  className="bg-rose-400 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition shadow-xs"
+                  className="bg-white hover:bg-pink-50 text-rose-800 disabled:opacity-50 text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition shadow-xs cursor-pointer"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-3.5 h-3.5 text-rose-700 ${isSyncing ? 'animate-spin' : ''}`} />
                   <span className="hidden sm:inline">{isSyncing ? 'กำลังซิงค์...' : 'ซิงค์ Sheet'}</span>
                 </button>
 
@@ -203,40 +203,40 @@ export const Header: React.FC<HeaderProps> = ({
                   href={sheetEditUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-medium px-2.5 py-1.5 rounded-xl flex items-center gap-1 transition shadow-2xs"
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-400/40 text-xs font-semibold px-2.5 py-1.5 rounded-xl flex items-center gap-1 transition shadow-xs"
                   title="เปิดดูไฟล์ Google Sheet จริง"
                 >
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-100" />
                   <span className="hidden md:inline">เปิด Sheet</span>
-                  <ExternalLink className="w-3 h-3 text-emerald-600" />
+                  <ExternalLink className="w-3 h-3 text-emerald-200" />
                 </a>
 
                 {/* Sheet Settings */}
                 <button
                   onClick={onOpenSettings}
                   title="ตั้งค่า Google Sheet"
-                  className="text-slate-500 hover:text-slate-800 p-1.5 rounded-xl hover:bg-rose-50 transition"
+                  className="text-pink-200 hover:text-white p-1.5 rounded-xl hover:bg-white/15 transition cursor-pointer"
                 >
-                  <Settings2 className="w-4 h-4 text-rose-600" />
+                  <Settings2 className="w-4 h-4 text-pink-200" />
                 </button>
 
                 {/* User Info Avatar & Logout */}
-                <div className="flex items-center gap-2 pl-1 border-l border-rose-200">
+                <div className="flex items-center gap-2 pl-1 border-l border-pink-400/30">
                   {user.photoURL ? (
                     <img 
                       src={user.photoURL} 
                       alt={user.displayName || 'User'} 
-                      className="w-7 h-7 rounded-full border border-rose-300"
+                      className="w-7 h-7 rounded-full border border-pink-300 shadow-2xs"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-rose-400 text-white flex items-center justify-center text-xs font-bold">
+                    <div className="w-7 h-7 rounded-full bg-white text-rose-800 flex items-center justify-center text-xs font-bold shadow-2xs">
                       {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
                     </div>
                   )}
                   <button
                     onClick={onLogout}
                     title="ออกจากระบบ Google"
-                    className="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition"
+                    className="text-pink-200 hover:text-white p-1 rounded-lg hover:bg-white/15 transition cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
@@ -247,7 +247,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={onLogin}
-                  className="bg-white hover:bg-rose-50/70 text-slate-800 text-xs font-semibold px-3 py-2 rounded-xl flex items-center gap-2 shadow-2xs hover:shadow-xs transition transform active:scale-95 border border-rose-200"
+                  className="bg-white hover:bg-pink-50 text-slate-800 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-2 shadow-sm transition transform active:scale-95 border border-white/40 cursor-pointer"
                   title="เชื่อมต่อ Google Sheet สำหรับสำรองข้อมูลลง Sheet"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 48 48">
@@ -261,29 +261,29 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   onClick={onOpenSettings}
                   title="ตั้งค่า Sheet ID"
-                  className="text-slate-500 hover:text-slate-800 p-2 rounded-xl bg-white hover:bg-rose-50 border border-rose-200 transition shadow-2xs"
+                  className="text-pink-200 hover:text-white p-2 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 transition shadow-2xs cursor-pointer"
                 >
-                  <Settings2 className="w-4 h-4 text-rose-600" />
+                  <Settings2 className="w-4 h-4 text-pink-200" />
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Soft Status Sub-bar */}
-        <div className="py-1.5 border-t border-rose-200/50 flex flex-wrap items-center justify-between text-[11px] text-slate-600">
+        {/* Status Sub-bar with deep, polite pink & readable contrast */}
+        <div className="py-1.5 border-t border-pink-400/25 bg-rose-950/40 text-[11px] text-pink-100 flex flex-wrap items-center justify-between -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={onRefreshServerData}
               disabled={isSyncing}
-              className="flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-50/90 hover:bg-emerald-100/90 px-2.5 py-0.5 rounded-lg border border-emerald-300 text-[11px] transition cursor-pointer"
+              className="flex items-center gap-1.5 text-emerald-200 font-bold bg-emerald-950/70 hover:bg-emerald-900/80 px-2.5 py-0.5 rounded-lg border border-emerald-400/40 text-[11px] transition cursor-pointer shadow-2xs"
               title="ระบบเชื่อมต่อคลาวด์อัตโนมัติ รองรับ Vercel, GitHub และเชื่อมโยงทุกอุปกรณ์ตรงกันทันที (คลิกเพื่ออัปเดตข้อมูล)"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>🟢 ซิงค์อัตโนมัติ Cloud Real-Time (เชื่อมต่อทุก Device)</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>🟢 ซิงค์อัตโนมัติ Cloud Real-Time</span>
               {activeDevicesCount !== undefined && activeDevicesCount > 0 && (
-                <span className="bg-emerald-200 text-emerald-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">
+                <span className="bg-emerald-400 text-emerald-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">
                   {activeDevicesCount} เครื่อง
                 </span>
               )}
@@ -291,33 +291,33 @@ export const Header: React.FC<HeaderProps> = ({
 
             {user && (
               <>
-                <span className="hidden sm:inline text-rose-300">•</span>
-                <span className="flex items-center gap-1 text-emerald-700 font-medium">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                <span className="hidden sm:inline text-pink-400">•</span>
+                <span className="flex items-center gap-1 text-emerald-300 font-medium">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                   Google Sheet เชื่อมต่อแล้ว
                 </span>
               </>
             )}
 
-            <span className="hidden sm:inline text-rose-300">•</span>
-            <span className="hidden sm:inline text-slate-500 truncate max-w-xs">
-              Sheet ID: <code className="bg-white/80 px-1.5 py-0.5 rounded text-[10px] text-slate-700 border border-rose-200">{spreadsheetId}</code>
+            <span className="hidden sm:inline text-pink-400">•</span>
+            <span className="hidden sm:inline text-pink-200 truncate max-w-xs">
+              Sheet ID: <code className="bg-rose-900/70 px-1.5 py-0.5 rounded text-[10px] text-pink-100 border border-pink-400/30 font-mono">{spreadsheetId}</code>
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             {lastSyncTime && (
-              <span className="text-slate-500">
-                ซิงค์ล่าสุด: <strong className="text-slate-700">{lastSyncTime}</strong>
+              <span className="text-pink-200">
+                ซิงค์ล่าสุด: <strong className="text-white font-bold">{lastSyncTime}</strong>
               </span>
             )}
 
             {/* Mobile Role Switcher */}
-            <div className="flex lg:hidden items-center gap-1 bg-white p-0.5 rounded-lg border border-rose-200">
+            <div className="flex lg:hidden items-center gap-1 bg-rose-950/70 p-0.5 rounded-lg border border-pink-400/30">
               <button
                 onClick={() => onSelectRole('pharmacist')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  currentRole === 'pharmacist' ? 'bg-rose-400 text-white' : 'text-slate-600'
+                  currentRole === 'pharmacist' ? 'bg-white text-rose-800' : 'text-pink-200'
                 }`}
               >
                 เภสัช
@@ -325,7 +325,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => onSelectRole('nurse')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  currentRole === 'nurse' ? 'bg-teal-500 text-white' : 'text-slate-600'
+                  currentRole === 'nurse' ? 'bg-teal-500 text-white' : 'text-pink-200'
                 }`}
               >
                 พยาบาล
@@ -333,7 +333,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => onSelectRole('psychologist')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  currentRole === 'psychologist' ? 'bg-amber-200 text-amber-950 border border-amber-300' : 'text-slate-600'
+                  currentRole === 'psychologist' ? 'bg-amber-300 text-amber-950 border border-amber-400' : 'text-pink-200'
                 }`}
               >
                 จิตวิทยา

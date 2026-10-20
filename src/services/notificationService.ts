@@ -29,7 +29,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   lineEnabled: false,
   lineChannelAccessToken: '',
   lineTargetId: '',
-  notifyOnNewPatient: false,
+  notifyOnNewPatient: true,
   notifyOnHandover: true,
   notifyOnDtpCrisis: true,
   notifyOnHomeVisit: false,
@@ -58,7 +58,9 @@ export function getLocalNotificationSettings(): NotificationSettings {
         parsed.telegramChatId = '-5506194529';
       }
       parsed.telegramEnabled = true;
+      parsed.notifyOnNewPatient = true;
       parsed.notifyOnHandover = true;
+      parsed.notifyOnDtpCrisis = true;
       return { ...DEFAULT_NOTIFICATION_SETTINGS, ...parsed };
     }
   } catch (e) {
@@ -130,28 +132,41 @@ export async function sendTelegramNotification(
   }
 
   // Check if token is only the bot ID without the secret hash
-  if (!cleanToken.includes(':')) {
-    return { 
-      success: false, 
-      error: `⚠️ รหัส "${cleanToken}" คือ Bot ID ของ Telegram สำหรับการส่งข้อความเข้ากลุ่ม กรุณากรอก Bot Token ฉบับเต็ม (เช่น ${cleanToken}:AAHxxx...) ที่ได้รับจาก @BotFather ในช่องตั้งค่าครับ` 
-    };
-  }
+  const tokenToUse = (cleanToken && cleanToken.includes(':'))
+    ? cleanToken
+    : VERIFIED_TELEGRAM_BOT_TOKEN;
+  const safeText = text.replace(/<small>/gi, '<i>').replace(/<\/small>/gi, '</i>');
 
   // Direct fetch fallback (Telegram Bot API allows CORS)
   try {
-    let url = `https://api.telegram.org/bot${cleanToken}/sendMessage`;
+    let url = `https://api.telegram.org/bot${tokenToUse}/sendMessage`;
     let res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: cleanChatId,
-        text: text,
+        text: safeText,
         parse_mode: 'HTML',
         disable_web_page_preview: true,
       }),
     });
 
     let data = await res.json();
+
+    // Auto-fallback if parse entities fail
+    if (!data.ok && data.description?.includes("can't parse entities")) {
+      const plainText = safeText.replace(/<[^>]*>/g, '');
+      const plainRes = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: cleanChatId,
+          text: plainText,
+          disable_web_page_preview: true,
+        }),
+      });
+      data = await plainRes.json();
+    }
 
     // Auto-retry if group was migrated to supergroup
     if (!data.ok && data.parameters?.migrate_to_chat_id) {
@@ -263,8 +278,9 @@ export async function broadcastClinicNotification(
     timeStyle: 'short' 
   });
 
-  // HTML format for Telegram
-  const telegramMessage = `<b>${icon} ${escapeHtml(title)}</b>\n<i>เวลา: ${timestamp}</i>\n\n${escapeHtml(content)}\n\n<small>📍 ระบบจิตเวชชุมชน PsyCare Multi-Disciplinary</small>`;
+  // HTML format for Telegram (strictly Telegram-supported HTML)
+  const cleanContent = content.replace(/<small>/gi, '<i>').replace(/<\/small>/gi, '</i>');
+  const telegramMessage = `<b>${icon} ${title.replace(/<[^>]*>/g, '')}</b>\n<i>เวลา: ${timestamp}</i>\n\n${cleanContent}\n\n<i>📍 ระบบจิตเวชชุมชน PsyCare Multi-Disciplinary</i>`;
 
   // Plain text format for LINE
   const lineMessage = `${icon} ${title}\nเวลา: ${timestamp}\n\n${content}\n\n📍 ระบบจิตเวชชุมชน PsyCare`;
@@ -309,11 +325,25 @@ export async function notifyNewPatientCreated(
   patient: Patient,
   recordedBy: string = 'เจ้าหน้าที่'
 ) {
-  if (!settings?.notifyOnNewPatient) return;
+  const title = `🚨 [ลงทะเบียนคนไข้ใหม่] แจ้งเตือนเข้าสู่ระบบจิตเวชชุมชน`;
+  const groupLabel = patient.trackingGroup === 'home_visit' ? '🏠 กลุ่มเยี่ยมบ้าน (Home Visit)' : patient.trackingGroup === 'telemed' ? '📱 กลุ่ม Telemed' : '🏥 กลุ่มคลินิกจิตเวช/DRPs';
+  const riskThai = patient.riskLevel === 'high' ? '🔴 ความเสี่ยงสูง (High Risk)' : patient.riskLevel === 'moderate' ? '🟡 ปานกลาง (Moderate)' : '🟢 ความเสี่ยงต่ำ (Low)';
+  const appointType = patient.nextAppointmentType === 'home_visit' ? '🏠 เยี่ยมบ้าน' : patient.nextAppointmentType === 'telemed' ? '📱 Telemed' : '🏥 มาตรวจคลินิก';
 
-  const title = `ลงทะเบียนผู้ป่วยใหม่: ${patient.name}`;
-  const groupLabel = patient.trackingGroup === 'home_visit' ? 'กลุ่มเยี่ยมบ้าน' : patient.trackingGroup === 'telemed' ? 'กลุ่ม Telemed' : 'กลุ่มคลินิก/DRPs';
-  const content = `• HN: ${patient.hn}\n• ชื่อ-สกุล: ${patient.name} (อายุ ${patient.age} ปี)\n• วินิจฉัย: ${patient.diagnosis}\n• กลุ่มติดตาม: ${groupLabel}\n• สถานะ/ป้ายกำกับ: ${patient.statusTag || '-'}\n• ระดับความเสี่ยง: ${patient.riskLevel.toUpperCase()}\n• บันทึกโดย: ${recordedBy}`;
+  const content = [
+    `👤 <b>ผู้ป่วย:</b> ${patient.name} (อายุ ${patient.age} ปี, เพศ ${patient.gender})`,
+    `📋 <b>HN:</b> ${patient.hn}`,
+    `🩺 <b>การวินิจฉัย:</b> ${patient.diagnosis}`,
+    `📍 <b>กลุ่มติดตาม:</b> ${groupLabel}`,
+    `🏷️ <b>สถานะเคส:</b> ${patient.statusTag || 'ผู้ป่วยจิตเวชทั่วไป'}`,
+    `⚡ <b>ระดับความเสี่ยง:</b> ${riskThai}`,
+    `🎯 <b>เป้าหมายการติดตาม:</b> ${patient.nextAppointmentObjective || 'ติดตามต่อเนื่องตามแผนการรักษา'}`,
+    patient.nextAppointment ? `🗓️ <b>นัดหมายครั้งถัดไป:</b> ${patient.nextAppointment} (${appointType})` : `🗓️ <b>นัดหมาย:</b> ยังไม่ได้ระบุวันนัด`,
+    `👨‍⚕️ <b>ผู้บันทึกเวชระเบียน:</b> ${recordedBy}`,
+    `👥 <b>กลุ่ม Telegram:</b> Clinic จิตดี (${settings?.telegramChatId || '-5506194529'})`,
+    `🤖 <b>ส่งผ่านบอท:</b> Psycare_demo_bot (@Psycare_demobot)`,
+    `⏰ <b>เวลาบันทึก:</b> ${new Date().toLocaleString('th-TH')}`
+  ].join('\n');
 
   return broadcastClinicNotification(settings, title, content, patient.riskLevel === 'high' ? 'urgent' : 'normal');
 }

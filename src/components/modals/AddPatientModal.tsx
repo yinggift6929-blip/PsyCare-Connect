@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserPlus, Home, PhoneCall, Building2, Calendar } from 'lucide-react';
+import { UserPlus, Home, PhoneCall, Building2, Calendar, Venus, Mars } from 'lucide-react';
 import { Patient, RiskLevel, PatientTrackingGroup } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 
@@ -161,14 +161,34 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
           <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="block font-bold text-slate-700 mb-1">เพศ:</label>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value as any)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              >
-                <option value="ชาย">ชาย</option>
-                <option value="หญิง">หญิง</option>
-              </select>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setGender('หญิง')}
+                  className={`p-2 rounded-xl border flex items-center justify-center gap-1 font-bold text-xs transition cursor-pointer ${
+                    gender === 'หญิง'
+                      ? 'bg-pink-100 text-pink-700 border-pink-400 ring-2 ring-pink-200 shadow-2xs'
+                      : 'bg-white text-slate-600 hover:bg-pink-50 border-slate-200'
+                  }`}
+                  title="เพศหญิง"
+                >
+                  <Venus className="w-3.5 h-3.5 text-pink-600" />
+                  <span>หญิง</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGender('ชาย')}
+                  className={`p-2 rounded-xl border flex items-center justify-center gap-1 font-bold text-xs transition cursor-pointer ${
+                    gender === 'ชาย'
+                      ? 'bg-sky-100 text-sky-700 border-sky-400 ring-2 ring-sky-200 shadow-2xs'
+                      : 'bg-white text-slate-600 hover:bg-sky-50 border-slate-200'
+                  }`}
+                  title="เพศชาย"
+                >
+                  <Mars className="w-3.5 h-3.5 text-sky-600" />
+                  <span>ชาย</span>
+                </button>
+              </div>
             </div>
             <div>
               <label className="block font-bold text-slate-700 mb-1">อายุ (ปี):</label>
@@ -317,19 +337,32 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
+          {/* Telegram notification badge */}
+          <div className="bg-sky-50/90 p-2.5 rounded-xl border border-sky-200 flex flex-wrap items-center justify-between gap-1.5 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+              <span className="font-semibold text-sky-950">
+                📲 แจ้งเตือนคนไข้ใหม่เข้า Telegram กลุ่ม: <b>Clinic จิตดี (-5506194529)</b>
+              </span>
+            </div>
+            <span className="text-[10px] bg-sky-200/80 text-sky-900 px-2 py-0.5 rounded-md font-medium">
+              ส่งแจ้งเตือนทันทีเมื่อกดบันทึก
+            </span>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition"
+              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer"
             >
               ยกเลิก
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white font-bold rounded-xl shadow-xs transition transform active:scale-95 cursor-pointer"
+              className="px-5 py-2.5 bg-gradient-to-r from-sky-500 via-rose-500 to-pink-500 hover:from-sky-600 hover:to-pink-600 text-white font-bold rounded-xl shadow-xs transition transform active:scale-95 cursor-pointer flex items-center gap-1.5"
             >
-              บันทึกผู้ป่วย & ซิงค์อัตโนมัติ
+              <span>🚀 บันทึกคนไข้ &amp; แจ้งเตือน Telegram กลุ่ม</span>
             </button>
           </div>
         </form>

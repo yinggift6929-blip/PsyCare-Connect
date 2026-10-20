@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserCheck, Home, PhoneCall, Building2, Calendar, RotateCcw, Hospital, Tag, CheckCircle2 } from 'lucide-react';
+import { UserCheck, Home, PhoneCall, Building2, Calendar, RotateCcw, Hospital, Tag, CheckCircle2, Venus, Mars } from 'lucide-react';
 import { Patient, RiskLevel, PatientTrackingGroup } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 
@@ -331,14 +331,34 @@ export const EditPatientModal: React.FC<EditPatientModalProps> = ({
             </div>
             <div>
               <label className="block font-bold text-slate-700 mb-1">เพศ:</label>
-              <select
-                value={gender}
-                onChange={(e) => setGender(e.target.value as any)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              >
-                <option value="ชาย">ชาย</option>
-                <option value="หญิง">หญิง</option>
-              </select>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setGender('หญิง')}
+                  className={`p-2 rounded-xl border flex items-center justify-center gap-1 font-bold text-xs transition cursor-pointer ${
+                    gender === 'หญิง'
+                      ? 'bg-pink-100 text-pink-700 border-pink-400 ring-2 ring-pink-200 shadow-2xs'
+                      : 'bg-white text-slate-600 hover:bg-pink-50 border-slate-200'
+                  }`}
+                  title="เพศหญิง"
+                >
+                  <Venus className="w-3.5 h-3.5 text-pink-600" />
+                  <span>หญิง</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGender('ชาย')}
+                  className={`p-2 rounded-xl border flex items-center justify-center gap-1 font-bold text-xs transition cursor-pointer ${
+                    gender === 'ชาย'
+                      ? 'bg-sky-100 text-sky-700 border-sky-400 ring-2 ring-sky-200 shadow-2xs'
+                      : 'bg-white text-slate-600 hover:bg-sky-50 border-slate-200'
+                  }`}
+                  title="เพศชาย"
+                >
+                  <Mars className="w-3.5 h-3.5 text-sky-600" />
+                  <span>ชาย</span>
+                </button>
+              </div>
             </div>
             <div>
               <label className="block font-bold text-slate-700 mb-1">อายุ (ปี):</label>
