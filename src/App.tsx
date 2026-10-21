@@ -18,7 +18,8 @@ import {
   CheckCircle2,
   Users,
   Bell,
-  BarChart3
+  BarChart3,
+  LayoutGrid
 } from 'lucide-react';
 
 import { 
@@ -1127,6 +1128,18 @@ export default function App() {
     ? clinicData.handovers.filter(h => h.patientId === activePatient.id && h.status === 'open').length 
     : 0;
 
+  const pendingDtpsCount = activePatient
+    ? clinicData.dtps.filter(d => d.patientId === activePatient.id && d.status === 'pending').length
+    : 0;
+
+  const patientHomeVisitsCount = activePatient
+    ? clinicData.homeVisits.filter(h => h.patientId === activePatient.id).length
+    : 0;
+
+  const patientTelemedCount = activePatient
+    ? clinicData.telemedRecords.filter(t => t.patientId === activePatient.id).length
+    : 0;
+
   // Format today's date and due count
   const todayStr = new Date().toISOString().split('T')[0];
   const dueTodayCount = clinicData.patients.filter(p => p.nextAppointment === todayStr).length;
@@ -1239,115 +1252,230 @@ export default function App() {
                   onOpenQuickDrugReferral={() => setIsQuickDrugReferralOpen(true)}
                 />
 
-                {/* Multidisciplinary Workplace Navigation Tabs */}
-                <div className="bg-white rounded-2xl shadow-xs border border-rose-100 p-1.5 flex flex-wrap gap-1 text-xs font-semibold">
-                  {/* Tab 1: Pharmacist Care & DTP */}
-                  <button
-                    onClick={() => setActiveTab('rx')}
-                    className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
-                      activeTab === 'rx'
-                        ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-pink-600 hover:bg-pink-50/70'
-                    }`}
-                  >
-                    <Pill className="w-3.5 h-3.5" />
-                    <span>บริบาลเภสัชกรรม (Rx Care & DTP)</span>
-                  </button>
-
-                  {/* Tab 2: Home Visit */}
-                  <button
-                    onClick={() => setActiveTab('homevisit')}
-                    className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
-                      activeTab === 'homevisit'
-                        ? 'bg-indigo-600 text-white shadow-sm'
-                        : 'text-slate-600 hover:text-indigo-600 hover:bg-indigo-50/60'
-                    }`}
-                  >
-                    <Home className="w-3.5 h-3.5" />
-                    <span>เยี่ยมบ้านสหวิชาชีพ (Home Visit)</span>
-                  </button>
-
-                  {/* Tab 3: Telemed Care */}
-                  <button
-                    onClick={() => setActiveTab('telemed')}
-                    className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
-                      activeTab === 'telemed'
-                        ? 'bg-teal-600 text-white shadow-sm'
-                        : 'text-slate-600 hover:text-teal-600 hover:bg-teal-50/60'
-                    }`}
-                  >
-                    <PhoneCall className="w-3.5 h-3.5" />
-                    <span>ติดตาม Telemed (Telepsychiatry)</span>
-                  </button>
-
-                  {/* Tab 4: Nursing Care */}
-                  <button
-                    onClick={() => setActiveTab('nurse')}
-                    className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
-                      activeTab === 'nurse'
-                        ? 'bg-teal-700 text-white shadow-sm'
-                        : 'text-slate-600 hover:text-teal-700 hover:bg-teal-50/60'
-                    }`}
-                  >
-                    <Stethoscope className="w-3.5 h-3.5" />
-                    <span>บันทึกการพยาบาล (Nurse Log)</span>
-                  </button>
-
-                  {/* Tab 5: Psychologist */}
-                  <button
-                    onClick={() => setActiveTab('psych')}
-                    className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
-                      activeTab === 'psych'
-                        ? 'bg-amber-200 text-amber-950 font-bold shadow-xs border border-amber-300'
-                        : 'text-slate-600 hover:text-amber-900 hover:bg-amber-50'
-                    }`}
-                  >
-                    <Brain className="w-3.5 h-3.5 text-amber-700" />
-                    <span>ประเมินจิตวิทยา & CBT</span>
-                  </button>
-
-                  {/* Tab 6: Handover Board */}
-                  <button
-                    onClick={() => setActiveTab('handover')}
-                    className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition relative ${
-                      activeTab === 'handover'
-                        ? 'bg-amber-600 text-white shadow-sm'
-                        : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50/60'
-                    }`}
-                  >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    <span>ส่งต่อสหวิชาชีพ (Handover)</span>
-                    {openHandoversCount > 0 && (
-                      <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full ${
-                        activeTab === 'handover' ? 'bg-white text-amber-700' : 'bg-rose-500 text-white'
+                {/* 4 Core Clinical Care & Monitoring Columns (จัดตำแหน่ง 4 คอลัมน์หลักล่างภาพรวมของผู้ป่วย) */}
+                <div className="space-y-2.5">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+                    {/* Column 1: การบริบาลเภสัชกรรม */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('rx')}
+                      className={`p-3.5 rounded-2xl border text-left transition flex flex-col justify-between gap-2.5 cursor-pointer relative group ${
+                        activeTab === 'rx'
+                          ? 'bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100/60 border-rose-300 ring-2 ring-rose-400/50 shadow-sm'
+                          : 'bg-white hover:bg-pink-50/40 border-slate-200 hover:border-pink-200 shadow-2xs'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <div className={`p-2.5 rounded-xl transition ${
+                          activeTab === 'rx' 
+                            ? 'bg-gradient-to-tr from-pink-500 to-rose-500 text-white shadow-2xs' 
+                            : 'bg-pink-100 text-pink-700 group-hover:bg-pink-200'
+                        }`}>
+                          <Pill className="w-4 h-4" />
+                        </div>
+                        {pendingDtpsCount > 0 ? (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+                            DRP {pendingDtpsCount}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                            DRP ปกติ
+                          </span>
+                        )}
+                      </div>
+                      <div>
+                        <div className={`text-xs font-bold leading-tight ${activeTab === 'rx' ? 'text-rose-950 font-extrabold' : 'text-slate-800'}`}>
+                          การบริบาลเภสัชกรรม
+                        </div>
+                        <div className="text-[11px] text-slate-500 truncate mt-0.5">
+                          Rx Care, DTP & ยา
+                        </div>
+                      </div>
+                      <div className={`text-[10px] font-bold flex items-center justify-between pt-1.5 border-t w-full ${
+                        activeTab === 'rx' ? 'text-rose-700 border-rose-200' : 'text-slate-400 border-slate-100 group-hover:text-pink-600'
                       }`}>
-                        {openHandoversCount}
-                      </span>
-                    )}
-                  </button>
+                        <span>{activeTab === 'rx' ? '● กำลังแสดง' : 'คลิกเปิดดู'}</span>
+                        <span className="text-[9px] opacity-70">คอลัมน์ 1</span>
+                      </div>
+                    </button>
 
-                  {/* Tab 7: Analytics */}
-                  <button
-                    onClick={() => setActiveTab('analytics')}
-                    className={`px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition ${
-                      activeTab === 'analytics'
-                        ? 'bg-sky-600 text-white shadow-sm'
-                        : 'text-slate-600 hover:text-sky-600 hover:bg-sky-50/60'
-                    }`}
-                  >
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    <span>แนวโน้ม & Lab Monitor</span>
-                  </button>
+                    {/* Column 2: การเยี่ยมบ้าน */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('homevisit')}
+                      className={`p-3.5 rounded-2xl border text-left transition flex flex-col justify-between gap-2.5 cursor-pointer relative group ${
+                        activeTab === 'homevisit'
+                          ? 'bg-gradient-to-br from-indigo-50 via-blue-50 to-indigo-100/60 border-indigo-300 ring-2 ring-indigo-400/50 shadow-sm'
+                          : 'bg-white hover:bg-indigo-50/40 border-slate-200 hover:border-indigo-200 shadow-2xs'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <div className={`p-2.5 rounded-xl transition ${
+                          activeTab === 'homevisit' 
+                            ? 'bg-indigo-600 text-white shadow-2xs' 
+                            : 'bg-indigo-100 text-indigo-700 group-hover:bg-indigo-200'
+                        }`}>
+                          <Home className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          {patientHomeVisitsCount} บันทึก
+                        </span>
+                      </div>
+                      <div>
+                        <div className={`text-xs font-bold leading-tight ${activeTab === 'homevisit' ? 'text-indigo-950 font-extrabold' : 'text-slate-800'}`}>
+                          การเยี่ยมบ้าน
+                        </div>
+                        <div className="text-[11px] text-slate-500 truncate mt-0.5">
+                          Home Visit สหวิชาชีพ
+                        </div>
+                      </div>
+                      <div className={`text-[10px] font-bold flex items-center justify-between pt-1.5 border-t w-full ${
+                        activeTab === 'homevisit' ? 'text-indigo-700 border-indigo-200' : 'text-slate-400 border-slate-100 group-hover:text-indigo-600'
+                      }`}>
+                        <span>{activeTab === 'homevisit' ? '● กำลังแสดง' : 'คลิกเปิดดู'}</span>
+                        <span className="text-[9px] opacity-70">คอลัมน์ 2</span>
+                      </div>
+                    </button>
 
-                  {/* Dashboard สรุปผลงานคลินิกจิตดี (รายเดือน) */}
-                  <button
-                    onClick={() => setIsMonthlyDashboardOpen(true)}
-                    className="px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition text-indigo-700 hover:text-indigo-900 bg-indigo-50/80 hover:bg-indigo-100 font-bold ml-auto border border-indigo-200/80 shadow-2xs cursor-pointer"
-                    title="แสดง Dashboard สรุปผลการบริบาลเภสัชกรรมผู้ป่วยคลินิกจิตดี รายเดือน เพื่อดึงสรุปเป็นผลการดำเนินงาน"
-                  >
-                    <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>📊 Dashboard ผลงานรายเดือน</span>
-                  </button>
+                    {/* Column 3: การติดตาม Telemed */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('telemed')}
+                      className={`p-3.5 rounded-2xl border text-left transition flex flex-col justify-between gap-2.5 cursor-pointer relative group ${
+                        activeTab === 'telemed'
+                          ? 'bg-gradient-to-br from-teal-50 via-emerald-50 to-teal-100/60 border-teal-300 ring-2 ring-teal-400/50 shadow-sm'
+                          : 'bg-white hover:bg-teal-50/40 border-slate-200 hover:border-teal-200 shadow-2xs'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <div className={`p-2.5 rounded-xl transition ${
+                          activeTab === 'telemed' 
+                            ? 'bg-teal-600 text-white shadow-2xs' 
+                            : 'bg-teal-100 text-teal-700 group-hover:bg-teal-200'
+                        }`}>
+                          <PhoneCall className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                          {patientTelemedCount} บันทึก
+                        </span>
+                      </div>
+                      <div>
+                        <div className={`text-xs font-bold leading-tight ${activeTab === 'telemed' ? 'text-teal-950 font-extrabold' : 'text-slate-800'}`}>
+                          การติดตาม Telemed
+                        </div>
+                        <div className="text-[11px] text-slate-500 truncate mt-0.5">
+                          โทร/วิดีโอคอลติดตาม
+                        </div>
+                      </div>
+                      <div className={`text-[10px] font-bold flex items-center justify-between pt-1.5 border-t w-full ${
+                        activeTab === 'telemed' ? 'text-teal-700 border-teal-200' : 'text-slate-400 border-slate-100 group-hover:text-teal-600'
+                      }`}>
+                        <span>{activeTab === 'telemed' ? '● กำลังแสดง' : 'คลิกเปิดดู'}</span>
+                        <span className="text-[9px] opacity-70">คอลัมน์ 3</span>
+                      </div>
+                    </button>
+
+                    {/* Column 4: แนวโน้ม & Lab Monitor */}
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('analytics')}
+                      className={`p-3.5 rounded-2xl border text-left transition flex flex-col justify-between gap-2.5 cursor-pointer relative group ${
+                        activeTab === 'analytics'
+                          ? 'bg-gradient-to-br from-sky-50 via-cyan-50 to-sky-100/60 border-sky-300 ring-2 ring-sky-400/50 shadow-sm'
+                          : 'bg-white hover:bg-sky-50/40 border-slate-200 hover:border-sky-200 shadow-2xs'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <div className={`p-2.5 rounded-xl transition ${
+                          activeTab === 'analytics' 
+                            ? 'bg-sky-600 text-white shadow-2xs' 
+                            : 'bg-sky-100 text-sky-700 group-hover:bg-sky-200'
+                        }`}>
+                          <TrendingUp className="w-4 h-4" />
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                          Labs & Trends
+                        </span>
+                      </div>
+                      <div>
+                        <div className={`text-xs font-bold leading-tight ${activeTab === 'analytics' ? 'text-sky-950 font-extrabold' : 'text-slate-800'}`}>
+                          แนวโน้ม & Lab Monitor
+                        </div>
+                        <div className="text-[11px] text-slate-500 truncate mt-0.5">
+                          ผลตรวจแล็บ & กราฟแนวโน้ม
+                        </div>
+                      </div>
+                      <div className={`text-[10px] font-bold flex items-center justify-between pt-1.5 border-t w-full ${
+                        activeTab === 'analytics' ? 'text-sky-700 border-sky-200' : 'text-slate-400 border-slate-100 group-hover:text-sky-600'
+                      }`}>
+                        <span>{activeTab === 'analytics' ? '● กำลังแสดง' : 'คลิกเปิดดู'}</span>
+                        <span className="text-[9px] opacity-70">คอลัมน์ 4</span>
+                      </div>
+                    </button>
+                  </div>
+
+                  {/* Secondary Bar: Other Multidisciplinary Tools & Dashboard */}
+                  <div className="bg-white rounded-2xl shadow-2xs border border-slate-200/90 p-2 flex flex-wrap items-center justify-between gap-1.5 text-xs">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] text-slate-400 font-bold px-2">งานสหวิชาชีพเพิ่มเติม:</span>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('nurse')}
+                        className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-medium transition cursor-pointer ${
+                          activeTab === 'nurse'
+                            ? 'bg-teal-700 text-white shadow-2xs font-bold'
+                            : 'text-slate-600 hover:text-teal-700 hover:bg-teal-50'
+                        }`}
+                      >
+                        <Stethoscope className="w-3.5 h-3.5" />
+                        <span>บันทึกการพยาบาล (Nurse)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('psych')}
+                        className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-medium transition cursor-pointer ${
+                          activeTab === 'psych'
+                            ? 'bg-amber-500 text-white shadow-2xs font-bold'
+                            : 'text-slate-600 hover:text-amber-800 hover:bg-amber-50'
+                        }`}
+                      >
+                        <Brain className="w-3.5 h-3.5" />
+                        <span>ประเมินจิตวิทยา & CBT</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('handover')}
+                        className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 font-medium transition cursor-pointer relative ${
+                          activeTab === 'handover'
+                            ? 'bg-purple-600 text-white shadow-2xs font-bold'
+                            : 'text-slate-600 hover:text-purple-700 hover:bg-purple-50'
+                        }`}
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>ส่งต่อสหวิชาชีพ (Handover)</span>
+                        {openHandoversCount > 0 && (
+                          <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
+                            activeTab === 'handover' ? 'bg-white text-purple-700' : 'bg-rose-500 text-white'
+                          }`}>
+                            {openHandoversCount}
+                          </span>
+                        )}
+                      </button>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsMonthlyDashboardOpen(true)}
+                      className="px-3.5 py-1.5 rounded-xl flex items-center gap-1.5 text-indigo-700 hover:text-indigo-900 bg-indigo-50/80 hover:bg-indigo-100 font-bold border border-indigo-200 transition cursor-pointer ml-auto shadow-2xs"
+                      title="แสดง Dashboard สรุปผลการบริบาลเภสัชกรรมผู้ป่วยคลินิกจิตดี รายเดือน เพื่อดึงสรุปเป็นผลการดำเนินงาน"
+                    >
+                      <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>📊 Dashboard ผลงานรายเดือน</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Tab Views */}

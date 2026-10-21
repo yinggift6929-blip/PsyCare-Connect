@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { HomeVisitRecord, Patient } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
+import { ThaiAppointmentDatePicker } from '../common/ThaiAppointmentDatePicker.tsx';
 
 
 interface HomeVisitModalProps {
@@ -297,28 +298,24 @@ export const HomeVisitModal: React.FC<HomeVisitModalProps> = ({
             />
           </div>
 
-          {/* Requirement 4: Setting Next Appointment for continuous follow-up */}
-          <div className="p-3 bg-rose-50/50 rounded-xl border border-rose-200 space-y-2">
+          <div className="p-3 bg-rose-50/50 rounded-xl border border-rose-200 space-y-2.5">
             <span className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
               <Calendar className="w-4 h-4 text-rose-500" />
               กำหนดวันนัดติดตามต่อเนื่อง (Next Follow-up Appointment):
             </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <div>
-                <label className="block text-[11px] text-slate-600 mb-0.5">วันนัดครั้งถัดไป:</label>
-                <input
-                  type="date"
-                  value={nextAppointmentDate}
-                  onChange={(e) => setNextAppointmentDate(e.target.value)}
-                  className="w-full p-1.5 text-xs bg-white border border-pink-200 rounded-lg"
-                />
-              </div>
+            <div className="space-y-2.5">
+              <ThaiAppointmentDatePicker
+                value={nextAppointmentDate}
+                onChange={setNextAppointmentDate}
+                label="วันนัดครั้งถัดไป:"
+                themeColor="rose"
+              />
               <div>
                 <label className="block text-[11px] text-slate-600 mb-0.5">ประเภทการนัด:</label>
                 <select
                   value={nextAppointmentType}
                   onChange={(e) => setNextAppointmentType(e.target.value as any)}
-                  className="w-full p-1.5 text-xs bg-white border border-pink-200 rounded-lg"
+                  className="w-full p-2 text-xs bg-white border border-rose-200 rounded-xl font-medium focus:outline-none focus:ring-1 focus:ring-rose-400"
                 >
                   <option value="home_visit">🏠 เยี่ยมบ้าน (Home Visit)</option>
                   <option value="telemed">📱 โทร/ติดต่อ Telemed</option>

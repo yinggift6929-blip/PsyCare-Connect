@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { Patient, DtpRecord, HandoverMessage, Medication, PatientTrackingGroup } from '../types.ts';
 import { PatientGenderAvatar, GenderBadge } from './common/GenderIcon.tsx';
+import { formatAppointmentDate } from '../utils/dateUtils.ts';
 
 interface PatientBannerProps {
   patient: Patient;
@@ -102,9 +103,9 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
                  patient.name.includes('ส่งต่อ');
 
   return (
-    <div className="bg-white rounded-3xl shadow-xs border border-rose-100 p-4 sm:p-5 relative transition-all">
+    <div className="bg-gradient-to-b from-slate-100 via-slate-100 to-slate-200/90 rounded-3xl shadow-md border-2 border-slate-300 p-4 sm:p-5 relative transition-all">
       {/* Top Patient Summary Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3.5 border-b border-rose-50">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 bg-white/95 backdrop-blur-xs rounded-2xl border border-slate-200/90 shadow-2xs">
         <div className="flex items-center gap-3.5">
           {/* Large Patient Avatar with Gender Icon (ญ/ช) */}
           <PatientGenderAvatar gender={patient.gender} size="lg" />
@@ -159,7 +160,7 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
                 <>
                   <span>•</span>
                   <span className="text-indigo-700 font-medium">
-                    นัดครั้งถัดไป: {patient.nextAppointment} ({getAppointmentTypeLabel(patient.nextAppointmentType)})
+                    นัดครั้งถัดไป: <strong>{formatAppointmentDate(patient.nextAppointment, 'short')}</strong> ({getAppointmentTypeLabel(patient.nextAppointmentType)})
                   </span>
                 </>
               )}
@@ -213,9 +214,9 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
 
       {/* Requirement 2: Big Action Icons (โชว์เฉพาะไอคอนใหญ่ๆ ดูง่าย สบายตา คลิกเพื่อขยายรายละเอียด) */}
       <div className="pt-3.5">
-        <div className="flex items-center justify-between pb-2">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-rose-400" />
+        <div className="flex items-center justify-between pb-2.5">
+          <span className="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5 bg-white/80 px-2.5 py-1 rounded-xl border border-slate-300/80 shadow-2xs">
+            <Sparkles className="w-3.5 h-3.5 text-slate-500" />
             ภาพรวมข้อมูลผู้ป่วย (คลิกที่ไอคอนเพื่อขยายรายละเอียด)
           </span>
 
@@ -341,8 +342,8 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
               <div className="text-xs font-bold text-slate-800 leading-tight">
                 วันนัด & แผนติดตาม
               </div>
-              <div className="text-[11px] font-bold truncate mt-0.5 text-indigo-700">
-                {patient.nextAppointment || 'ยังไม่มีวันนัด'}
+              <div className="text-[11px] font-bold truncate mt-0.5 text-indigo-700" title={patient.nextAppointment ? formatAppointmentDate(patient.nextAppointment, 'day_full') : ''}>
+                {patient.nextAppointment ? formatAppointmentDate(patient.nextAppointment, 'day_short') : 'ยังไม่มีวันนัด'}
               </div>
             </div>
             <div className="mt-auto pt-1 flex items-center justify-between w-full text-[10px] font-bold text-indigo-800">
@@ -496,7 +497,7 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
                   </div>
                   {patient.lastVisit && (
                     <div className="pt-1 border-t border-slate-100 text-[11px] text-slate-500">
-                      มารับบริการครั้งล่าสุด: <strong>{patient.lastVisit}</strong>
+                      มารับบริการครั้งล่าสุด: <strong>{formatAppointmentDate(patient.lastVisit, 'full')}</strong>
                     </div>
                   )}
                 </div>
@@ -646,10 +647,10 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                       <Calendar className="w-4 h-4 text-indigo-600" />
-                      วันนัดหมายติดตามต่อเนื่องครั้งถัดไป:
+                      วันนัดหมายติดตามต่อเนื่องครั้งถัดไป (วัน / เดือน / ปี พ.ศ.):
                     </span>
-                    <span className="text-sm font-extrabold text-indigo-900 bg-indigo-50 px-3 py-1 rounded-xl border border-indigo-200">
-                      {patient.nextAppointment || 'ยังไม่มีการกำหนดวันนัด'}
+                    <span className="text-sm font-extrabold text-indigo-900 bg-indigo-50 px-3 py-1 rounded-xl border border-indigo-200 shadow-2xs">
+                      {patient.nextAppointment ? formatAppointmentDate(patient.nextAppointment, 'day_full') : 'ยังไม่มีการกำหนดวันนัด'}
                     </span>
                   </div>
 

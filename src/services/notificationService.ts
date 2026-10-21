@@ -1,4 +1,5 @@
 import { NotificationSettings, Patient, HandoverMessage, DtpRecord, HomeVisitRecord } from '../types.ts';
+import { formatAppointmentDate } from '../utils/dateUtils.ts';
 
 export const VERIFIED_TELEGRAM_BOT_TOKEN = '8736275097:AAGNAdvrCKfQ9ZkPWWjL7IRyk8runB2y0Rw';
 export const VERIFIED_TELEGRAM_GROUP_ID = '-5506194529';
@@ -338,7 +339,7 @@ export async function notifyNewPatientCreated(
     `🏷️ <b>สถานะเคส:</b> ${patient.statusTag || 'ผู้ป่วยจิตเวชทั่วไป'}`,
     `⚡ <b>ระดับความเสี่ยง:</b> ${riskThai}`,
     `🎯 <b>เป้าหมายการติดตาม:</b> ${patient.nextAppointmentObjective || 'ติดตามต่อเนื่องตามแผนการรักษา'}`,
-    patient.nextAppointment ? `🗓️ <b>นัดหมายครั้งถัดไป:</b> ${patient.nextAppointment} (${appointType})` : `🗓️ <b>นัดหมาย:</b> ยังไม่ได้ระบุวันนัด`,
+    patient.nextAppointment ? `🗓️ <b>นัดหมายครั้งถัดไป (วัน/ด/ป):</b> ${formatAppointmentDate(patient.nextAppointment, 'day_full')} (${appointType})` : `🗓️ <b>นัดหมาย:</b> ยังไม่ได้ระบุวันนัด`,
     `👨‍⚕️ <b>ผู้บันทึกเวชระเบียน:</b> ${recordedBy}`,
     `👥 <b>กลุ่ม Telegram:</b> Clinic จิตดี (${settings?.telegramChatId || '-5506194529'})`,
     `🤖 <b>ส่งผ่านบอท:</b> Psycare_demo_bot (@Psycare_demobot)`,
@@ -426,7 +427,9 @@ export async function notifyHomeVisitRecorded(
   if (!settings?.notifyOnHomeVisit) return;
 
   const title = `บันทึกผลการเยี่ยมบ้าน: ${patientName}`;
-  const content = `• HN: ${visit.hn} (${patientName})\n• วันที่เยี่ยม: ${visit.date}\n• ผู้ร่วมทีม: ${visit.teamMembers}\n• สภาพแวดล้อม: ${visit.environmentNotes || '-'}\n• ปัญหาที่พบ: ${visit.problemsFound || 'ไม่พบปัญหาผิดปกติ'}\n• แผนการดูแล: ${visit.actionPlan}\n• นัดติดตามครั้งถัดไป: ${visit.nextAppointmentDate || 'ไม่ได้ระบุ'}\n• บันทึกโดย: ${visit.recordedBy}`;
+  const visitFormatted = formatAppointmentDate(visit.date, 'full');
+  const nextAppFormatted = visit.nextAppointmentDate ? formatAppointmentDate(visit.nextAppointmentDate, 'day_full') : 'ไม่ได้ระบุ';
+  const content = `• HN: ${visit.hn} (${patientName})\n• วันที่เยี่ยม: ${visitFormatted}\n• ผู้ร่วมทีม: ${visit.teamMembers}\n• สภาพแวดล้อม: ${visit.environmentNotes || '-'}\n• ปัญหาที่พบ: ${visit.problemsFound || 'ไม่พบปัญหาผิดปกติ'}\n• แผนการดูแล: ${visit.actionPlan}\n• นัดติดตามครั้งถัดไป: ${nextAppFormatted}\n• บันทึกโดย: ${visit.recordedBy}`;
 
   return broadcastClinicNotification(settings, title, content, 'normal');
 }

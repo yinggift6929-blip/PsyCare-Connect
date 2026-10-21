@@ -41,6 +41,7 @@ import {
   MetabolicRecord,
   DtpDomain
 } from '../types.ts';
+import { formatAppointmentDate } from '../utils/dateUtils.ts';
 
 interface MonthlyPharmacyCareDashboardProps {
   isOpen: boolean;
@@ -284,7 +285,7 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
 
   // Export CSV Handler
   const handleExportCSV = () => {
-    const headers = ['HN', 'ชื่อผู้ป่วย', 'กลุ่มการดูแล', 'การวินิจฉัย', 'ระดับความเสี่ยง', 'Adherence (%)', 'วันนัดถัดไป'];
+    const headers = ['HN', 'ชื่อผู้ป่วย', 'กลุ่มการดูแล', 'การวินิจฉัย', 'ระดับความเสี่ยง', 'Adherence (%)', 'วันนัดถัดไป (วัน/เดือน/ปี พ.ศ.)'];
     const rows = activePatientsInMonth.map(p => [
       p.hn,
       `"${p.name}"`,
@@ -292,7 +293,7 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
       `"${p.diagnosis}"`,
       p.riskLevel,
       p.adherenceScore,
-      p.nextAppointment || ''
+      p.nextAppointment ? formatAppointmentDate(p.nextAppointment, 'numeric') : ''
     ]);
 
     const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');

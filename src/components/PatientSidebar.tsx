@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Patient, HandoverMessage, PatientTrackingGroup } from '../types.ts';
 import { PatientGenderAvatar } from './common/GenderIcon.tsx';
+import { formatAppointmentDate } from '../utils/dateUtils.ts';
 
 interface PatientSidebarProps {
   patients: Patient[];
@@ -283,15 +284,18 @@ export const PatientSidebar: React.FC<PatientSidebarProps> = ({
                 {/* Appointment reminder bar */}
                 {patient.nextAppointment && (
                   <div className="mt-2 pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px]">
-                    <span className={`flex items-center gap-1 font-semibold ${
-                      isDueToday 
-                        ? 'text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded' 
-                        : isOverdue 
-                        ? 'text-amber-700' 
-                        : 'text-slate-500'
-                    }`}>
+                    <span 
+                      title={`วันนัดหมาย (วัน/เดือน/ปี): ${formatAppointmentDate(patient.nextAppointment, 'day_full')}`}
+                      className={`flex items-center gap-1 font-semibold ${
+                        isDueToday 
+                          ? 'text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded' 
+                          : isOverdue 
+                          ? 'text-amber-700' 
+                          : 'text-slate-500'
+                      }`}
+                    >
                       <Calendar className="w-3 h-3" />
-                      {isDueToday ? '🚨 นัดวันนี้:' : isOverdue ? '⚠️ เลยกำหนด:' : 'นัด:'} {patient.nextAppointment}
+                      {isDueToday ? '🚨 นัดวันนี้:' : isOverdue ? '⚠️ เลยกำหนด:' : 'นัด:'} {formatAppointmentDate(patient.nextAppointment, 'short')}
                     </span>
 
                     <div className="flex items-center gap-1.5">

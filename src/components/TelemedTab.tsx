@@ -1,6 +1,7 @@
 import React from 'react';
 import { PhoneCall, Plus, Calendar, Phone, CheckCircle2, AlertCircle, MessageSquare, Video } from 'lucide-react';
 import { TelemedRecord, Patient } from '../types.ts';
+import { formatAppointmentDate } from '../utils/dateUtils.ts';
 
 interface TelemedTabProps {
   patient: Patient;
@@ -71,7 +72,7 @@ export const TelemedTab: React.FC<TelemedTabProps> = ({
               <div className="flex items-center justify-between pb-2 border-b border-rose-50 flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-teal-950 text-sm flex items-center gap-1.5">
-                    <Calendar className="w-4 h-4 text-teal-600" /> วันที่ติดต่อ: {log.date}
+                    <Calendar className="w-4 h-4 text-teal-600" /> วันที่ติดต่อ: {formatAppointmentDate(log.date, 'full')}
                   </span>
                   <span className="text-[10px] bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded-full border border-teal-200 font-semibold">
                     {log.channel}
@@ -108,10 +109,13 @@ export const TelemedTab: React.FC<TelemedTabProps> = ({
               </div>
 
               {log.nextAppointmentDate && (
-                <div className="flex items-center justify-between text-[11px] text-teal-800 bg-teal-50/60 p-2 rounded-lg border border-teal-200">
-                  <span className="flex items-center gap-1 font-semibold">
-                    <Calendar className="w-3.5 h-3.5" />
-                    วันนัดติดตามครั้งถัดไป: {log.nextAppointmentDate}
+                <div className="flex items-center justify-between text-[11px] text-teal-800 bg-teal-50/60 p-2.5 rounded-xl border border-teal-200 flex-wrap gap-2">
+                  <span className="flex items-center gap-1.5 font-semibold">
+                    <Calendar className="w-3.5 h-3.5 text-teal-600" />
+                    <span>วันนัดติดตามครั้งถัดไป:</span>
+                    <strong className="text-teal-950 font-bold bg-white px-2 py-0.5 rounded border border-teal-200">
+                      {formatAppointmentDate(log.nextAppointmentDate, 'day_full')}
+                    </strong>
                   </span>
                   <span className="text-[10px] bg-white px-2 py-0.5 rounded font-medium border text-slate-700">
                     {log.nextAppointmentType === 'home_visit' ? '🏠 นัดเยี่ยมบ้าน' : (log.nextAppointmentType === 'clinic' ? '🏥 นัดมาคลินิก' : '📱 นัดโทร Telemed')}

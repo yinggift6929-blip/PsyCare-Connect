@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Home, Plus, Calendar, Users, AlertTriangle, CheckCircle2, Image as ImageIcon, ExternalLink, X } from 'lucide-react';
 import { HomeVisitRecord, Patient } from '../types.ts';
+import { formatAppointmentDate } from '../utils/dateUtils.ts';
 
 interface HomeVisitTabProps {
   patient: Patient;
@@ -62,7 +63,7 @@ export const HomeVisitTab: React.FC<HomeVisitTabProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-purple-950 text-sm flex items-center gap-1.5">
                     <Calendar className="w-4 h-4 text-purple-600" />
-                    วันที่เยี่ยมบ้าน: {visit.date}
+                    วันที่เยี่ยมบ้าน: {formatAppointmentDate(visit.date, 'full')}
                   </span>
                   <span className="text-[10px] bg-purple-50 text-purple-700 px-2.5 py-0.5 rounded-full border border-purple-200 font-medium">
                     ผู้บันทึก: {visit.recordedBy}
@@ -113,6 +114,22 @@ export const HomeVisitTab: React.FC<HomeVisitTabProps> = ({
                   </div>
                 )}
               </div>
+
+              {/* Next Follow-up Appointment */}
+              {visit.nextAppointmentDate && (
+                <div className="flex items-center justify-between text-[11px] text-purple-900 bg-purple-50/70 p-2.5 rounded-xl border border-purple-200 flex-wrap gap-2">
+                  <span className="flex items-center gap-1.5 font-semibold">
+                    <Calendar className="w-3.5 h-3.5 text-purple-600" />
+                    <span>วันนัดติดตามครั้งถัดไป:</span>
+                    <strong className="text-purple-950 font-bold bg-white px-2 py-0.5 rounded border border-purple-200">
+                      {formatAppointmentDate(visit.nextAppointmentDate, 'day_full')}
+                    </strong>
+                  </span>
+                  <span className="text-[10px] bg-white px-2 py-0.5 rounded font-medium border text-slate-700">
+                    {visit.nextAppointmentType === 'home_visit' ? '🏠 นัดเยี่ยมบ้าน' : (visit.nextAppointmentType === 'clinic' ? '🏥 นัดมาคลินิก' : '📱 นัดโทร Telemed')}
+                  </span>
+                </div>
+              )}
 
               {/* Attached Images Gallery */}
               {visit.images && visit.images.length > 0 && (

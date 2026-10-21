@@ -41,6 +41,8 @@ import {
 } from '../types.ts';
 import { STANDARD_DRUG_GROUPS } from './modals/AddMedicationModal.tsx';
 import { GenderBadge } from './common/GenderIcon.tsx';
+import { formatAppointmentDate } from '../utils/dateUtils.ts';
+import { ThaiAppointmentDatePicker } from './common/ThaiAppointmentDatePicker.tsx';
 
 interface PharmacistCareTabProps {
   patient: Patient;
@@ -1626,13 +1628,15 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
 
         {/* Current Scheduled Status Banner */}
         {patient.nextAppointment && (
-          <div className="p-3 bg-white/90 rounded-2xl border border-indigo-200/80 flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
+          <div className="p-3 bg-white/90 rounded-2xl border border-indigo-200/80 flex items-center justify-between text-xs flex-wrap gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Calendar className="w-4 h-4 text-indigo-600" />
               <span className="text-slate-600">นัดหมายปัจจุบันในระบบ:</span>
-              <strong className="text-indigo-900 font-mono text-sm">{patient.nextAppointment}</strong>
+              <strong className="text-indigo-900 font-bold text-sm bg-indigo-50 px-2.5 py-0.5 rounded-lg border border-indigo-200">
+                {formatAppointmentDate(patient.nextAppointment, 'day_full')}
+              </strong>
               <span className="text-slate-400">•</span>
-              <span className="font-medium text-slate-700">
+              <span className="font-semibold text-indigo-800">
                 {patient.nextAppointmentType === 'home_visit' ? '🏠 เยี่ยมบ้าน' : patient.nextAppointmentType === 'telemed' ? '📱 โทร Telemed' : '🏥 ตรวจคลินิก/DRPs'}
               </span>
             </div>
@@ -1647,24 +1651,19 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
         {/* Appointment Form */}
         <form onSubmit={handleSaveAppointment} className="space-y-3.5">
           <div className="grid grid-cols-1 sm:grid-cols-12 gap-3.5 text-xs">
-            {/* วันที่นัดถัดไป */}
-            <div className="sm:col-span-4">
-              <label className="block text-xs font-bold text-slate-800 mb-1">
-                วันที่นัดหมายครั้งถัดไป: *
-              </label>
-              <div className="relative">
-                <input
-                  type="date"
-                  required
-                  value={nextAppDate}
-                  onChange={(e) => setNextAppDate(e.target.value)}
-                  className="w-full p-2.5 bg-white border border-rose-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-400"
-                />
-              </div>
+            {/* วันที่นัดถัดไป (วัน/เดือน/ปี พ.ศ.) */}
+            <div className="sm:col-span-6">
+              <ThaiAppointmentDatePicker
+                value={nextAppDate}
+                onChange={setNextAppDate}
+                label="วันที่นัดหมายครั้งถัดไป:"
+                required
+                themeColor="indigo"
+              />
             </div>
 
             {/* ช่องทางการติดตาม 3 กลุ่ม */}
-            <div className="sm:col-span-8">
+            <div className="sm:col-span-6">
               <label className="block text-xs font-bold text-slate-800 mb-1">
                 ช่องทางการติดตาม (3 กลุ่มการดูแล): *
               </label>

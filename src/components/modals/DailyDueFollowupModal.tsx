@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Patient, PatientTrackingGroup } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
+import { formatAppointmentDate } from '../../utils/dateUtils.ts';
 
 interface DailyDueFollowupModalProps {
   isOpen: boolean;
@@ -301,7 +302,7 @@ export const DailyDueFollowupModal: React.FC<DailyDueFollowupModalProps> = ({
                     }}
                     className="bg-white hover:bg-rose-100 text-rose-900 px-2.5 py-1 rounded-xl border border-rose-200 text-[11px] font-medium transition"
                   >
-                    {op.name} (นัด {op.nextAppointment})
+                    {op.name} (นัด {formatAppointmentDate(op.nextAppointment, 'full')})
                   </button>
                 ))}
               </div>

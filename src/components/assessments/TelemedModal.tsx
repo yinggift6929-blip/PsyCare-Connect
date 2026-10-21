@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { PhoneCall, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { TelemedRecord, Patient } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
+import { ThaiAppointmentDatePicker } from '../common/ThaiAppointmentDatePicker.tsx';
 
 interface TelemedModalProps {
   isOpen: boolean;
@@ -196,22 +197,19 @@ export const TelemedModal: React.FC<TelemedModalProps> = ({
             <Calendar className="w-4 h-4 text-teal-600" />
             <span>นัดหมายติดตามครั้งถัดไป (Next Follow-up Plan)</span>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div>
-              <label className="block text-[11px] text-slate-600 mb-0.5">วันนัดครั้งถัดไป:</label>
-              <input
-                type="date"
-                value={nextAppointmentDate}
-                onChange={(e) => setNextAppointmentDate(e.target.value)}
-                className="w-full p-1.5 text-xs bg-white border border-teal-200 rounded-lg"
-              />
-            </div>
+          <div className="space-y-2.5">
+            <ThaiAppointmentDatePicker
+              value={nextAppointmentDate}
+              onChange={setNextAppointmentDate}
+              label="วันนัดครั้งถัดไป:"
+              themeColor="teal"
+            />
             <div>
               <label className="block text-[11px] text-slate-600 mb-0.5">ประเภทการติดตาม:</label>
               <select
                 value={nextAppointmentType}
                 onChange={(e) => setNextAppointmentType(e.target.value as any)}
-                className="w-full p-1.5 text-xs bg-white border border-teal-200 rounded-lg"
+                className="w-full p-2 text-xs bg-white border border-teal-200 rounded-xl font-medium focus:outline-none focus:ring-1 focus:ring-teal-400"
               >
                 <option value="telemed">📱 โทร/ติดต่อ Telemed</option>
                 <option value="home_visit">🏠 เยี่ยมบ้าน (Home Visit)</option>
