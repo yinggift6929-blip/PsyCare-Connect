@@ -37,7 +37,7 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
   const [totalCholesterol, setTotalCholesterol] = useState('210');
   const [ldl, setLdl] = useState('130');
   const [pharmacistAdvice, setPharmacistAdvice] = useState('');
-  const [recordedBy, setRecordedBy] = useState('ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)');
+  const [recordedBy, setRecordedBy] = useState('ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)');
 
   if (!isOpen) return null;
 

@@ -35,7 +35,7 @@ export const DiepssAssessmentModal: React.FC<DiepssAssessmentModalProps> = ({
   const [dyskinesia, setDyskinesia] = useState(0);
   const [overallSeverity, setOverallSeverity] = useState(0);
   const [actionPlan, setActionPlan] = useState('');
-  const [evaluatedBy, setEvaluatedBy] = useState('ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)');
+  const [evaluatedBy, setEvaluatedBy] = useState('ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)');
 
   if (!isOpen) return null;
 

@@ -1,4 +1,4 @@
-export type RoleType = 'pharmacist' | 'nurse' | 'psychologist';
+export type RoleType = 'pharmacist' | 'nurse' | 'psychologist' | 'public_health';
 
 export type RiskLevel = 'low' | 'moderate' | 'high';
 

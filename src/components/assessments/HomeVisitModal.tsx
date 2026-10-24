@@ -16,6 +16,7 @@ import {
 import { HomeVisitRecord, Patient } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 import { ThaiAppointmentDatePicker } from '../common/ThaiAppointmentDatePicker.tsx';
+import { MULTIDISCIPLINARY_TEAM, formatMemberNameAndPosition } from '../../data/teamMembers.ts';
 
 
 interface HomeVisitModalProps {
@@ -53,7 +54,7 @@ export const HomeVisitModal: React.FC<HomeVisitModalProps> = ({
 }) => {
   const sliderRef = React.useRef<HTMLDivElement>(null);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [teamMembers, setTeamMembers] = useState('ภญ.สุพิชฌาย์ (เภสัชกร), พว.ประภัสสร (พยาบาล), นจต.นภัสสร (นักจิตวิทยา)');
+  const [teamMembers, setTeamMembers] = useState('ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ), นางรชณากร บัวแก้ว (พยาบาลวิชาชีพชำนาญการ), น.ส. สุธาสินี นะนุ้ย (นักวิชาการสาธารณสุข)');
   const [environmentNotes, setEnvironmentNotes] = useState('');
   
   // Requirement 3: Selected problems from scrolling bar & custom notes
@@ -182,6 +183,38 @@ export const HomeVisitModal: React.FC<HomeVisitModalProps> = ({
                 placeholder="เช่น เภสัชกร, พยาบาล, นักจิตวิทยา, อสม."
                 className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl"
               />
+              <div className="flex items-center gap-1.5 overflow-x-auto py-1 mt-1 no-scrollbar">
+                <span className="text-[10px] text-slate-400 shrink-0 font-bold">แตะเพื่อเพิ่ม/ลด:</span>
+                {MULTIDISCIPLINARY_TEAM.map((m) => {
+                  const isIncluded = teamMembers.includes(m.name);
+                  return (
+                    <button
+                      key={m.id}
+                      type="button"
+                      onClick={() => {
+                        const formatted = formatMemberNameAndPosition(m);
+                        if (isIncluded) {
+                          const updated = teamMembers
+                            .split(',')
+                            .map(s => s.trim())
+                            .filter(s => !s.includes(m.name))
+                            .join(', ');
+                          setTeamMembers(updated);
+                        } else {
+                          setTeamMembers(prev => prev ? `${prev}, ${formatted}` : formatted);
+                        }
+                      }}
+                      className={`text-[10px] px-2 py-0.5 rounded-full border transition shrink-0 cursor-pointer ${
+                        isIncluded
+                          ? 'bg-pink-100 text-pink-800 border-pink-300 font-bold'
+                          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      {isIncluded ? '✓ ' : '+ '}{m.name} ({m.position})
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 

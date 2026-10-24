@@ -21,7 +21,7 @@ export const Mars5AssessmentModal: React.FC<Mars5AssessmentModalProps> = ({
   const [q3, setQ3] = useState(5); // ฉันหยุดกินยาเองเป็นบางช่วง
   const [q4, setQ4] = useState(5); // ฉันข้ามการกินยาบางมื้อ
   const [q5, setQ5] = useState(5); // ฉันกินยาน้อยกว่าที่หมอสั่ง
-  const [evaluatedBy, setEvaluatedBy] = useState('ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)');
+  const [evaluatedBy, setEvaluatedBy] = useState('ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)');
   const [notes, setNotes] = useState('');
   const [autoUpdatePatientScore, setAutoUpdatePatientScore] = useState(true);
 

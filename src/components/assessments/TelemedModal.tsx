@@ -3,6 +3,8 @@ import { PhoneCall, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { TelemedRecord, Patient } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
 import { ThaiAppointmentDatePicker } from '../common/ThaiAppointmentDatePicker.tsx';
+import { TeamMemberSlider } from '../common/TeamMemberSlider.tsx';
+import { getActiveTeamMember, formatMemberNameAndPosition, TeamMember } from '../../data/teamMembers.ts';
 
 interface TelemedModalProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ export const TelemedModal: React.FC<TelemedModalProps> = ({
   patient,
   onSave
 }) => {
+  const [selectedStaff, setSelectedStaff] = useState<TeamMember>(() => getActiveTeamMember());
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [channel, setChannel] = useState<'โทรศัพท์ (Phone Call)' | 'วิดีโอคอล (Video Call)' | 'LINE Official / ข้อความ'>('โทรศัพท์ (Phone Call)');
   const [respondent, setRespondent] = useState<'ผู้ป่วยโดยตรง' | 'ญาติ / ผู้ดูแลหลัก'>('ผู้ป่วยโดยตรง');
@@ -27,7 +30,7 @@ export const TelemedModal: React.FC<TelemedModalProps> = ({
   const [nextAppointmentDate, setNextAppointmentDate] = useState('');
   const [nextAppointmentType, setNextAppointmentType] = useState<'home_visit' | 'telemed' | 'clinic'>('telemed');
   const [nextAppointmentObjective, setNextAppointmentObjective] = useState('');
-  const [recordedBy, setRecordedBy] = useState('ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)');
+  const [recordedBy, setRecordedBy] = useState(() => formatMemberNameAndPosition(getActiveTeamMember()));
 
   if (!isOpen) return null;
 
@@ -229,13 +232,18 @@ export const TelemedModal: React.FC<TelemedModalProps> = ({
           </div>
         </div>
 
-        <div>
-          <label className="block font-bold text-slate-700 mb-1">ผู้ให้บริการ / ผู้บันทึก:</label>
-          <input
-            type="text"
-            value={recordedBy}
-            onChange={(e) => setRecordedBy(e.target.value)}
-            className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white"
+        <div className="pt-2 border-t border-teal-100">
+          <TeamMemberSlider
+            profession={selectedStaff.profession}
+            selectedMemberId={selectedStaff.id}
+            onSelectMember={(m) => {
+              setSelectedStaff(m);
+              setRecordedBy(formatMemberNameAndPosition(m));
+            }}
+            showProfessionTabs={true}
+            compact={true}
+            label="ผู้ให้บริการ / ผู้บันทึก Telemed"
+            helperText="เลือกกลุ่มวิชาชีพและเลื่อนเลือกรายชื่อในกลุ่มวิชาชีพเดียวกัน ระบบจำค่าชื่อตำแหน่งอัตโนมัติ"
           />
         </div>
       </form>

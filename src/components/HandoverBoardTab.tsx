@@ -74,6 +74,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
     if (role === 'pharmacist') return <span className="bg-rose-100/70 text-rose-800 px-2 py-0.5 rounded-md font-medium text-[10px]">💊 เภสัชกร</span>;
     if (role === 'nurse') return <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded-md font-medium text-[10px]">🩺 พยาบาล</span>;
     if (role === 'psychologist') return <span className="bg-amber-100 text-amber-900 border border-amber-200/80 px-2 py-0.5 rounded-md font-medium text-[10px]">🧠 นักจิตวิทยา</span>;
+    if (role === 'public_health') return <span className="bg-blue-100 text-blue-900 border border-blue-200/80 px-2 py-0.5 rounded-md font-medium text-[10px]">🏥 นักวิชาการสาธารณสุข</span>;
     return <span className="bg-slate-100 text-slate-800 px-2 py-0.5 rounded-md font-medium text-[10px]">👥 ทีมสหวิชาชีพ</span>;
   };
 
@@ -164,6 +165,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
                 <option value="all">👥 @ ทีมสหวิชาชีพทั้งหมด (All Team)</option>
                 <option value="nurse">🩺 @ พยาบาล (Nurse)</option>
                 <option value="psychologist">🧠 @ นักจิตวิทยา (Psychologist)</option>
+                <option value="public_health">🏥 @ นักวิชาการสาธารณสุข (Public Health)</option>
               </select>
             </div>
 

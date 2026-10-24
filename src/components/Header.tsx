@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User } from 'firebase/auth';
 import { 
   FileSpreadsheet, 
@@ -7,19 +7,33 @@ import {
   Pill, 
   Stethoscope, 
   Brain, 
+  Building2,
   CheckCircle2, 
   LogOut, 
   Settings2,
   Sparkles,
   Bell,
   BarChart3,
-  Send
+  Send,
+  Users,
+  ChevronDown,
+  UserCheck
 } from 'lucide-react';
 import { RoleType } from '../types.ts';
+import { 
+  TeamMember, 
+  MULTIDISCIPLINARY_TEAM, 
+  PROFESSION_GROUPS, 
+  formatMemberNameAndPosition,
+  getTeamMembersByProfession 
+} from '../data/teamMembers.ts';
+import { TeamMemberSlider } from './common/TeamMemberSlider.tsx';
 
 interface HeaderProps {
   currentRole: RoleType;
   onSelectRole: (role: RoleType) => void;
+  activeTeamMember?: TeamMember;
+  onSelectTeamMember?: (member: TeamMember) => void;
   user: User | null;
   spreadsheetId: string;
   isSyncing: boolean;
@@ -31,7 +45,6 @@ interface HeaderProps {
   onOpenNotificationSettings?: () => void;
   isNotificationActive?: boolean;
   onLogin: () => void;
-
   onLogout: () => void;
   onSyncNow: () => void;
   onRefreshServerData?: () => void;
@@ -43,6 +56,8 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   currentRole,
   onSelectRole,
+  activeTeamMember,
+  onSelectTeamMember,
   user,
   spreadsheetId,
   isSyncing,
@@ -61,6 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenDeviceSync,
   activeDevicesCount
 }) => {
+  const [showTeamSlider, setShowTeamSlider] = useState(true);
   const sheetEditUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
 
   return (
@@ -88,38 +104,53 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Role Switcher Center Pill (Soft pastel comfort) */}
+          {/* Multidisciplinary Role Switcher (4 Professions) */}
           <div className="hidden lg:flex items-center bg-white/90 backdrop-blur-md rounded-2xl p-1 border border-pink-200/80 shadow-2xs">
-            <span className="text-[11px] font-bold text-slate-500 px-2.5">บทบาท:</span>
+            <span className="text-[11px] font-bold text-slate-500 px-2.5">กลุ่มวิชาชีพ:</span>
             <button
               onClick={() => onSelectRole('pharmacist')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 currentRole === 'pharmacist'
                   ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-xs'
                   : 'text-slate-600 hover:text-pink-700 hover:bg-pink-50/70'
               }`}
             >
-              <Pill className="w-3.5 h-3.5" /> เภสัชกร (Pharmacist)
+              <Pill className="w-3.5 h-3.5" /> ภญ.สุภิตา (เภสัชกร)
             </button>
             <button
               onClick={() => onSelectRole('nurse')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 currentRole === 'nurse'
                   ? 'bg-teal-500 text-white shadow-xs'
                   : 'text-slate-600 hover:text-teal-700 hover:bg-teal-50/70'
               }`}
             >
-              <Stethoscope className="w-3.5 h-3.5" /> พยาบาล (Nurse)
+              <Stethoscope className="w-3.5 h-3.5" /> พยาบาลวิชาชีพ
+              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-black ${
+                currentRole === 'nurse' ? 'bg-white text-teal-800' : 'bg-teal-100 text-teal-800'
+              }`}>
+                3
+              </span>
             </button>
             <button
               onClick={() => onSelectRole('psychologist')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 currentRole === 'psychologist'
-                  ? 'bg-amber-200 text-amber-950 shadow-xs border border-amber-300'
+                  ? 'bg-amber-400 text-amber-950 shadow-xs border border-amber-500/30'
                   : 'text-slate-600 hover:text-amber-900 hover:bg-amber-50'
               }`}
             >
-              <Brain className="w-3.5 h-3.5 text-amber-700" /> นักจิตวิทยา (Psychologist)
+              <Brain className="w-3.5 h-3.5 text-amber-800" /> น.ส.อัยมี (นักจิตวิทยา)
+            </button>
+            <button
+              onClick={() => onSelectRole('public_health')}
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                currentRole === 'public_health'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50'
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5" /> น.ส. สุธาสินี (สธ.)
             </button>
           </div>
 
@@ -270,6 +301,51 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
+        {/* Multidisciplinary Team Ribbon & Scrollable Slider (แถบเลื่อนทีมสหวิชาชีพ) */}
+        <div className="py-2 px-3 my-1.5 bg-white/95 rounded-2xl border border-pink-200/90 shadow-2xs backdrop-blur-md">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
+            {/* Left: Active Practitioner Indicator */}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="p-2 rounded-xl bg-pink-100 text-pink-700 shadow-2xs shrink-0">
+                <Users className="w-4 h-4 text-pink-600" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                    ผู้ปฏิบัติงานขณะนี้:
+                  </span>
+                  {activeTeamMember && (
+                    <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 text-xs font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                      {activeTeamMember.name} • <span className="font-semibold text-emerald-700">{activeTeamMember.position}</span>
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                  {currentRole === 'nurse' 
+                    ? 'พยาบาลวิชาชีพ (มี 3 ท่าน) — เลื่อนแถบด้านขวาเพื่อเลือกรายชื่อผู้ปฏิบัติงาน'
+                    : 'จำค่าชื่อและตำแหน่งอัตโนมัติ (ตำแหน่งเดียวในกลุ่มวิชาชีพนี้)'}
+                </p>
+              </div>
+            </div>
+
+            {/* Right: The Scrollable Slider for current profession */}
+            <div className="flex-1 lg:max-w-xl">
+              <TeamMemberSlider
+                profession={currentRole}
+                selectedMemberId={activeTeamMember?.id}
+                onSelectMember={(member) => {
+                  if (onSelectTeamMember) onSelectTeamMember(member);
+                  if (member.profession !== currentRole) onSelectRole(member.profession);
+                }}
+                showProfessionTabs={false}
+                compact={true}
+                label=""
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Status Sub-bar with comfortable pastel contrast */}
         <div className="py-1.5 border-t border-pink-200/60 bg-pink-50/40 text-[11px] text-slate-600 flex flex-wrap items-center justify-between -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3">
@@ -337,6 +413,14 @@ export const Header: React.FC<HeaderProps> = ({
                 }`}
               >
                 จิตวิทยา
+              </button>
+              <button
+                onClick={() => onSelectRole('public_health')}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                  currentRole === 'public_health' ? 'bg-blue-600 text-white' : 'text-slate-600'
+                }`}
+              >
+                สธ.
               </button>
             </div>
           </div>

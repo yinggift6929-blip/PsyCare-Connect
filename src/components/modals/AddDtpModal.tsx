@@ -20,7 +20,7 @@ export const AddDtpModal: React.FC<AddDtpModalProps> = ({
   const [description, setDescription] = useState('');
   const [causeDrug, setCauseDrug] = useState('');
   const [intervention, setIntervention] = useState('');
-  const [recordedBy, setRecordedBy] = useState('ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)');
+  const [recordedBy, setRecordedBy] = useState('ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)');
   const [notifyTelegram, setNotifyTelegram] = useState(true);
 
   if (!isOpen) return null;

@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { Stethoscope, CheckCircle2 } from 'lucide-react';
 import { NurseRecord, Patient } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
+import { TeamMemberSlider } from '../common/TeamMemberSlider.tsx';
+import { 
+  getRememberedMemberForProfession, 
+  formatMemberNameAndPosition, 
+  TeamMember 
+} from '../../data/teamMembers.ts';
 
 interface AddNurseLogModalProps {
   isOpen: boolean;
@@ -16,6 +22,7 @@ export const AddNurseLogModal: React.FC<AddNurseLogModalProps> = ({
   patient,
   onSave
 }) => {
+  const [selectedNurse, setSelectedNurse] = useState<TeamMember>(() => getRememberedMemberForProfession('nurse'));
   const [bp, setBp] = useState('120/80');
   const [pulse, setPulse] = useState('78');
   const [weight, setWeight] = useState('68');
@@ -25,7 +32,7 @@ export const AddNurseLogModal: React.FC<AddNurseLogModalProps> = ({
   const [dotObserved, setDotObserved] = useState(true);
   const [mseObservation, setMseObservation] = useState('');
   const [riskBehavior, setRiskBehavior] = useState('ปกติ ไม่พบพฤติกรรมก้าวร้าว');
-  const [nurseName, setNurseName] = useState('พว.ประภัสสร (พยาบาลจิตเวช)');
+  const [nurseName, setNurseName] = useState(() => formatMemberNameAndPosition(getRememberedMemberForProfession('nurse')));
 
   if (!isOpen) return null;
 
@@ -193,13 +200,17 @@ export const AddNurseLogModal: React.FC<AddNurseLogModalProps> = ({
           />
         </div>
 
-        <div>
-          <label className="block font-bold text-slate-700 mb-1">พยาบาลผู้บันทึก:</label>
-          <input
-            type="text"
-            value={nurseName}
-            onChange={(e) => setNurseName(e.target.value)}
-            className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-400"
+        <div className="pt-1 border-t border-teal-100">
+          <TeamMemberSlider
+            profession="nurse"
+            selectedMemberId={selectedNurse?.id}
+            onSelectMember={(member) => {
+              setSelectedNurse(member);
+              setNurseName(formatMemberNameAndPosition(member));
+            }}
+            compact={true}
+            label="พยาบาลวิชาชีพผู้บันทึก (เลือกจากแถบเลื่อน)"
+            helperText="เลื่อนแถบเพื่อเลือกรายชื่อพยาบาลในกลุ่มวิชาชีพเดียวกัน ระบบจะจำค่าพยาบาลและตำแหน่งที่เลือกให้อัตโนมัติ"
           />
         </div>
       </form>

@@ -117,6 +117,13 @@ import {
   fetchFirestoreClinicData,
   testFirestoreConnection 
 } from './services/firebaseSync.ts';
+import { 
+  TeamMember, 
+  getActiveTeamMember, 
+  getRememberedMemberForProfession, 
+  saveRememberedMemberForProfession,
+  formatMemberNameAndPosition 
+} from './data/teamMembers.ts';
 
 
 export default function App() {
@@ -131,8 +138,9 @@ export default function App() {
   // Clinic Core Data State
   const [clinicData, setClinicData] = useState<AppClinicData>(loadLocalClinicData());
 
-  // UI Active State
-  const [currentRole, setCurrentRole] = useState<RoleType>('pharmacist');
+  // UI Active State & Multidisciplinary Practitioner
+  const [activeTeamMember, setActiveTeamMember] = useState<TeamMember>(() => getActiveTeamMember());
+  const [currentRole, setCurrentRole] = useState<RoleType>(() => getActiveTeamMember().profession);
   const [activeTab, setActiveTab] = useState<'rx' | 'nurse' | 'psych' | 'homevisit' | 'telemed' | 'handover' | 'analytics'>('rx');
   const [selectedPatientId, setSelectedPatientId] = useState<string>(() => {
     const local = loadLocalClinicData();
@@ -538,9 +546,24 @@ export default function App() {
   // Multidisciplinary Role selection handler
   const handleSelectRole = (role: RoleType) => {
     setCurrentRole(role);
+    const remembered = getRememberedMemberForProfession(role);
+    setActiveTeamMember(remembered);
+    saveRememberedMemberForProfession(remembered);
     if (role === 'pharmacist') setActiveTab('rx');
     else if (role === 'nurse') setActiveTab('nurse');
     else if (role === 'psychologist') setActiveTab('psych');
+    else if (role === 'public_health') setActiveTab('homevisit');
+  };
+
+  // Multidisciplinary Team Member selection handler (from slider)
+  const handleSelectTeamMember = (member: TeamMember) => {
+    setActiveTeamMember(member);
+    setCurrentRole(member.profession);
+    saveRememberedMemberForProfession(member);
+    if (member.profession === 'pharmacist') setActiveTab('rx');
+    else if (member.profession === 'nurse') setActiveTab('nurse');
+    else if (member.profession === 'psychologist') setActiveTab('psych');
+    else if (member.profession === 'public_health') setActiveTab('homevisit');
   };
 
   // Action: Add New Patient
@@ -575,7 +598,7 @@ export default function App() {
     notifyNewPatientCreated(
       notificationSettings,
       patientObj,
-      user?.displayName || (currentRole === 'pharmacist' ? 'เภสัชกร' : currentRole === 'nurse' ? 'พยาบาล' : 'นักจิตวิทยา')
+      user?.displayName || formatMemberNameAndPosition(activeTeamMember)
     ).then((res) => {
       if (res?.telegram?.success) {
         setCrossDeviceToast({
@@ -1076,7 +1099,7 @@ export default function App() {
 
   // Action: Resolve Handover Note
   const handleResolveHandover = (handoverId: string, responseNote?: string) => {
-    const resolverName = currentRole === 'pharmacist' ? 'เภสัชกร' : (currentRole === 'nurse' ? 'พยาบาล' : 'นักจิตวิทยา');
+    const resolverName = formatMemberNameAndPosition(activeTeamMember);
 
     updateDataAndSync((prev) => ({
       ...prev,
@@ -1150,6 +1173,8 @@ export default function App() {
       <Header
         currentRole={currentRole}
         onSelectRole={handleSelectRole}
+        activeTeamMember={activeTeamMember}
+        onSelectTeamMember={handleSelectTeamMember}
         user={user}
         spreadsheetId={spreadsheetId}
         isSyncing={isSyncing}

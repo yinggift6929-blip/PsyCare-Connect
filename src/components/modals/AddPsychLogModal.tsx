@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { Brain } from 'lucide-react';
 import { PsychRecord, Patient } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
+import { TeamMemberSlider } from '../common/TeamMemberSlider.tsx';
+import { 
+  getRememberedMemberForProfession, 
+  formatMemberNameAndPosition,
+  TeamMember 
+} from '../../data/teamMembers.ts';
 
 interface AddPsychLogModalProps {
   isOpen: boolean;
@@ -16,13 +22,14 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
   patient,
   onSave
 }) => {
+  const [selectedPsych, setSelectedPsych] = useState<TeamMember>(() => getRememberedMemberForProfession('psychologist'));
   const [phq9Score, setPhq9Score] = useState('10');
   const [suicideRisk8q, setSuicideRisk8q] = useState('0 (ไม่มีความเสี่ยง)');
   const [gad7Score, setGad7Score] = useState('');
   const [therapyType, setTherapyType] = useState('CBT (การปรับความคิดและพฤติกรรม)');
   const [sessionNumber, setSessionNumber] = useState('ครั้งที่ 1');
   const [counselingNotes, setCounselingNotes] = useState('');
-  const [psychologistName, setPsychologistName] = useState('นจต.นภัสสร (นักจิตวิทยาคลินิก)');
+  const [psychologistName, setPsychologistName] = useState(() => formatMemberNameAndPosition(getRememberedMemberForProfession('psychologist')));
 
   if (!isOpen) return null;
 
@@ -162,13 +169,17 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
           />
         </div>
 
-        <div>
-          <label className="block font-bold text-slate-700 mb-1">นักจิตวิทยาผู้บันทึก:</label>
-          <input
-            type="text"
-            value={psychologistName}
-            onChange={(e) => setPsychologistName(e.target.value)}
-            className="w-full p-2 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+        <div className="pt-1 border-t border-amber-100">
+          <TeamMemberSlider
+            profession="psychologist"
+            selectedMemberId={selectedPsych?.id}
+            onSelectMember={(member) => {
+              setSelectedPsych(member);
+              setPsychologistName(formatMemberNameAndPosition(member));
+            }}
+            compact={true}
+            label="นักจิตวิทยาผู้บันทึก (จำค่าตำแหน่งเดียวอัตโนมัติ)"
+            helperText="กลุ่มวิชาชีพนี้มี 1 ตำแหน่ง ระบบจำค่าชื่อ น.ส.อัยมี สามะ (นักจิตวิทยา) ให้อัตโนมัติ"
           />
         </div>
       </form>

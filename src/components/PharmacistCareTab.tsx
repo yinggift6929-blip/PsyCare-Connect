@@ -7,7 +7,6 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   Clock, 
-  FileText, 
   Activity, 
   ShieldAlert, 
   FlaskConical, 
@@ -22,7 +21,6 @@ import {
   Search, 
   Sparkles, 
   User, 
-  Save, 
   CalendarClock, 
   ArrowRight,
   Filter
@@ -48,7 +46,7 @@ interface PharmacistCareTabProps {
   patient: Patient;
   medications: Medication[];
   dtps: DtpRecord[];
-  soapNotes: SoapNote[];
+  soapNotes?: SoapNote[];
   safetyLogs: SafetyLog[];
   mars5Records: Mars5Assessment[];
   diepssRecords: DiepssAssessment[];
@@ -62,7 +60,7 @@ interface PharmacistCareTabProps {
   onOpenMars5: () => void;
   onOpenDiepss: () => void;
   onOpenMetabolic: () => void;
-  onSaveSoapNote: (soap: { subjective: string; objective: string; assessment: string; plan: string }) => void;
+  onSaveSoapNote?: (soap: { subjective: string; objective: string; assessment: string; plan: string }) => void;
   onSaveSafetyLog: (safety: Partial<SafetyLog>) => void;
   onSaveMars5?: (record: Partial<Mars5Assessment>, updatedAdherencePercent?: number) => void;
   onUpdateAppointment?: (patientId: string, appointment: { nextAppointment?: string; nextAppointmentType?: 'home_visit' | 'telemed' | 'clinic'; nextAppointmentObjective?: string }) => void;
@@ -82,7 +80,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
   patient,
   medications,
   dtps,
-  soapNotes,
+  soapNotes: _soapNotes,
   safetyLogs,
   mars5Records,
   diepssRecords,
@@ -96,14 +94,13 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
   onOpenMars5,
   onOpenDiepss,
   onOpenMetabolic,
-  onSaveSoapNote,
+  onSaveSoapNote: _onSaveSoapNote,
   onSaveSafetyLog,
   onSaveMars5,
   onUpdateAppointment
 }) => {
   const patientMeds = medications.filter(m => m.patientId === patient.id);
   const patientDtps = dtps.filter(d => d.patientId === patient.id);
-  const patientSoaps = soapNotes.filter(s => s.patientId === patient.id);
   const latestSafety = safetyLogs.filter(s => s.patientId === patient.id)[0];
   const patientMars5 = mars5Records.filter(m => m.patientId === patient.id);
   const latestMars5 = patientMars5[0];
@@ -222,36 +219,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
   };
 
   // ==========================================
-  // Section 2 State: SOAP Note (Req 1)
-  // ==========================================
-  const [subjective, setSubjective] = useState('');
-  const [objective, setObjective] = useState('');
-  const [assessment, setAssessment] = useState('');
-  const [plan, setPlan] = useState('');
-  const [soapSavedToast, setSoapSavedToast] = useState(false);
-
-  const handleSaveSoap = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subjective.trim() && !objective.trim() && !assessment.trim() && !plan.trim()) {
-      alert('กรุณากรอกข้อมูลใน SOAP Note อย่างน้อยหนึ่งช่อง');
-      return;
-    }
-    onSaveSoapNote({
-      subjective: subjective.trim(),
-      objective: objective.trim(),
-      assessment: assessment.trim(),
-      plan: plan.trim()
-    });
-    setSubjective('');
-    setObjective('');
-    setAssessment('');
-    setPlan('');
-    setSoapSavedToast(true);
-    setTimeout(() => setSoapSavedToast(false), 3000);
-  };
-
-  // ==========================================
-  // Section 3 State: DRPs Search & Fast Record (Req 1 & 2)
+  // Section 2 State: DRPs Search & Fast Record (Req 1 & 2)
   // ==========================================
   const [drpSearch, setDrpSearch] = useState('');
   const [selectedDrpTopic, setSelectedDrpTopic] = useState<string>(DRP_REQUIRED_TOPICS[0]);
@@ -280,7 +248,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
         causeDrug: drpCauseDrug.trim(),
         intervention: drpIntervention.trim(),
         status: 'pending',
-        recordedBy: 'ภญ.สุพิชฌาย์ (เภสัชกรคลินิก)'
+        recordedBy: 'ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)'
       });
       setDrpDescription('');
       setDrpCauseDrug('');
@@ -1018,139 +986,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
       </section>
 
       {/* ========================================================
-          2. SOAP Note แบบบันทึกการบริบาลเภสัชกรรม (Requirement 1)
-         ======================================================== */}
-      <section className="bg-white rounded-3xl shadow-xs border border-rose-100 p-5 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-rose-50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-rose-100 text-rose-700 rounded-2xl shadow-2xs">
-              <FileText className="w-5 h-5 text-rose-600" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
-                  ขั้นตอนที่ 2
-                </span>
-                <h3 className="font-extrabold text-slate-900 text-base">
-                  แบบบันทึกการบริบาลเภสัชกรรม (SOAP Note)
-                </h3>
-              </div>
-              <p className="text-xs text-slate-500 mt-0.5">
-                บันทึกการประเมินและการบริบาลทางเภสัชกรรม เชื่อมโยงประวัติและซิงค์ข้อมูล
-              </p>
-            </div>
-          </div>
-
-          {soapSavedToast && (
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5 animate-in fade-in">
-              <Check className="w-3.5 h-3.5" /> บันทึก SOAP Note สำเร็จ
-            </span>
-          )}
-        </div>
-
-        {/* SOAP Input Form */}
-        <form onSubmit={handleSaveSoap} className="space-y-3.5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
-                <span>Subjective (S): ข้อมูลจากการสัมภาษณ์และอาการสำคัญ</span>
-                <span className="text-[10px] font-normal text-slate-400">คำบอกเล่าผู้ป่วย / ญาติ</span>
-              </label>
-              <textarea
-                rows={3}
-                placeholder="เช่น ผู้ป่วยเล่าว่านอนหลับดีขึ้น ไม่มีหูแว่ว อาการสงบ ทานยาได้สม่ำเสมอ แต่มีอาการมือสั่นเล็กน้อยตอนเช้า..."
-                value={subjective}
-                onChange={(e) => setSubjective(e.target.value)}
-                className="w-full text-xs p-3 bg-rose-50/20 border border-rose-150 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
-                <span>Objective (O): ข้อมูลตรวจร่างกาย Lab & สัญญาณชีพ</span>
-                <span className="text-[10px] font-normal text-slate-400">ผลตรวจ, MARS-5, DIEPSS</span>
-              </label>
-              <textarea
-                rows={3}
-                placeholder="เช่น Adherence 95%, MARS-5 = 24/25, DIEPSS = 2/36 (สั่นเล็กน้อย), BP = 120/80 mmHg, FBS = 98 mg/dL..."
-                value={objective}
-                onChange={(e) => setObjective(e.target.value)}
-                className="w-full text-xs p-3 bg-rose-50/20 border border-rose-150 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 transition"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
-                <span>Assessment (A): การประเมินปัญหาจากการใช้ยา</span>
-                <span className="text-[10px] font-normal text-slate-400">วิเคราะห์ DRPs & ความร่วมมือ</span>
-              </label>
-              <textarea
-                rows={3}
-                placeholder="เช่น ผู้ป่วยมีอาการทางจิตคงที่ แต่พบ EPS สั่นเล็กน้อยจากยา Antipsychotic, ควบคุมโรคได้ดี ความร่วมมือระดับสูง..."
-                value={assessment}
-                onChange={(e) => setAssessment(e.target.value)}
-                className="w-full text-xs p-3 bg-rose-50/20 border border-rose-150 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 transition"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center justify-between">
-                <span>Plan (P): แผนการบริบาลและการประสานงาน</span>
-                <span className="text-[10px] font-normal text-slate-400">การให้คำแนะนำ / นัดติดตาม</span>
-              </label>
-              <textarea
-                rows={3}
-                placeholder="เช่น 1. จ่ายยาตามแพทย์สั่งเดิม 2. ปรึกษาแพทย์พิจารณา Trihexyphenidyl 2 mg บรรเทาอาการสั่น 3. นัดติดตามอีก 1 เดือน..."
-                value={plan}
-                onChange={(e) => setPlan(e.target.value)}
-                className="w-full text-xs p-3 bg-rose-50/20 border border-rose-150 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 transition"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-1">
-            <span className="text-[11px] text-slate-500">
-              ✍️ บันทึกโดย: ภญ.สุพิชฌาย์ (เภสัชกรคลินิกจิตดี)
-            </span>
-            <button
-              type="submit"
-              className="bg-rose-500 hover:bg-rose-600 active:bg-rose-700 text-white text-xs font-bold px-5 py-2.5 rounded-2xl shadow-xs transition flex items-center gap-1.5"
-            >
-              <Save className="w-4 h-4" />
-              <span>บันทึก SOAP Note</span>
-            </button>
-          </div>
-        </form>
-
-        {/* History of Past SOAP Notes */}
-        {patientSoaps.length > 0 && (
-          <div className="pt-3 border-t border-rose-50 space-y-2">
-            <h5 className="font-bold text-xs text-slate-700 flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-rose-500" />
-              ประวัติบันทึก SOAP Notes ย้อนหลัง ({patientSoaps.length} ฉบับ)
-            </h5>
-            <div className="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-1">
-              {patientSoaps.map((soap) => (
-                <div key={soap.id} className="p-3 bg-rose-50/20 rounded-2xl border border-rose-100 text-xs space-y-1">
-                  <div className="flex justify-between items-center text-[11px] text-slate-500 font-medium pb-1 border-b border-rose-100/60">
-                    <span className="font-bold text-rose-900">วันที่: {soap.date}</span>
-                    <span className="text-slate-600">{soap.recordedBy}</span>
-                  </div>
-                  {soap.subjective && <p className="pt-0.5"><strong className="text-rose-700">S:</strong> {soap.subjective}</p>}
-                  {soap.objective && <p><strong className="text-rose-700">O:</strong> {soap.objective}</p>}
-                  {soap.assessment && <p><strong className="text-rose-700">A:</strong> {soap.assessment}</p>}
-                  {soap.plan && <p><strong className="text-rose-700">P:</strong> {soap.plan}</p>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
-
-      {/* ========================================================
-          3. การค้นหาปัญหาที่เกิดจากการใช้ยา (DRPs) (Requirement 1 & 2)
+          2. การค้นหาปัญหาที่เกิดจากการใช้ยา (DRPs) (Requirement 1 & 2)
          ======================================================== */}
       <section className="bg-white rounded-3xl shadow-xs border border-rose-100 p-5 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-rose-50">
@@ -1161,7 +997,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                  ขั้นตอนที่ 3
+                  ขั้นตอนที่ 2
                 </span>
                 <h3 className="font-extrabold text-slate-900 text-base">
                   การค้นหาปัญหาที่เกิดจากการใช้ยา (Drug Therapy Problems - DRPs)
@@ -1408,7 +1244,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
       </section>
 
       {/* ========================================================
-          4. ชุดแบบประเมินทางเภสัชกรรม (ADR & Metabolic Monitoring)
+          3. ชุดแบบประเมินทางเภสัชกรรม (ADR & Metabolic Monitoring)
          ======================================================== */}
       <section className="bg-white rounded-3xl shadow-xs border border-rose-100 p-5 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-rose-50">
@@ -1419,7 +1255,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                  ขั้นตอนที่ 4
+                  ขั้นตอนที่ 3
                 </span>
                 <h3 className="font-extrabold text-slate-900 text-base">
                   ชุดแบบประเมินทางเภสัชกรรม (ADR & Metabolic Monitoring)
@@ -1449,12 +1285,12 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
 
         {/* 2 Summary Cards (ADR & Metabolic - Adherence moved to Step 1) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-          {/* 4.1 ADR / EPS (DIEPSS) */}
+          {/* 3.1 ADR / EPS (DIEPSS) */}
           <div className="bg-amber-50/30 p-4 rounded-2xl border border-amber-150 space-y-2 text-xs">
             <div className="flex items-center justify-between">
               <span className="font-bold text-amber-900 flex items-center gap-1.5">
                 <Activity className="w-4 h-4 text-amber-600" />
-                4.1 ADR / EPS (DIEPSS)
+                3.1 ADR / EPS (DIEPSS)
               </span>
               <button
                 onClick={onOpenDiepss}
@@ -1480,12 +1316,12 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
             )}
           </div>
 
-          {/* 4.2 Metabolic Syndrome */}
+          {/* 3.2 Metabolic Syndrome */}
           <div className="bg-rose-50/30 p-4 rounded-2xl border border-rose-150 space-y-2 text-xs">
             <div className="flex items-center justify-between">
               <span className="font-bold text-rose-900 flex items-center gap-1.5">
                 <HeartPulse className="w-4 h-4 text-rose-600" />
-                4.2 Metabolic Syndrome
+                3.2 Metabolic Syndrome
               </span>
               <button
                 onClick={onOpenMetabolic}
@@ -1596,7 +1432,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
       </section>
 
       {/* ========================================================
-          5. การคีย์บันทึกนัดติดตาม (Requirement 1)
+          4. การคีย์บันทึกนัดติดตาม (Requirement 1)
          ======================================================== */}
       <section className="bg-gradient-to-r from-rose-50/90 via-pink-50/60 to-indigo-50/50 rounded-3xl shadow-xs border border-rose-200 p-5 space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-rose-200/80">
@@ -1607,7 +1443,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-200">
-                  ขั้นตอนที่ 5 (สิ้นสุดขั้นตอน)
+                  ขั้นตอนที่ 4 (สิ้นสุดขั้นตอน)
                 </span>
                 <h3 className="font-extrabold text-slate-900 text-base">
                   การคีย์บันทึกนัดติดตาม (Follow-up Appointment Scheduling)
