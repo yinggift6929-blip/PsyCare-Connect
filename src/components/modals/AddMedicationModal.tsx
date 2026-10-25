@@ -54,13 +54,14 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
   const [customDrugName, setCustomDrugName] = useState('');
   const [category, setCategory] = useState<any>('Antipsychotic');
 
-  // 6-slot Sig State (Requirement 4)
+  // 6-slot Sig State (Requirement 4) + prn
   const [doseTab, setDoseTab] = useState('1'); // ช่อง 1: ใส่เฉพาะตัวเลข ระบุจำนวนเม็ด
   const [mealTiming, setMealTiming] = useState<'หลังอาหาร' | 'ก่อนอาหาร' | 'พร้อมอาหาร' | 'ก่อนนอน'>('หลังอาหาร'); // ช่อง 2: ก่อน/หลังอาหาร
   const [takeMorning, setTakeMorning] = useState(false); // ช่อง 3: เช้า
   const [takeNoon, setTakeNoon] = useState(false); // ช่อง 4: กลางวัน
   const [takeEvening, setTakeEvening] = useState(false); // ช่อง 5: เย็น
   const [takeBedtime, setTakeBedtime] = useState(true); // ช่อง 6: ก่อนนอน
+  const [takePrn, setTakePrn] = useState(false); // เวลามีอาการ (prn)
 
   // Manual Sig Override
   const [customSig, setCustomSig] = useState('');
@@ -70,7 +71,7 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
   const [adherence, setAdherence] = useState('100');
   const [notes, setNotes] = useState('');
 
-  // Auto-generate Sig from the 6 slots (Requirement 4)
+  // Auto-generate Sig from the slots
   useEffect(() => {
     if (isEditingSigManually) return;
 
@@ -80,10 +81,14 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
     if (takeNoon) times.push('กลางวัน');
     if (takeEvening) times.push('เย็น');
     if (takeBedtime) times.push('ก่อนนอน');
+    if (takePrn) times.push('เวลามีอาการ (prn)');
 
     let generated = '';
     if (mealTiming === 'ก่อนนอน' && times.length === 1 && times[0] === 'ก่อนนอน') {
       generated = `รับประทานครั้งละ ${tabsStr} วันละ 1 ครั้ง ก่อนนอน`;
+    } else if (times.length === 1 && times[0] === 'เวลามีอาการ (prn)') {
+      const mealStr = mealTiming === 'ก่อนนอน' ? '' : ` ${mealTiming}`;
+      generated = `รับประทานครั้งละ ${tabsStr}${mealStr} เวลามีอาการ (prn)`;
     } else {
       const timesStr = times.length > 0 ? times.join(', ') : 'ตามแพทย์สั่ง';
       const mealStr = mealTiming === 'ก่อนนอน' ? '' : ` ${mealTiming}`;
@@ -91,7 +96,7 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
     }
 
     setCustomSig(generated);
-  }, [doseTab, mealTiming, takeMorning, takeNoon, takeEvening, takeBedtime, isEditingSigManually]);
+  }, [doseTab, mealTiming, takeMorning, takeNoon, takeEvening, takeBedtime, takePrn, isEditingSigManually]);
 
   // Sync category and indication when preset drug changes
   const handlePresetChange = (drugName: string) => {
@@ -238,7 +243,7 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
               <span className="text-[10px] text-slate-500 font-medium">คำนวณ Sig อัตโนมัติ</span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
               {/* ช่องที่ 1: ใส่เฉพาะตัวเลข ระบุจำนวนเม็ดที่รับประทาน */}
               <div className="col-span-1 bg-white p-2 rounded-xl border border-slate-200">
                 <label className="block text-[10px] font-bold text-slate-700 mb-1">
@@ -330,6 +335,21 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
                 <span className="text-[10px] text-slate-500">ช่อง 6</span>
                 <span className="text-xs">🌙 ก่อนนอน</span>
                 {takeBedtime && <Check className="w-3 h-3 text-indigo-700" />}
+              </button>
+
+              {/* รับประทานยาเวลามีอาการ (prn) */}
+              <button
+                type="button"
+                onClick={() => setTakePrn(!takePrn)}
+                className={`col-span-1 p-2 rounded-xl border flex flex-col items-center justify-center gap-1 transition ${
+                  takePrn
+                    ? 'bg-purple-100 text-purple-900 border-purple-300 shadow-2xs font-bold'
+                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                <span className="text-[10px] text-slate-500">เวลามีอาการ</span>
+                <span className="text-xs">⚡ prn มีอาการ</span>
+                {takePrn && <Check className="w-3 h-3 text-purple-700" />}
               </button>
             </div>
 

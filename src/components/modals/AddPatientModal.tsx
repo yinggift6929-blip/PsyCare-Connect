@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { UserPlus, Home, PhoneCall, Building2, Calendar, Venus, Mars } from 'lucide-react';
-import { Patient, RiskLevel, PatientTrackingGroup } from '../../types.ts';
+import { UserPlus, Home, PhoneCall, Building2, Venus, Mars } from 'lucide-react';
+import { Patient, PatientTrackingGroup } from '../../types.ts';
 import { PsychiatricModalFrame } from '../common/PsychiatricModalFrame.tsx';
-import { formatAppointmentDate } from '../../utils/dateUtils.ts';
-import { ThaiAppointmentDatePicker } from '../common/ThaiAppointmentDatePicker.tsx';
 
 interface AddPatientModalProps {
   isOpen: boolean;
@@ -23,14 +21,8 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
   const [diagnosis, setDiagnosis] = useState('Schizophrenia (โรคจิตเภท)');
   const [customDiag, setCustomDiag] = useState('');
   const [trackingGroup, setTrackingGroup] = useState<PatientTrackingGroup>('home_visit');
-  const [statusTag, setStatusTag] = useState('General Psych');
-  const [riskLevel, setRiskLevel] = useState<RiskLevel>('low');
-  const [adherenceScore, setAdherenceScore] = useState('100');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [nextAppointment, setNextAppointment] = useState('');
-  const [nextAppointmentType, setNextAppointmentType] = useState<'home_visit' | 'telemed' | 'clinic'>('home_visit');
-  const [nextAppointmentObjective, setNextAppointmentObjective] = useState('');
 
   if (!isOpen) return null;
 
@@ -50,14 +42,12 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
       age: parseInt(age) || 30,
       diagnosis: finalDiag,
       trackingGroup,
-      statusTag,
-      riskLevel,
-      adherenceScore: Math.min(100, Math.max(0, parseInt(adherenceScore) || 100)),
+      statusTag: 'General Psych',
+      riskLevel: 'low',
+      adherenceScore: 100, // ค่าเริ่มต้น 100% ประเมินจริงในขั้นตอนที่ 1 ของการบริบาลเภสัชกรรม
       phone: phone.trim() || undefined,
       address: address.trim() || undefined,
-      nextAppointment: nextAppointment || undefined,
-      nextAppointmentType,
-      nextAppointmentObjective: nextAppointmentObjective.trim() || undefined,
+      nextAppointmentType: trackingGroup === 'home_visit' ? 'home_visit' : trackingGroup === 'telemed' ? 'telemed' : 'clinic',
       lastVisit: new Date().toISOString().split('T')[0],
       updatedAt: new Date().toLocaleString('th-TH')
     });
@@ -87,10 +77,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setTrackingGroup('home_visit');
-                  setNextAppointmentType('home_visit');
-                }}
+                onClick={() => setTrackingGroup('home_visit')}
                 className={`p-2 rounded-xl text-center font-bold border transition flex flex-col items-center gap-1 ${
                   trackingGroup === 'home_visit'
                     ? 'bg-indigo-600 text-white border-indigo-700 shadow-xs'
@@ -103,10 +90,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
 
               <button
                 type="button"
-                onClick={() => {
-                  setTrackingGroup('telemed');
-                  setNextAppointmentType('telemed');
-                }}
+                onClick={() => setTrackingGroup('telemed')}
                 className={`p-2 rounded-xl text-center font-bold border transition flex flex-col items-center gap-1 ${
                   trackingGroup === 'telemed'
                     ? 'bg-teal-600 text-white border-teal-700 shadow-xs'
@@ -119,10 +103,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
 
               <button
                 type="button"
-                onClick={() => {
-                  setTrackingGroup('clinic_dtp');
-                  setNextAppointmentType('clinic');
-                }}
+                onClick={() => setTrackingGroup('clinic_dtp')}
                 className={`p-2 rounded-xl text-center font-bold border transition flex flex-col items-center gap-1 ${
                   trackingGroup === 'clinic_dtp'
                     ? 'bg-rose-400 text-white border-rose-500 shadow-xs'
@@ -160,7 +141,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block font-bold text-slate-700 mb-1">เพศ:</label>
               <div className="grid grid-cols-2 gap-1.5">
@@ -202,25 +183,37 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
                 className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 mb-1">ระดับ Adherence (%):</label>
+              <label className="block font-bold text-slate-700 mb-1">เบอร์โทรศัพท์ติดต่อ:</label>
               <input
-                type="number"
-                min="0"
-                max="100"
-                value={adherenceScore}
-                onChange={(e) => setAdherenceScore(e.target.value)}
+                type="tel"
+                placeholder="081-xxx-xxxx"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+              />
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">ที่อยู่ (สำหรับการเยี่ยมบ้าน):</label>
+              <input
+                type="text"
+                placeholder="บ้านเลขที่, หมู่, ตำบล, อำเภอ"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
                 className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
               />
             </div>
           </div>
 
           <div>
-            <label className="block font-bold text-slate-700 mb-1">การวินิจฉัยหลัก (Psychiatric Diagnosis):</label>
+            <label className="block font-bold text-slate-700 mb-1">การวินิจฉัยหลัก (Psychiatric Diagnosis): *</label>
             <select
               value={diagnosis}
               onChange={(e) => setDiagnosis(e.target.value)}
-              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
+              className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300 font-medium"
             >
               <option value="Schizophrenia (โรคจิตเภท)">Schizophrenia (โรคจิตเภท)</option>
               <option value="Major Depressive Disorder (โรคซึมเศร้า)">Major Depressive Disorder (โรคซึมเศร้า)</option>
@@ -245,97 +238,6 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
               />
             </div>
           )}
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">กลุ่มคลินิกเฉพาะทาง / แท็ก:</label>
-              <select
-                value={statusTag}
-                onChange={(e) => setStatusTag(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              >
-                <option value="General Psych">General Psych (จิตเวชทั่วไป)</option>
-                <option value="Clozapine Clinic">Clozapine Clinic (คลินิกโคลซาปีน)</option>
-                <option value="Depot LAI">Depot LAI (ฉีดยาออกฤทธิ์เนิ่น)</option>
-                <option value="Lithium TDM">Lithium TDM (ตรวจระดับยา)</option>
-                <option value="High Suicide Risk">High Suicide Risk (เสี่ยงฆ่าตัวตายสูง)</option>
-              </select>
-            </div>
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">ระดับความเสี่ยง (Risk Level):</label>
-              <select
-                value={riskLevel}
-                onChange={(e) => setRiskLevel(e.target.value as any)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              >
-                <option value="low">ปกติ / เสี่ยงต่ำ (Low)</option>
-                <option value="moderate">ปานกลาง (Moderate)</option>
-                <option value="high">เสี่ยงสูง (High Risk)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">เบอร์โทรศัพท์ติดต่อ:</label>
-              <input
-                type="tel"
-                placeholder="081-xxx-xxxx"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              />
-            </div>
-            <div>
-              <label className="block font-bold text-slate-700 mb-1">ที่อยู่ (สำหรับการเยี่ยมบ้าน):</label>
-              <input
-                type="text"
-                placeholder="บ้านเลขที่, หมู่, ตำบล, อำเภอ"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-300"
-              />
-            </div>
-          </div>
-
-          {/* Continuous Appointment Tracking Section */}
-          <div className="bg-rose-50/40 p-3 rounded-xl border border-rose-100 space-y-2">
-            <span className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
-              <Calendar className="w-4 h-4 text-rose-500" />
-              การติดตามต่อเนื่อง (Continuous Follow-up Appointment):
-            </span>
-            <div className="space-y-3">
-              <ThaiAppointmentDatePicker
-                value={nextAppointment}
-                onChange={setNextAppointment}
-                label="วันนัดติดตามครั้งถัดไป:"
-                themeColor="rose"
-              />
-
-              <div>
-                <label className="block text-[11px] font-semibold text-slate-700 mb-0.5">ช่องทางการติดตาม:</label>
-                <select
-                  value={nextAppointmentType}
-                  onChange={(e) => setNextAppointmentType(e.target.value as any)}
-                  className="w-full p-2 bg-white border border-rose-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300 text-xs font-medium"
-                >
-                  <option value="home_visit">🏠 เยี่ยมบ้าน (Home Visit)</option>
-                  <option value="telemed">📱 โทร/ติดต่อ Telemed</option>
-                  <option value="clinic">🏥 มาตรวจที่คลินิกจิตเวช</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className="block text-[11px] text-slate-600 mb-0.5">วัตถุประสงค์การติดตามต่อเนื่อง:</label>
-              <input
-                type="text"
-                placeholder="เช่น เยี่ยมบ้านติดตามการทานยา, โทรเช็คผลข้างเคียง, นัดเจาะเลือด Clozapine ANC"
-                value={nextAppointmentObjective}
-                onChange={(e) => setNextAppointmentObjective(e.target.value)}
-                className="w-full p-2 bg-white border border-rose-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-300"
-              />
-            </div>
-          </div>
 
           {/* Telegram notification badge */}
           <div className="bg-sky-50/90 p-2.5 rounded-xl border border-sky-200 flex flex-wrap items-center justify-between gap-1.5 text-xs">

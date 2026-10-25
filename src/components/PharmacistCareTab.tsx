@@ -116,13 +116,14 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
   const [selectedPresetMed, setSelectedPresetMed] = useState<string>('Risperidone 2 mg');
   const [customMedName, setCustomMedName] = useState('');
   const [medCategory, setMedCategory] = useState<any>('Antipsychotic');
-  // 6 slots
+  // 6 slots + prn
   const [doseTab, setDoseTab] = useState('1'); // ช่อง 1
   const [mealTiming, setMealTiming] = useState<'หลังอาหาร' | 'ก่อนอาหาร' | 'พร้อมอาหาร' | 'ก่อนนอน'>('หลังอาหาร'); // ช่อง 2
   const [takeMorning, setTakeMorning] = useState(false); // ช่อง 3
   const [takeNoon, setTakeNoon] = useState(false); // ช่อง 4
   const [takeEvening, setTakeEvening] = useState(false); // ช่อง 5
   const [takeBedtime, setTakeBedtime] = useState(true); // ช่อง 6
+  const [takePrn, setTakePrn] = useState(false); // เวลามีอาการ (prn)
   const [customSig, setCustomSig] = useState('');
   const [isEditingSigManually, setIsEditingSigManually] = useState(false);
   const [medAdherence, setMedAdherence] = useState('100');
@@ -180,17 +181,21 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
     if (takeNoon) times.push('กลางวัน');
     if (takeEvening) times.push('เย็น');
     if (takeBedtime) times.push('ก่อนนอน');
+    if (takePrn) times.push('เวลามีอาการ (prn)');
 
     let generated = '';
     if (mealTiming === 'ก่อนนอน' && times.length === 1 && times[0] === 'ก่อนนอน') {
       generated = `รับประทานครั้งละ ${tabsStr} วันละ 1 ครั้ง ก่อนนอน`;
+    } else if (times.length === 1 && times[0] === 'เวลามีอาการ (prn)') {
+      const mealStr = mealTiming === 'ก่อนนอน' ? '' : ` ${mealTiming}`;
+      generated = `รับประทานครั้งละ ${tabsStr}${mealStr} เวลามีอาการ (prn)`;
     } else {
       const timesStr = times.length > 0 ? times.join(', ') : 'ตามแพทย์สั่ง';
       const mealStr = mealTiming === 'ก่อนนอน' ? '' : ` ${mealTiming}`;
       generated = `รับประทานครั้งละ ${tabsStr}${mealStr} ${timesStr}`;
     }
     setCustomSig(generated);
-  }, [doseTab, mealTiming, takeMorning, takeNoon, takeEvening, takeBedtime, isEditingSigManually]);
+  }, [doseTab, mealTiming, takeMorning, takeNoon, takeEvening, takeBedtime, takePrn, isEditingSigManually]);
 
   const handleQuickAddMedSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -219,7 +224,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
   };
 
   // ==========================================
-  // Section 2 State: DRPs Search & Fast Record (Req 1 & 2)
+  // Section 2 State: DRPs Search & Fast Record (Req 1 & 2 & 3)
   // ==========================================
   const [drpSearch, setDrpSearch] = useState('');
   const [selectedDrpTopic, setSelectedDrpTopic] = useState<string>(DRP_REQUIRED_TOPICS[0]);
@@ -228,6 +233,29 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
   const [drpIntervention, setDrpIntervention] = useState('');
   const [drpSavedToast, setDrpSavedToast] = useState(false);
   const [showDrpForm, setShowDrpForm] = useState(false);
+
+  // Requirement 3: 2-Part DRP Choice ("ไม่มี DRP" vs "มี DRP")
+  const [drpStatusChoice, setDrpStatusChoice] = useState<'no_drp' | 'has_drp' | null>(null);
+  const [noDrpNotes, setNoDrpNotes] = useState('ประเมินแล้วไม่พบปัญหาจากการใช้ยา (No DRP) ผู้ป่วยรับประทานยาได้ตามแพทย์สั่งอย่างถูกต้องสม่ำเสมอ ไม่พบอาการไม่พึงประสงค์ สั่นเกร็ง หรืออันตรกิริยายา');
+
+  const handleSaveNoDrp = () => {
+    if (onSaveDtp) {
+      onSaveDtp({
+        patientId: patient.id,
+        hn: patient.hn,
+        date: new Date().toISOString().split('T')[0],
+        domain: 'No DRP (ไม่พบปัญหาจากการใช้ยา)',
+        description: noDrpNotes.trim() || 'ประเมินแล้วไม่พบปัญหาจากการใช้ยา ผู้ป่วยรับประทานยาได้ถูกต้องตามแพทย์สั่ง และไม่พบอาการไม่พึงประสงค์',
+        causeDrug: '-',
+        intervention: 'ให้คำแนะนำการรับประทานยาต่อเนื่อง และเฝ้าระวังอาการผิดปกติ',
+        status: 'resolved',
+        recordedBy: 'ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)'
+      });
+      setDrpSavedToast(true);
+      setTimeout(() => setDrpSavedToast(false), 3000);
+      setDrpStatusChoice(null);
+    }
+  };
 
   const handleSaveQuickDrp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -518,12 +546,12 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
               </div>
             </div>
 
-            {/* Requirement 4: 6-slot Sig Builder */}
+            {/* Requirement 4: Sig Builder with prn */}
             <div className="p-3 bg-white rounded-2xl border border-rose-150 space-y-2">
               <span className="text-[11px] font-bold text-slate-700 block">
-                วิธีใช้ยา: 6 ช่อง สำหรับติ๊กเลือกวิธีการรับประทาน
+                วิธีใช้ยา: สำหรับติ๊กเลือกวิธีการรับประทาน
               </span>
-              <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2">
                 {/* ช่อง 1: ใส่เฉพาะตัวเลข ระบุจำนวนเม็ด */}
                 <div className="bg-rose-50/40 p-2 rounded-xl border border-rose-200">
                   <label className="block text-[9px] font-bold text-rose-800 mb-0.5">
@@ -611,6 +639,20 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
                 >
                   <span className="text-[9px] text-slate-400">ช่อง 6</span>
                   <span className="text-xs">🌙 ก่อนนอน</span>
+                </button>
+
+                {/* เวลามีอาการ (prn) */}
+                <button
+                  type="button"
+                  onClick={() => setTakePrn(!takePrn)}
+                  className={`p-2 rounded-xl border flex flex-col items-center justify-center gap-0.5 transition ${
+                    takePrn
+                      ? 'bg-purple-100 text-purple-900 border-purple-300 font-bold shadow-2xs'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  <span className="text-[9px] text-slate-400">เวลามีอาการ</span>
+                  <span className="text-xs">⚡ prn มีอาการ</span>
                 </button>
               </div>
 
@@ -1011,7 +1053,15 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setShowDrpForm(!showDrpForm)}
+              onClick={() => {
+                if (showDrpForm) {
+                  setShowDrpForm(false);
+                  setDrpStatusChoice(null);
+                } else {
+                  setShowDrpForm(true);
+                  setDrpStatusChoice('has_drp');
+                }
+              }}
               className="text-xs bg-amber-500 hover:bg-amber-600 text-white font-bold px-3.5 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1.5"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -1026,7 +1076,136 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
           </div>
         </div>
 
-        {/* Quick DRP Recording Form with 6 Required Topics (Requirement 2) */}
+        {/* Requirement 3: 2 ส่วนหลักที่สามารถเลือกติ๊กได้ว่า มี หรือ ไม่มี DRP */}
+        <div className="bg-slate-50/80 p-3.5 sm:p-4 rounded-2xl border border-slate-200 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <span>การประเมินปัญหาจากการใช้ยา (DRP Assessment): ติ๊กเลือกผลการประเมิน</span>
+            </label>
+            {drpStatusChoice && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDrpStatusChoice(null);
+                  setShowDrpForm(false);
+                }}
+                className="text-[11px] text-slate-400 hover:text-slate-600 underline"
+              >
+                ล้างการเลือก
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* ส่วนที่ 1: ไม่มี DRP */}
+            <label
+              onClick={() => {
+                setDrpStatusChoice('no_drp');
+                setShowDrpForm(false);
+              }}
+              className={`p-3.5 rounded-2xl border-2 flex items-start gap-3 transition cursor-pointer select-none ${
+                drpStatusChoice === 'no_drp'
+                  ? 'bg-emerald-50/90 border-emerald-500 shadow-xs'
+                  : 'bg-white border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/20'
+              }`}
+            >
+              <input
+                type="radio"
+                name="drp_choice"
+                checked={drpStatusChoice === 'no_drp'}
+                onChange={() => {}}
+                className="mt-1 w-4 h-4 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+              />
+              <div className="space-y-0.5">
+                <span className="text-xs font-extrabold text-emerald-900 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  ไม่มี DRP (ไม่พบปัญหาจากการใช้ยา)
+                </span>
+                <p className="text-[11px] text-slate-600 leading-tight">
+                  ผู้ป่วยรับประทานยาถูกต้อง สม่ำเสมอ ไม่พบอาการข้างเคียง สั่นเกร็ง หรืออันตรกิริยาระหว่างยา
+                </p>
+              </div>
+            </label>
+
+            {/* ส่วนที่ 2: มี DRP */}
+            <label
+              onClick={() => {
+                setDrpStatusChoice('has_drp');
+                setShowDrpForm(true);
+              }}
+              className={`p-3.5 rounded-2xl border-2 flex items-start gap-3 transition cursor-pointer select-none ${
+                drpStatusChoice === 'has_drp'
+                  ? 'bg-amber-50/90 border-amber-500 shadow-xs'
+                  : 'bg-white border-slate-200 hover:border-amber-300 hover:bg-amber-50/20'
+              }`}
+            >
+              <input
+                type="radio"
+                name="drp_choice"
+                checked={drpStatusChoice === 'has_drp'}
+                onChange={() => {}}
+                className="mt-1 w-4 h-4 text-amber-600 focus:ring-amber-500 cursor-pointer"
+              />
+              <div className="space-y-0.5">
+                <span className="text-xs font-extrabold text-amber-950 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  มี DRP (พบปัญหาจากการใช้ยา)
+                </span>
+                <p className="text-[11px] text-slate-600 leading-tight">
+                  อ้างอิงข้อมูลเดิมที่เป็นแถบเลื่อน 6 ข้อมาตรฐาน (ลืม/ผิดขนาด/หยุดยาเอง, ADR สั่นเกร็ง, DI)
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* ส่วนที่ 1 ฟอร์มบันทึกผล: กรณีเลือก ไม่มี DRP */}
+        {drpStatusChoice === 'no_drp' && (
+          <div className="p-4 bg-gradient-to-br from-emerald-50 via-teal-50/40 to-white rounded-2xl border border-emerald-200 space-y-3 shadow-xs animate-in fade-in duration-200">
+            <div className="flex items-center justify-between pb-2 border-b border-emerald-200">
+              <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                ยืนยันผลการประเมิน: ไม่พบปัญหาจากการใช้ยา (No DRPs)
+              </span>
+              <button 
+                type="button" 
+                onClick={() => setDrpStatusChoice(null)}
+                className="text-slate-400 hover:text-slate-600 text-xs font-medium"
+              >
+                ย่อเก็บ
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                บันทึกหมายเหตุการประเมิน (เพิ่มเติม):
+              </label>
+              <input
+                type="text"
+                value={noDrpNotes}
+                onChange={(e) => setNoDrpNotes(e.target.value)}
+                className="w-full p-2 bg-white border border-emerald-200 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-emerald-300"
+                placeholder="ระบุข้อสังเกตเพิ่มเติม เช่น ผู้ป่วยรับประทานยาครบถ้วนตามแพทย์สั่ง..."
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-[10px] text-slate-500">
+                ผู้ประเมิน: ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)
+              </span>
+              <button
+                type="button"
+                onClick={handleSaveNoDrp}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-xs transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>✓ บันทึกผล: ไม่มี DRP</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ส่วนที่ 2 ฟอร์มบันทึกผล: กรณีเลือก มี DRP (อ้างอิงข้อมูลเดิมที่เป็นแถบเลื่อนทั้งหมด 6 หัวข้อมาตรฐาน) */}
         {showDrpForm && (
           <form 
             onSubmit={handleSaveQuickDrp}
@@ -1035,11 +1214,14 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
             <div className="flex items-center justify-between pb-2 border-b border-amber-200">
               <span className="text-xs font-bold text-amber-900 flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-amber-600" />
-                บันทึกปัญหา DRPs (เลือกหัวข้อจากแถบเลื่อน 6 ข้อมาตรฐาน)
+                บันทึกปัญหา DRPs (อ้างอิงแถบเลื่อน 6 ข้อมาตรฐานเดิม)
               </span>
               <button 
                 type="button" 
-                onClick={() => setShowDrpForm(false)}
+                onClick={() => {
+                  setShowDrpForm(false);
+                  if (drpStatusChoice === 'has_drp') setDrpStatusChoice(null);
+                }}
                 className="text-slate-400 hover:text-slate-600 text-xs font-medium"
               >
                 ย่อเก็บ
@@ -1141,7 +1323,10 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
             <div className="flex justify-end gap-2 pt-1">
               <button
                 type="button"
-                onClick={() => setShowDrpForm(false)}
+                onClick={() => {
+                  setShowDrpForm(false);
+                  if (drpStatusChoice === 'has_drp') setDrpStatusChoice(null);
+                }}
                 className="px-3.5 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-xl font-medium"
               >
                 ยกเลิก
@@ -1159,7 +1344,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
         {drpSavedToast && (
           <div className="p-2.5 bg-emerald-50 text-emerald-800 text-xs font-bold rounded-xl border border-emerald-200 flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-            บันทึกปัญหา DRPs เข้าสู่ระบบเรียบร้อยแล้ว
+            บันทึกข้อมูล DRPs เข้าสู่ระบบเรียบร้อยแล้ว
           </div>
         )}
 
@@ -1186,59 +1371,66 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
               </p>
             </div>
           ) : (
-            filteredPatientDtps.map((dtp) => (
-              <div
-                key={dtp.id}
-                className={`p-3.5 rounded-2xl border text-xs space-y-1.5 transition ${
-                  dtp.status === 'resolved'
-                    ? 'bg-slate-50/70 border-slate-200 opacity-80'
-                    : 'bg-amber-50/40 border-amber-200 shadow-2xs'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-bold text-amber-950 flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                    {dtp.domain}
-                  </span>
-                  <button
-                    onClick={() => onToggleDtpStatus(dtp.id)}
-                    className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition flex items-center gap-1 cursor-pointer ${
-                      dtp.status === 'resolved'
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-                        : 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-emerald-50 hover:text-emerald-700'
-                    }`}
-                    title="คลิกเพื่อสลับสถานะแก้ไขแล้ว/รอดำเนินการ"
-                  >
-                    {dtp.status === 'resolved' ? (
-                      <>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" /> แก้ไขแล้ว (Resolved)
-                      </>
-                    ) : (
-                      <>
-                        <Clock className="w-3 h-3 text-amber-600" /> รอดำเนินการ (Pending)
-                      </>
-                    )}
-                  </button>
-                </div>
+            filteredPatientDtps.map((dtp) => {
+              const isNoDrp = dtp.domain.includes('No DRP') || dtp.domain.includes('ไม่พบปัญหา');
+              return (
+                <div
+                  key={dtp.id}
+                  className={`p-3.5 rounded-2xl border text-xs space-y-1.5 transition ${
+                    isNoDrp
+                      ? 'bg-emerald-50/40 border-emerald-200'
+                      : dtp.status === 'resolved'
+                      ? 'bg-slate-50/70 border-slate-200 opacity-80'
+                      : 'bg-amber-50/40 border-amber-200 shadow-2xs'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className={`font-bold flex items-center gap-1.5 ${isNoDrp ? 'text-emerald-950' : 'text-amber-950'}`}>
+                      <span className={`w-2.5 h-2.5 rounded-full ${isNoDrp ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                      {dtp.domain}
+                    </span>
+                    <button
+                      onClick={() => onToggleDtpStatus(dtp.id)}
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition flex items-center gap-1 cursor-pointer ${
+                        dtp.status === 'resolved'
+                          ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          : 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-emerald-50 hover:text-emerald-700'
+                      }`}
+                      title="คลิกเพื่อสลับสถานะแก้ไขแล้ว/รอดำเนินการ"
+                    >
+                      {dtp.status === 'resolved' ? (
+                        <>
+                          <CheckCircle2 className="w-3 h-3 text-emerald-600" /> แก้ไขแล้ว (Resolved)
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="w-3 h-3 text-amber-600" /> รอดำเนินการ (Pending)
+                        </>
+                      )}
+                    </button>
+                  </div>
 
-                <p className="text-slate-800 text-xs leading-relaxed">
-                  <strong>ปัญหา:</strong> {dtp.description}
-                </p>
-                {dtp.causeDrug && (
-                  <p className="text-xs text-slate-600">
-                    <strong>ยาสาเหตุ:</strong> <span className="font-bold text-rose-700">{dtp.causeDrug}</span>
+                  <p className="text-slate-800 text-xs leading-relaxed">
+                    <strong>ปัญหา:</strong> {dtp.description}
                   </p>
-                )}
-                <div className="bg-white p-2.5 rounded-xl border border-amber-150 text-slate-700 text-xs">
-                  <strong className="text-amber-900 block mb-0.5">การบริบาล / Intervention:</strong>
-                  {dtp.intervention}
+                  {dtp.causeDrug && dtp.causeDrug !== '-' && (
+                    <p className="text-xs text-slate-600">
+                      <strong>ยาสาเหตุ:</strong> <span className="font-bold text-rose-700">{dtp.causeDrug}</span>
+                    </p>
+                  )}
+                  <div className={`p-2.5 rounded-xl border text-slate-700 text-xs ${isNoDrp ? 'bg-white border-emerald-150' : 'bg-white border-amber-150'}`}>
+                    <strong className={`block mb-0.5 ${isNoDrp ? 'text-emerald-900' : 'text-amber-900'}`}>
+                      {isNoDrp ? 'คำแนะนำการบริบาล:' : 'การบริบาล / Intervention:'}
+                    </strong>
+                    {dtp.intervention}
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+                    <span>วันที่บันทึก: {dtp.date}</span>
+                    <span>ผู้บันทึก: {dtp.recordedBy}</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
-                  <span>วันที่บันทึก: {dtp.date}</span>
-                  <span>ผู้บันทึก: {dtp.recordedBy}</span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </section>
