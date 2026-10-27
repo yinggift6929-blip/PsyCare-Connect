@@ -228,12 +228,13 @@ app.post('/api/clinic-data', (req, res) => {
 
     // Persist to Cloud Firestore so Vercel and external devices receive updates
     if (firestoreDb) {
-      setDoc(doc(firestoreDb, 'clinic_data', 'current'), {
+      const cleanPayload = JSON.parse(JSON.stringify({
         ...incoming,
         version: dataVersion,
         updatedAt: lastSyncTimestamp,
-        updatedBy: 'AI Studio Node Server'
-      }).catch((err) => {
+        updatedBy: req.body.updatedBy || 'AI Studio Node Server'
+      }));
+      setDoc(doc(firestoreDb, 'clinic_data', 'current'), cleanPayload).catch((err) => {
         console.warn('Server Firestore sync error:', err);
       });
     }

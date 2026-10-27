@@ -35,7 +35,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
 
     const finalDiag = diagnosis === 'อื่นๆ' ? customDiag.trim() || 'Psychiatric Condition' : diagnosis;
 
-    onSave({
+    const payload: Partial<Patient> = {
       hn: hn.trim(),
       name: name.trim(),
       gender,
@@ -44,14 +44,24 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
       trackingGroup,
       statusTag: 'General Psych',
       riskLevel: 'low',
-      adherenceScore: 100, // ค่าเริ่มต้น 100% ประเมินจริงในขั้นตอนที่ 1 ของการบริบาลเภสัชกรรม
-      phone: phone.trim() || undefined,
-      address: address.trim() || undefined,
+      adherenceScore: 100,
       nextAppointmentType: trackingGroup === 'home_visit' ? 'home_visit' : trackingGroup === 'telemed' ? 'telemed' : 'clinic',
       lastVisit: new Date().toISOString().split('T')[0],
       updatedAt: new Date().toLocaleString('th-TH')
-    });
+    };
 
+    if (phone.trim()) payload.phone = phone.trim();
+    if (address.trim()) payload.address = address.trim();
+
+    onSave(payload);
+
+    // Reset inputs
+    setHn('');
+    setName('');
+    setAge('');
+    setPhone('');
+    setAddress('');
+    setCustomDiag('');
     onClose();
   };
 

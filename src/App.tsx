@@ -585,14 +585,15 @@ export default function App() {
       statusTag: newP.statusTag || 'General Psych',
       riskLevel: newP.riskLevel || 'low',
       adherenceScore: newP.adherenceScore ?? 100,
-      phone: newP.phone,
-      address: newP.address,
       lastVisit: newP.lastVisit || new Date().toISOString().split('T')[0],
-      nextAppointment: newP.nextAppointment,
       nextAppointmentType: newP.nextAppointmentType || (newP.trackingGroup === 'home_visit' ? 'home_visit' : newP.trackingGroup === 'telemed' ? 'telemed' : 'clinic'),
-      nextAppointmentObjective: newP.nextAppointmentObjective,
       updatedAt: new Date().toLocaleString('th-TH')
     };
+
+    if (newP.phone && newP.phone.trim()) patientObj.phone = newP.phone.trim();
+    if (newP.address && newP.address.trim()) patientObj.address = newP.address.trim();
+    if (newP.nextAppointment) patientObj.nextAppointment = newP.nextAppointment;
+    if (newP.nextAppointmentObjective) patientObj.nextAppointmentObjective = newP.nextAppointmentObjective;
 
     updateDataAndSync((prev) => {
       const remaining = prev.patients.filter(p => p.hn !== patientObj.hn && p.id !== patientObj.id);

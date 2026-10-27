@@ -141,18 +141,26 @@ export function subscribeToClinicData(
 }
 
 /**
+ * Sanitizes object to remove all undefined properties, which Firestore rejects
+ */
+export function sanitizeForFirestore<T>(data: T): T {
+  return JSON.parse(JSON.stringify(data));
+}
+
+/**
  * Seed initial clinic data to Firestore cloud if not already present
  */
 async function seedInitialFirestoreData() {
   try {
     const clinicDocRef = doc(db, 'clinic_data', 'current');
     const version = Date.now();
-    await setDoc(clinicDocRef, {
+    const payload = sanitizeForFirestore({
       ...initialClinicData,
       version,
       updatedAt: new Date().toISOString(),
       updatedBy: 'System Seed'
     });
+    await setDoc(clinicDocRef, payload);
   } catch (error) {
     handleFirestoreError(error, OperationType.CREATE, CLINIC_DOC_PATH);
   }
@@ -169,13 +177,14 @@ export async function saveFirestoreClinicData(
   try {
     const clinicDocRef = doc(db, 'clinic_data', 'current');
     const version = Date.now();
-    const payload = {
+    const rawPayload = {
       ...data,
       version,
       updatedAt: new Date().toISOString(),
       updatedBy
     };
-    await setDoc(clinicDocRef, payload);
+    const cleanPayload = sanitizeForFirestore(rawPayload);
+    await setDoc(clinicDocRef, cleanPayload);
     return { success: true, version };
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, CLINIC_DOC_PATH);

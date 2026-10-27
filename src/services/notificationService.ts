@@ -335,6 +335,8 @@ export async function notifyNewPatientCreated(
     `👤 <b>ผู้ป่วย:</b> ${patient.name} (อายุ ${patient.age} ปี, เพศ ${patient.gender})`,
     `📋 <b>HN:</b> ${patient.hn}`,
     `🩺 <b>การวินิจฉัย:</b> ${patient.diagnosis}`,
+    patient.phone ? `📞 <b>โทร:</b> ${patient.phone}` : '',
+    patient.address ? `🏠 <b>ที่อยู่:</b> ${patient.address}` : '',
     `📍 <b>กลุ่มติดตาม:</b> ${groupLabel}`,
     `🏷️ <b>สถานะเคส:</b> ${patient.statusTag || 'ผู้ป่วยจิตเวชทั่วไป'}`,
     `⚡ <b>ระดับความเสี่ยง:</b> ${riskThai}`,
@@ -344,7 +346,7 @@ export async function notifyNewPatientCreated(
     `👥 <b>กลุ่ม Telegram:</b> Clinic จิตดี (${settings?.telegramChatId || '-5506194529'})`,
     `🤖 <b>ส่งผ่านบอท:</b> Psycare_demo_bot (@Psycare_demobot)`,
     `⏰ <b>เวลาบันทึก:</b> ${new Date().toLocaleString('th-TH')}`
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 
   return broadcastClinicNotification(settings, title, content, patient.riskLevel === 'high' ? 'urgent' : 'normal');
 }
