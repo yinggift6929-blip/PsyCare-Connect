@@ -43,7 +43,7 @@ if (!fs.existsSync(DATA_DIR)) {
 let sharedGoogleToken: string | null = null;
 let sharedSpreadsheetId: string = '1ILefnwJLb1fsKLqjlRElV4E04dMmBUXFpq2wZXtPTVw';
 let lastSyncTimestamp: string = new Date().toISOString();
-let dataVersion: number = Date.now();
+let dataVersion: number = 0;
 let cachedClinicData: any = null;
 
 // Read existing token if available
@@ -61,6 +61,12 @@ if (fs.existsSync(TOKEN_FILE)) {
 if (fs.existsSync(DATA_FILE)) {
   try {
     cachedClinicData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+    if (cachedClinicData?.version) {
+      dataVersion = cachedClinicData.version;
+    }
+    if (cachedClinicData?.updatedAt) {
+      lastSyncTimestamp = cachedClinicData.updatedAt;
+    }
   } catch (e) {
     console.error('Error reading clinic data file:', e);
     cachedClinicData = initialClinicData;
@@ -78,29 +84,29 @@ if (fs.existsSync(DATA_FILE)) {
 // Bi-directional Cloud Sync with Firestore
 if (firestoreDb) {
   // 1. Initial sync with Cloud Firestore
-  getDoc(doc(firestoreDb, 'clinic_data', 'current')).then((snap) => {
+  getDoc(doc(firestoreDb, 'clinic_data', 'current')).then((snap: any) => {
     if (snap.exists()) {
       const remote = snap.data();
       if (remote && Array.isArray(remote.patients) && remote.patients.length > 0) {
         const remoteVer = remote.version || 0;
-        if (remoteVer >= dataVersion) {
+        if (remoteVer >= dataVersion || !cachedClinicData || cachedClinicData.patients.length === 0) {
           cachedClinicData = remote;
-          dataVersion = remoteVer;
+          dataVersion = remoteVer || Date.now();
           lastSyncTimestamp = remote.updatedAt || new Date().toISOString();
           fs.writeFileSync(DATA_FILE, JSON.stringify(remote, null, 2), 'utf-8');
           console.log(`Server synced ${remote.patients.length} patients from Firestore cloud.`);
         }
       }
-    } else if (cachedClinicData) {
+    } else if (cachedClinicData && cachedClinicData.patients && cachedClinicData.patients.length > 0) {
       // Cloud document doesn't exist yet, seed with local cached data
       setDoc(doc(firestoreDb, 'clinic_data', 'current'), {
         ...cachedClinicData,
-        version: dataVersion,
+        version: dataVersion || Date.now(),
         updatedAt: lastSyncTimestamp,
         updatedBy: 'AI Studio Seed'
       }).catch(() => {});
     }
-  }).catch((err) => {
+  }).catch((err: any) => {
     console.warn('Initial Firestore sync check notice:', err);
   });
 

@@ -186,27 +186,31 @@ export async function saveFirestoreClinicData(
 /**
  * One-time fetch of clinic data from Firestore
  */
-export async function fetchFirestoreClinicData(): Promise<AppClinicData | null> {
+export async function fetchFirestoreClinicData(): Promise<{ data: AppClinicData; version: number } | null> {
   try {
     const clinicDocRef = doc(db, 'clinic_data', 'current');
     const docSnap = await getDoc(clinicDocRef);
     if (docSnap.exists()) {
       const raw = docSnap.data();
       if (raw && Array.isArray(raw.patients)) {
+        const version = raw.version || Date.now();
         return {
-          patients: raw.patients || [],
-          medications: raw.medications || [],
-          dtps: raw.dtps || [],
-          soapNotes: raw.soapNotes || [],
-          safetyLogs: raw.safetyLogs || [],
-          nurseRecords: raw.nurseRecords || [],
-          psychRecords: raw.psychRecords || [],
-          handovers: raw.handovers || [],
-          mars5Records: raw.mars5Records || [],
-          diepssRecords: raw.diepssRecords || [],
-          homeVisits: raw.homeVisits || [],
-          telemedRecords: raw.telemedRecords || [],
-          metabolicRecords: raw.metabolicRecords || []
+          version,
+          data: {
+            patients: raw.patients || [],
+            medications: raw.medications || [],
+            dtps: raw.dtps || [],
+            soapNotes: raw.soapNotes || [],
+            safetyLogs: raw.safetyLogs || [],
+            nurseRecords: raw.nurseRecords || [],
+            psychRecords: raw.psychRecords || [],
+            handovers: raw.handovers || [],
+            mars5Records: raw.mars5Records || [],
+            diepssRecords: raw.diepssRecords || [],
+            homeVisits: raw.homeVisits || [],
+            telemedRecords: raw.telemedRecords || [],
+            metabolicRecords: raw.metabolicRecords || []
+          }
         };
       }
     }

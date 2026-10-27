@@ -198,8 +198,12 @@ export default function App() {
 
   // Helper to persist data locally, to central backend, and to Google Sheets
   const updateDataAndSync = useCallback(async (updater: (prev: AppClinicData) => AppClinicData) => {
+    const newVersion = Date.now();
+    lastKnownVersionRef.current = newVersion;
+
     setClinicData((prev) => {
       const nextData = updater(prev);
+      (nextData as any).version = newVersion;
       
       // 1. Persist locally to browser storage
       saveLocalClinicData(nextData);
@@ -207,7 +211,7 @@ export default function App() {
       // 2. Persist to Firestore Cloud Database (auto-sync across Vercel, GitHub, and all devices)
       saveFirestoreClinicData(nextData, user?.displayName || currentRole).then((res) => {
         if (res.success && res.version) {
-          lastKnownVersionRef.current = res.version;
+          lastKnownVersionRef.current = Math.max(lastKnownVersionRef.current, res.version);
           setSyncStatusMessage('✓ ซิงค์ข้อมูลขึ้น Cloud เชื่อมต่อทุกอุปกรณ์เรียบร้อย');
           setTimeout(() => setSyncStatusMessage(null), 3500);
         }
@@ -216,7 +220,7 @@ export default function App() {
       });
 
       // 3. Persist to Central Backend Database immediately (mirroring for server environment)
-      saveServerClinicData(nextData).catch(() => {});
+      saveServerClinicData({ ...nextData, version: newVersion }).catch(() => {});
 
       // 4. Async sync to Google Sheets if access token is available (either from active login or shared backend)
       getAccessToken().then(async (token) => {
@@ -322,11 +326,12 @@ export default function App() {
     );
 
     // 3. Initial load from Firestore Cloud / Server
-    fetchFirestoreClinicData().then((cloudData) => {
-      if (isMounted && cloudData && Array.isArray(cloudData.patients) && cloudData.patients.length > 0) {
-        setClinicData(cloudData);
-        saveLocalClinicData(cloudData);
-        setSelectedPatientId((prev) => prev || cloudData.patients[0]?.id || '');
+    fetchFirestoreClinicData().then((res) => {
+      if (isMounted && res?.data && Array.isArray(res.data.patients) && res.data.patients.length > 0) {
+        lastKnownVersionRef.current = res.version || Date.now();
+        setClinicData(res.data);
+        saveLocalClinicData(res.data);
+        setSelectedPatientId((prev) => prev || res.data.patients[0]?.id || '');
       } else {
         // Fallback to server if cloud document is initial
         fetchServerClinicData().then((serverData) => {
@@ -338,8 +343,8 @@ export default function App() {
             // Seed cloud and server with local clinic data
             const initial = loadLocalClinicData();
             saveFirestoreClinicData(initial, 'Initial Setup');
-            saveServerClinicData(initial).then(res => {
-              if (res.version) lastKnownVersionRef.current = res.version;
+            saveServerClinicData(initial).then(r => {
+              if (r.version) lastKnownVersionRef.current = r.version;
             }).catch(() => {});
           }
         });
@@ -571,8 +576,8 @@ export default function App() {
   const handleSaveNewPatient = (newP: Partial<Patient>) => {
     const patientObj: Patient = {
       id: `P_${Date.now()}`,
-      hn: newP.hn || '',
-      name: newP.name || '',
+      hn: (newP.hn || '').trim(),
+      name: (newP.name || '').trim(),
       gender: newP.gender || 'ชาย',
       age: newP.age || 30,
       diagnosis: newP.diagnosis || 'Schizophrenia',
@@ -582,18 +587,23 @@ export default function App() {
       adherenceScore: newP.adherenceScore ?? 100,
       phone: newP.phone,
       address: newP.address,
-      lastVisit: newP.lastVisit,
+      lastVisit: newP.lastVisit || new Date().toISOString().split('T')[0],
       nextAppointment: newP.nextAppointment,
       nextAppointmentType: newP.nextAppointmentType || (newP.trackingGroup === 'home_visit' ? 'home_visit' : newP.trackingGroup === 'telemed' ? 'telemed' : 'clinic'),
       nextAppointmentObjective: newP.nextAppointmentObjective,
       updatedAt: new Date().toLocaleString('th-TH')
     };
 
-    updateDataAndSync((prev) => ({
-      ...prev,
-      patients: [patientObj, ...prev.patients]
-    }));
+    updateDataAndSync((prev) => {
+      const remaining = prev.patients.filter(p => p.hn !== patientObj.hn && p.id !== patientObj.id);
+      return {
+        ...prev,
+        patients: [patientObj, ...remaining]
+      };
+    });
     setSelectedPatientId(patientObj.id);
+    setSearchQuery('');
+    setFilterTag('all');
 
     // Broadcast instant alert to Telegram / LINE
     notifyNewPatientCreated(
@@ -603,12 +613,12 @@ export default function App() {
     ).then((res) => {
       if (res?.telegram?.success) {
         setCrossDeviceToast({
-          message: `📲 บันทึกและส่งแจ้งเตือนคนไข้ ${patientObj.name} เข้า Telegram กลุ่ม Clinic จิตดี เรียบร้อยแล้ว`,
+          message: `📲 บันทึกคนไข้ใหม่ HN ${patientObj.hn} (${patientObj.name}) และแจ้งเตือน Telegram กลุ่มสำเร็จ`,
           timestamp: new Date().toLocaleTimeString('th-TH')
         });
       } else {
         setCrossDeviceToast({
-          message: `✅ บันทึกข้อมูลคนไข้ ${patientObj.name} เรียบร้อยแล้ว`,
+          message: `✅ บันทึกข้อมูลคนไข้ใหม่ HN ${patientObj.hn} (${patientObj.name}) เรียบร้อยแล้ว`,
           timestamp: new Date().toLocaleTimeString('th-TH')
         });
       }
@@ -1187,11 +1197,11 @@ export default function App() {
   const handleManualRefreshServer = async () => {
     setIsSyncing(true);
     try {
-      const cloudData = await fetchFirestoreClinicData();
-      if (cloudData && Array.isArray(cloudData.patients) && cloudData.patients.length > 0) {
-        setClinicData(cloudData);
-        saveLocalClinicData(cloudData);
-        lastKnownVersionRef.current = Date.now();
+      const cloudRes = await fetchFirestoreClinicData();
+      if (cloudRes?.data && Array.isArray(cloudRes.data.patients) && cloudRes.data.patients.length > 0) {
+        setClinicData(cloudRes.data);
+        saveLocalClinicData(cloudRes.data);
+        lastKnownVersionRef.current = cloudRes.version || Date.now();
         setSyncStatusMessage('✓ ดึงข้อมูลล่าสุดจาก Cloud ซิงค์ตรงกันทุกเครื่องเรียบร้อย');
         setTimeout(() => setSyncStatusMessage(null), 3000);
         return;

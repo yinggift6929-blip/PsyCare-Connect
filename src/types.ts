@@ -286,5 +286,8 @@ export interface AppClinicData {
   telemedRecords: TelemedRecord[];
   metabolicRecords: MetabolicRecord[];
   notificationSettings?: NotificationSettings;
+  version?: number;
+  updatedAt?: string;
+  updatedBy?: string;
 }
 
