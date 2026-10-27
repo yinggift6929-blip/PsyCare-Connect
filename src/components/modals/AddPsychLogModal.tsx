@@ -13,7 +13,10 @@ interface AddPsychLogModalProps {
   isOpen: boolean;
   onClose: () => void;
   patient: Patient;
-  onSave: (psychLog: Partial<PsychRecord>) => void;
+  onSave: (
+    psychLog: Partial<PsychRecord>,
+    medRecHandover?: { needMedRec: boolean; hospital: string; details: string }
+  ) => void;
 }
 
 export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
@@ -31,12 +34,22 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
   const [counselingNotes, setCounselingNotes] = useState('');
   const [psychologistName, setPsychologistName] = useState(() => formatMemberNameAndPosition(getRememberedMemberForProfession('psychologist')));
 
+  // Medication Reconciliation Referral to Pharmacist
+  const [needMedRec, setNeedMedRec] = useState(false);
+  const [medRecHospital, setMedRecHospital] = useState('');
+  const [medRecDetails, setMedRecDetails] = useState('');
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!counselingNotes.trim()) {
       alert('กรุณากรอกบันทึกการปรึกษา/การบำบัดทางจิต');
+      return;
+    }
+
+    if (needMedRec && !medRecHospital.trim()) {
+      alert('กรุณาระบุชื่อโรงพยาบาลเดิมหรือแหล่งที่ผู้ป่วยรับยา');
       return;
     }
 
@@ -50,8 +63,15 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
       therapyType,
       sessionNumber,
       counselingNotes: counselingNotes.trim(),
-      psychologistName: psychologistName.trim() || 'นักจิตวิทยาคลินิก'
-    });
+      psychologistName: psychologistName.trim() || 'นักจิตวิทยาคลินิก',
+      medRecRequested: needMedRec,
+      medRecOtherHospital: needMedRec ? medRecHospital.trim() : undefined,
+      medRecDetails: needMedRec ? medRecDetails.trim() : undefined
+    }, needMedRec ? {
+      needMedRec: true,
+      hospital: medRecHospital.trim(),
+      details: medRecDetails.trim()
+    } : undefined);
 
     onClose();
   };
@@ -153,6 +173,69 @@ export const AddPsychLogModal: React.FC<AddPsychLogModalProps> = ({
             <option value="Psychoeducation">Psychoeducation (จิตศึกษาแก่ผู้ป่วยและครอบครัว)</option>
             <option value="Behavioral Activation">Behavioral Activation (กระตุ้นพฤติกรรมเชิงบวก)</option>
           </select>
+        </div>
+
+        {/* ส่งต่อข้อมูลเพื่อให้เภสัชกรสอบถาม ประวัติการรับยาจาก รพ.อื่น (Medication Reconciliation) */}
+        <div className={`p-3.5 rounded-2xl border transition ${
+          needMedRec 
+            ? 'bg-amber-50/90 border-amber-300 ring-2 ring-amber-200 shadow-2xs' 
+            : 'bg-slate-50 border-slate-200'
+        }`}>
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={needMedRec}
+              onChange={(e) => setNeedMedRec(e.target.checked)}
+              className="mt-0.5 rounded text-amber-600 focus:ring-amber-500 w-4 h-4 cursor-pointer shrink-0"
+            />
+            <div className="space-y-0.5">
+              <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5 flex-wrap">
+                <span>🏥 ส่งต่อเภสัชกร: สอบถามประวัติการรับยาจาก รพ.อื่น (Medication Reconciliation)</span>
+                <span className="text-[10px] bg-amber-200/80 text-amber-950 px-2 py-0.5 rounded-full font-bold">
+                  ส่งต่อเภสัชกร
+                </span>
+              </span>
+              <p className="text-[11px] text-slate-500 leading-tight">
+                ติ๊กเลือกหากนักจิตวิทยาซักประวัติพบผู้ป่วยมีประวัติรับยาจาก รพ.อื่น / คลินิกนอก หรือหยุดยาเดิม เพื่อให้เภสัชกรช่วยตรวจสอบและประสานรายการยา
+              </p>
+            </div>
+          </label>
+
+          {needMedRec && (
+            <div className="mt-3 pt-3 border-t border-amber-200 space-y-2.5 animate-in fade-in duration-150">
+              <div>
+                <label className="block text-[11px] font-bold text-amber-900 mb-1">
+                  ชื่อโรงพยาบาลเดิม / คลินิกที่ผู้ป่วยรับยา: <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required={needMedRec}
+                  placeholder="เช่น รพ.ทั่วไป, รพ.จิตเวช, คลินิกจิตเวชนอก, ซื้อยาทานเอง"
+                  value={medRecHospital}
+                  onChange={(e) => setMedRecHospital(e.target.value)}
+                  className="w-full p-2 text-xs bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400 font-medium"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-amber-900 mb-1">
+                  รายละเอียดรายการยาหรือข้อมูลที่พบจากการซักประวัติ:
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="เช่น ผู้ป่วยให้ข้อมูลว่าเคยทานยาต้านเศร้าจาก รพ.อื่น, ทานยานอนหลับเพิ่มเอง, หรือมียาชุด..."
+                  value={medRecDetails}
+                  onChange={(e) => setMedRecDetails(e.target.value)}
+                  className="w-full p-2 text-xs bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400"
+                />
+              </div>
+
+              <div className="p-2 bg-white/90 rounded-lg border border-amber-200 text-[10px] text-amber-800 flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span>ระบบจะส่งข้อความแจ้งเตือนถึงเภสัชกรในกระดานส่งต่อและกลุ่ม Telegram ทันทีที่บันทึก</span>
+              </div>
+            </div>
+          )}
         </div>
 
         <div>

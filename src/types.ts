@@ -115,6 +115,9 @@ export interface NurseRecord {
   riskBehavior: string;
   nextFollowupDate?: string;
   nurseName: string;
+  medRecRequested?: boolean; // ส่งต่อเภสัชกรสอบถามประวัติรับยาจาก รพ.อื่น
+  medRecOtherHospital?: string; // ชื่อ รพ.อื่น / คลินิก
+  medRecDetails?: string; // รายละเอียดข้อมูลยาที่พบจากการซักประวัติ
 }
 
 export interface PsychRecord {
@@ -130,6 +133,9 @@ export interface PsychRecord {
   counselingNotes: string;
   nextFollowupDate?: string;
   psychologistName: string;
+  medRecRequested?: boolean; // ส่งต่อเภสัชกรสอบถามประวัติรับยาจาก รพ.อื่น
+  medRecOtherHospital?: string; // ชื่อ รพ.อื่น / คลินิก
+  medRecDetails?: string; // รายละเอียดข้อมูลยาที่พบจากการซักประวัติ
 }
 
 export interface HandoverMessage {

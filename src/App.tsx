@@ -167,6 +167,7 @@ export default function App() {
   const [isSheetSettingsOpen, setIsSheetSettingsOpen] = useState(false);
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isQuickDrugReferralOpen, setIsQuickDrugReferralOpen] = useState(false);
+  const [referralInitialTopic, setReferralInitialTopic] = useState<string>('med_rec');
   const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>(() => {
     return getLocalNotificationSettings();
   });
@@ -799,7 +800,10 @@ export default function App() {
   };
 
   // Action: Save Nurse Log
-  const handleSaveNurseLog = (log: Partial<NurseRecord>) => {
+  const handleSaveNurseLog = (
+    log: Partial<NurseRecord>,
+    medRecHandover?: { needMedRec: boolean; hospital: string; details: string }
+  ) => {
     if (!activePatient) return;
     const nurseObj: NurseRecord = {
       id: `N_${Date.now()}`,
@@ -815,17 +819,49 @@ export default function App() {
       dotObserved: log.dotObserved ?? true,
       mseObservation: log.mseObservation || '',
       riskBehavior: log.riskBehavior || 'ปกติ',
-      nurseName: log.nurseName || 'พยาบาลจิตเวช'
+      nurseName: log.nurseName || 'พยาบาลจิตเวช',
+      medRecRequested: log.medRecRequested,
+      medRecOtherHospital: log.medRecOtherHospital,
+      medRecDetails: log.medRecDetails
     };
+
+    let newHandover: HandoverMessage | null = null;
+    if (medRecHandover && medRecHandover.needMedRec) {
+      newHandover = {
+        id: `H_${Date.now()}`,
+        patientId: activePatient.id,
+        hn: activePatient.hn,
+        patientName: activePatient.name,
+        timestamp: new Date().toLocaleString('th-TH'),
+        senderRole: 'nurse',
+        targetRole: 'pharmacist',
+        priority: 'urgent',
+        subject: `[Med Rec จากพยาบาล] สอบถามประวัติรับยาจาก รพ.อื่น (${medRecHandover.hospital || 'รพ.อื่น'})`,
+        content: `จากการซักประวัติและพยาบาลตรวจติดตาม พบประวัติรับยาจาก: ${medRecHandover.hospital || 'รพ.อื่น'}\nรายละเอียด: ${medRecHandover.details || 'ขอความกรุณาเภสัชกรสอบถามประวัติการใช้ยาเดิมและทำ Medication Reconciliation'}\nผู้ส่งต่อ: ${nurseObj.nurseName}`,
+        status: 'open'
+      };
+    }
 
     updateDataAndSync((prev) => ({
       ...prev,
-      nurseRecords: [nurseObj, ...prev.nurseRecords]
+      nurseRecords: [nurseObj, ...prev.nurseRecords],
+      handovers: newHandover ? [newHandover, ...prev.handovers] : prev.handovers
     }));
+
+    if (newHandover) {
+      notifyHandoverPosted(notificationSettings, newHandover).catch(() => {});
+      setCrossDeviceToast({
+        message: `🏥 ส่งต่อเภสัชกรทำ Med Rec (${medRecHandover?.hospital}) และแจ้งเตือน Telegram กลุ่มสำเร็จ`,
+        timestamp: new Date().toLocaleTimeString('th-TH')
+      });
+    }
   };
 
   // Action: Save Psych Log
-  const handleSavePsychLog = (log: Partial<PsychRecord>) => {
+  const handleSavePsychLog = (
+    log: Partial<PsychRecord>,
+    medRecHandover?: { needMedRec: boolean; hospital: string; details: string }
+  ) => {
     if (!activePatient) return;
     const psychObj: PsychRecord = {
       id: `PS_${Date.now()}`,
@@ -838,13 +874,42 @@ export default function App() {
       therapyType: log.therapyType || 'CBT',
       sessionNumber: log.sessionNumber || 'ครั้งที่ 1',
       counselingNotes: log.counselingNotes || '',
-      psychologistName: log.psychologistName || 'นักจิตวิทยาคลินิก'
+      psychologistName: log.psychologistName || 'นักจิตวิทยาคลินิก',
+      medRecRequested: log.medRecRequested,
+      medRecOtherHospital: log.medRecOtherHospital,
+      medRecDetails: log.medRecDetails
     };
+
+    let newHandover: HandoverMessage | null = null;
+    if (medRecHandover && medRecHandover.needMedRec) {
+      newHandover = {
+        id: `H_${Date.now()}`,
+        patientId: activePatient.id,
+        hn: activePatient.hn,
+        patientName: activePatient.name,
+        timestamp: new Date().toLocaleString('th-TH'),
+        senderRole: 'psychologist',
+        targetRole: 'pharmacist',
+        priority: 'urgent',
+        subject: `[Med Rec จากนักจิตวิทยา] สอบถามประวัติรับยาจาก รพ.อื่น (${medRecHandover.hospital || 'รพ.อื่น'})`,
+        content: `จากการซักประวัติและให้การบำบัดทางจิตวิทยา พบประวัติรับยาจาก: ${medRecHandover.hospital || 'รพ.อื่น'}\nรายละเอียด: ${medRecHandover.details || 'ขอความกรุณาเภสัชกรสอบถามประวัติการใช้ยาเดิมและทำ Medication Reconciliation'}\nผู้ส่งต่อ: ${psychObj.psychologistName}`,
+        status: 'open'
+      };
+    }
 
     updateDataAndSync((prev) => ({
       ...prev,
-      psychRecords: [psychObj, ...prev.psychRecords]
+      psychRecords: [psychObj, ...prev.psychRecords],
+      handovers: newHandover ? [newHandover, ...prev.handovers] : prev.handovers
     }));
+
+    if (newHandover) {
+      notifyHandoverPosted(notificationSettings, newHandover).catch(() => {});
+      setCrossDeviceToast({
+        message: `🏥 ส่งต่อเภสัชกรทำ Med Rec (${medRecHandover?.hospital}) และแจ้งเตือน Telegram กลุ่มสำเร็จ`,
+        timestamp: new Date().toLocaleTimeString('th-TH')
+      });
+    }
   };
 
   // Action: Save MARS-5 Assessment
@@ -1514,6 +1579,7 @@ export default function App() {
                     mars5Records={clinicData.mars5Records || []}
                     diepssRecords={clinicData.diepssRecords || []}
                     metabolicRecords={clinicData.metabolicRecords || []}
+                    handovers={clinicData.handovers}
                     onOpenAddMed={() => setIsAddMedOpen(true)}
                     onDeleteMed={handleDeleteMedication}
                     onOpenAddDtp={() => setIsAddDtpOpen(true)}
@@ -1527,6 +1593,7 @@ export default function App() {
                     onSaveSoapNote={handleSaveSoapNote}
                     onSaveSafetyLog={handleSaveSafetyLog}
                     onSaveMars5={handleSaveMars5}
+                    onResolveHandover={handleResolveHandover}
                   />
                 )}
 
@@ -1535,6 +1602,10 @@ export default function App() {
                     patient={activePatient}
                     nurseRecords={clinicData.nurseRecords}
                     onOpenAddNurseLog={() => setIsAddNurseOpen(true)}
+                    onOpenMedRecReferral={() => {
+                      setReferralInitialTopic('med_rec');
+                      setIsQuickDrugReferralOpen(true);
+                    }}
                   />
                 )}
 
@@ -1543,6 +1614,10 @@ export default function App() {
                     patient={activePatient}
                     psychRecords={clinicData.psychRecords}
                     onOpenAddPsychLog={() => setIsAddPsychOpen(true)}
+                    onOpenMedRecReferral={() => {
+                      setReferralInitialTopic('med_rec');
+                      setIsQuickDrugReferralOpen(true);
+                    }}
                   />
                 )}
 
@@ -1760,6 +1835,7 @@ export default function App() {
           notificationSettings={notificationSettings}
           onSaveNotificationSettings={handleSaveNotificationSettings}
           onSubmitHandover={handleSubmitHandover}
+          initialTopicId={referralInitialTopic}
         />
       )}
 

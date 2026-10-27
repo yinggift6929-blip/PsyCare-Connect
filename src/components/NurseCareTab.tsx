@@ -17,12 +17,14 @@ interface NurseCareTabProps {
   patient: Patient;
   nurseRecords: NurseRecord[];
   onOpenAddNurseLog: () => void;
+  onOpenMedRecReferral?: () => void;
 }
 
 export const NurseCareTab: React.FC<NurseCareTabProps> = ({
   patient,
   nurseRecords,
-  onOpenAddNurseLog
+  onOpenAddNurseLog,
+  onOpenMedRecReferral
 }) => {
   const patientNurseLogs = nurseRecords.filter(n => n.patientId === patient.id);
   const latestLog = patientNurseLogs[0];
@@ -31,7 +33,7 @@ export const NurseCareTab: React.FC<NurseCareTabProps> = ({
     <div className="space-y-5">
       {/* Overview Vital Signs & Quick Indicators */}
       <div className="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-rose-50">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-2 border-b border-rose-50">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-teal-100 text-teal-700 rounded-xl">
               <Stethoscope className="w-4 h-4" />
@@ -46,12 +48,24 @@ export const NurseCareTab: React.FC<NurseCareTabProps> = ({
             </div>
           </div>
 
-          <button
-            onClick={onOpenAddNurseLog}
-            className="text-xs bg-teal-600 hover:bg-teal-700 text-white px-3.5 py-1.5 rounded-xl font-medium transition flex items-center gap-1.5 shadow-2xs"
-          >
-            <Plus className="w-3.5 h-3.5" /> บันทึกการพยาบาลใหม่
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            {onOpenMedRecReferral && (
+              <button
+                type="button"
+                onClick={onOpenMedRecReferral}
+                className="text-xs bg-gradient-to-r from-amber-50 to-orange-50 hover:from-amber-100 hover:to-orange-100 text-amber-900 border border-amber-300 px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95"
+                title="ส่งต่อข้อมูลให้เภสัชกรสอบถามประวัติการรับยาจาก รพ.อื่น (Medication Reconciliation)"
+              >
+                <span>🏥 ส่งต่อเภสัชกรทำ Med Rec</span>
+              </button>
+            )}
+            <button
+              onClick={onOpenAddNurseLog}
+              className="text-xs bg-teal-600 hover:bg-teal-700 text-white px-3.5 py-1.5 rounded-xl font-medium transition flex items-center gap-1.5 shadow-2xs"
+            >
+              <Plus className="w-3.5 h-3.5" /> บันทึกการพยาบาลใหม่
+            </button>
+          </div>
         </div>
 
         {/* 4 Cards Quick Vitals Summary */}
@@ -166,6 +180,22 @@ export const NurseCareTab: React.FC<NurseCareTabProps> = ({
                   <div>
                     <strong className="text-rose-700 block text-[11px]">พฤติกรรมเสี่ยงหรือความรุนแรง:</strong>
                     <p className="text-slate-700 text-[11px] mt-0.5">{log.riskBehavior}</p>
+                  </div>
+                )}
+
+                {log.medRecRequested && (
+                  <div className="p-2 bg-amber-50 rounded-lg border border-amber-200 text-[11px] text-amber-950 space-y-0.5">
+                    <div className="font-bold flex items-center gap-1.5 text-amber-800">
+                      <span>🏥 ส่งต่อเภสัชกรสอบถามประวัติรับยาจาก รพ.อื่น (Med Rec)</span>
+                      {log.medRecOtherHospital && (
+                        <span className="bg-amber-200 text-amber-900 px-1.5 py-0.2 rounded font-semibold text-[10px]">
+                          {log.medRecOtherHospital}
+                        </span>
+                      )}
+                    </div>
+                    {log.medRecDetails && (
+                      <p className="text-slate-700 text-[10px] pl-4">{log.medRecDetails}</p>
+                    )}
                   </div>
                 )}
               </div>

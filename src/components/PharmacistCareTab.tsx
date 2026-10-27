@@ -35,7 +35,8 @@ import {
   DiepssAssessment, 
   MetabolicRecord,
   DtpDomain,
-  PatientTrackingGroup
+  PatientTrackingGroup,
+  HandoverMessage
 } from '../types.ts';
 import { STANDARD_DRUG_GROUPS } from './modals/AddMedicationModal.tsx';
 import { GenderBadge } from './common/GenderIcon.tsx';
@@ -51,6 +52,7 @@ interface PharmacistCareTabProps {
   mars5Records: Mars5Assessment[];
   diepssRecords: DiepssAssessment[];
   metabolicRecords: MetabolicRecord[];
+  handovers?: HandoverMessage[];
   onOpenAddMed: () => void;
   onDeleteMed: (med: Medication) => void;
   onOpenAddDtp: () => void;
@@ -64,6 +66,7 @@ interface PharmacistCareTabProps {
   onSaveSafetyLog: (safety: Partial<SafetyLog>) => void;
   onSaveMars5?: (record: Partial<Mars5Assessment>, updatedAdherencePercent?: number) => void;
   onUpdateAppointment?: (patientId: string, appointment: { nextAppointment?: string; nextAppointmentType?: 'home_visit' | 'telemed' | 'clinic'; nextAppointmentObjective?: string }) => void;
+  onResolveHandover?: (id: string, responseNote?: string) => void;
 }
 
 // 6 Required DRP Topics (Requirement 2)
@@ -85,6 +88,7 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
   mars5Records,
   diepssRecords,
   metabolicRecords,
+  handovers = [],
   onOpenAddMed,
   onDeleteMed,
   onOpenAddDtp,
@@ -97,7 +101,8 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
   onSaveSoapNote: _onSaveSoapNote,
   onSaveSafetyLog,
   onSaveMars5,
-  onUpdateAppointment
+  onUpdateAppointment,
+  onResolveHandover
 }) => {
   const patientMeds = medications.filter(m => m.patientId === patient.id);
   const patientDtps = dtps.filter(d => d.patientId === patient.id);
@@ -108,6 +113,14 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
   const latestDiepss = patientDiepss[0];
   const patientMetabolic = metabolicRecords.filter(met => met.patientId === patient.id);
   const latestMetabolic = patientMetabolic[0];
+
+  // Medication Reconciliation Handovers to Pharmacist from Nurse / Psychologist
+  const pendingMedRecHandovers = (handovers || []).filter(h => 
+    h.patientId === patient.id && 
+    h.targetRole === 'pharmacist' && 
+    (h.subject.includes('Med Rec') || h.subject.includes('รพ.อื่น') || h.content.includes('Medication Reconciliation')) &&
+    h.status === 'open'
+  );
 
   // ==========================================
   // Section 1 State: Quick Add Medication (Req 3 & 4)
@@ -380,6 +393,68 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
+      {/* Med Rec Referral Alert Banner from Multidisciplinary Team */}
+      {pendingMedRecHandovers.length > 0 && (
+        <div className="p-4 bg-gradient-to-r from-amber-50 via-orange-50/50 to-white rounded-3xl border-2 border-amber-300 shadow-xs space-y-3 animate-in fade-in">
+          <div className="flex items-center justify-between gap-2 border-b border-amber-200 pb-2 flex-wrap">
+            <div className="flex items-center gap-2 text-amber-950 font-extrabold text-sm">
+              <span className="text-xl">🏥</span>
+              <span>คำขอส่งต่อจากทีมสหวิชาชีพ: สอบถามประวัติการรับยาจาก รพ.อื่น (Medication Reconciliation)</span>
+            </div>
+            <span className="text-[11px] bg-amber-200 text-amber-950 px-2.5 py-0.5 rounded-full font-bold">
+              {pendingMedRecHandovers.length} รายการรอดำเนินการ
+            </span>
+          </div>
+
+          <div className="space-y-2.5">
+            {pendingMedRecHandovers.map(h => (
+              <div key={h.id} className="p-3.5 bg-white/95 rounded-2xl border border-amber-200 text-xs space-y-2 shadow-2xs">
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                    <span className="font-bold text-amber-950 text-xs">{h.subject}</span>
+                    <span className="text-[10px] bg-rose-50 text-rose-700 font-bold px-2 py-0.5 rounded-md border border-rose-200">
+                      {h.priority === 'stat' ? '🚨 STAT' : h.priority === 'urgent' ? '⚡ ด่วน' : '📋 Routine'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono">{h.timestamp}</span>
+                </div>
+
+                <div className="text-slate-700 bg-amber-50/40 p-2.5 rounded-xl border border-amber-100 whitespace-pre-line leading-relaxed text-[11px]">
+                  {h.content}
+                </div>
+
+                <div className="flex items-center justify-between pt-1 text-[11px] flex-wrap gap-2">
+                  <span className="text-slate-500 font-medium">
+                    ผู้ส่งต่อ: <strong className="text-slate-800">{h.senderRole === 'nurse' ? 'พยาบาลวิชาชีพ' : h.senderRole === 'psychologist' ? 'นักจิตวิทยา' : h.senderRole}</strong>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowQuickAddMed(true)}
+                      className="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-xl font-bold border border-rose-200 transition cursor-pointer flex items-center gap-1 shadow-2xs"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>บันทึกยาที่ประสานได้</span>
+                    </button>
+                    {onResolveHandover && (
+                      <button
+                        type="button"
+                        onClick={() => onResolveHandover(h.id, 'เภสัชกรสอบถามประวัติการใช้ยาเดิมจาก รพ.อื่น และทำ Medication Reconciliation เรียบร้อยแล้ว')}
+                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-2xs flex items-center gap-1 cursor-pointer"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>✓ บันทึกว่าทำ Med Rec แล้ว</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ========================================================
           1. ข้อมูลผู้ป่วย & บัญชียาที่ผู้ป่วยใช้ (Requirement 1, 3, 4)
          ======================================================== */}

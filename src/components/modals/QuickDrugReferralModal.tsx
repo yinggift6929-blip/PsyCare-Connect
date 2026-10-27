@@ -32,9 +32,18 @@ interface QuickDrugReferralModalProps {
     subject: string;
     content: string;
   }) => void;
+  initialTopicId?: string;
 }
 
 const PRESET_TOPICS = [
+  {
+    id: 'med_rec',
+    icon: '🏥',
+    label: 'ประวัติรับยาจาก รพ.อื่น (Medication Reconciliation)',
+    subject: 'ขอส่งต่อเภสัชกรสอบถามประวัติการรับยาจาก รพ.อื่น (Med Rec)',
+    defaultContent: 'จากการซักประวัติพบผู้ป่วยมีประวัติการรักษาหรือได้รับยาจาก รพ.อื่น/คลินิกอื่น หรือมียาโรคเรื้อรังเดิม ขอความกรุณาเภสัชกรช่วยตรวจสอบและทำ Medication Reconciliation สอบถามรายการยาเดิม ขนาดยา และประสานรายการยาเพื่อความปลอดภัย',
+    priority: 'urgent' as const
+  },
   {
     id: 'adherence',
     icon: '🛑',
@@ -77,12 +86,25 @@ export const QuickDrugReferralModal: React.FC<QuickDrugReferralModalProps> = ({
   medications = [],
   notificationSettings,
   onSaveNotificationSettings,
-  onSubmitHandover
+  onSubmitHandover,
+  initialTopicId
 }) => {
-  const [selectedTopicId, setSelectedTopicId] = useState<string>('adherence');
+  const [selectedTopicId, setSelectedTopicId] = useState<string>(() => initialTopicId || 'med_rec');
   const [priority, setPriority] = useState<'normal' | 'urgent' | 'stat'>('urgent');
   const [subject, setSubject] = useState(PRESET_TOPICS[0].subject);
   const [content, setContent] = useState(PRESET_TOPICS[0].defaultContent);
+
+  // Sync preset when modal opens or initialTopicId changes
+  React.useEffect(() => {
+    if (isOpen) {
+      const targetId = initialTopicId || selectedTopicId || 'med_rec';
+      const preset = PRESET_TOPICS.find(p => p.id === targetId) || PRESET_TOPICS[0];
+      setSelectedTopicId(preset.id);
+      setSubject(preset.subject);
+      setContent(preset.defaultContent);
+      setPriority(preset.priority);
+    }
+  }, [isOpen, initialTopicId]);
 
   // Bot Token input with automatic sanitization (Bot ID 8736275097)
   const [botTokenInput, setBotTokenInput] = useState(
@@ -367,7 +389,7 @@ export const QuickDrugReferralModal: React.FC<QuickDrugReferralModalProps> = ({
         <div>
           <label className="block font-bold text-slate-800 mb-1.5 flex items-center justify-between">
             <span>1. เลือกประเภทปัญหาการใช้ยา (คลิกเพื่อเลือกหัวข้อด่วน):</span>
-            <span className="text-[11px] text-rose-600 font-medium">4 หมวดหลัก</span>
+            <span className="text-[11px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">5 หมวดหลัก (รวมยา รพ.อื่น / Med Rec)</span>
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {PRESET_TOPICS.map((preset) => (
