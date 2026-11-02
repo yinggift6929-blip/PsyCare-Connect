@@ -182,18 +182,18 @@ export const AddMedicationModal: React.FC<AddMedicationModalProps> = ({
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form onSubmit={handleSubmit} className="space-y-4 text-base sm:text-xs clinical-record-form">
           {/* Requirement 3: 3 Drug Groups Dropdown / Scrollable selector */}
           <div className="space-y-1.5">
             <label className="block font-bold text-slate-800 flex items-center justify-between">
               <span>1. เลือกรายการยา (3 กลุ่มยาจิตเวชหลัก / แถบเลื่อน): *</span>
-              <span className="text-[11px] text-rose-600 font-medium">3 กลุ่มมาตรฐาน</span>
+              <span className="text-[11px] sm:text-xs text-rose-600 font-medium">3 กลุ่มมาตรฐาน</span>
             </label>
 
             <select
               value={selectedPreset}
               onChange={(e) => handlePresetChange(e.target.value)}
-              className="w-full p-2.5 bg-rose-50/30 border border-rose-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-400 font-semibold text-slate-800 text-xs"
+              className="w-full p-2.5 bg-rose-50/30 border border-rose-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-400 font-semibold text-slate-800 text-base sm:text-xs"
             >
               <optgroup label="3.1 Antipsychotic drugs">
                 {STANDARD_DRUG_GROUPS.antipsychotic.drugs.map(drug => (

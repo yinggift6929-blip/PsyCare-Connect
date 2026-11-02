@@ -56,7 +56,7 @@ export const PsychiatricModalFrame: React.FC<PsychiatricModalFrameProps> = ({
 
       {/* Main Modal Card Container */}
       <div 
-        className={`relative ${maxWidth} w-full rounded-3xl bg-gradient-to-b from-[#fdfbfc] via-[#ffffff] to-[#faf5f8] shadow-[0_25px_70px_-12px_rgba(25,12,35,0.4)] border border-rose-200/90 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200 ring-1 ring-black/5`}
+        className={`relative ${maxWidth} w-full rounded-3xl bg-gradient-to-b from-[#fdfbfc] via-[#ffffff] to-[#faf5f8] shadow-[0_25px_70px_-12px_rgba(25,12,35,0.4)] border border-rose-200/90 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200 ring-1 ring-black/5 clinical-modal-container`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Multidisciplinary Top Clinical Stripe (Pharmacist, Nurse, Psychologist, Physician) */}
@@ -187,13 +187,13 @@ export const PsychiatricModalFrame: React.FC<PsychiatricModalFrameProps> = ({
         </div>
 
         {/* Scrollable Content Body */}
-        <div className="relative z-10 p-5 sm:p-7 overflow-y-auto custom-scrollbar flex-1 space-y-5">
+        <div className="relative z-10 p-4 sm:p-7 overflow-y-auto custom-scrollbar flex-1 space-y-5 clinical-modal-body">
           {children}
         </div>
 
         {/* Formal Institutional Footer & Confidentiality Notice */}
-        <div className="relative z-10 px-5 sm:px-7 py-3 bg-gradient-to-r from-rose-50/80 via-white to-pink-50/80 border-t border-rose-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shrink-0">
-          <div className="flex items-center gap-2 text-slate-500 text-[11px] text-center sm:text-left">
+        <div className="relative z-10 px-4 sm:px-7 py-3 bg-gradient-to-r from-rose-50/80 via-white to-pink-50/80 border-t border-rose-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shrink-0 clinical-modal-footer">
+          <div className="flex items-center gap-2 text-slate-500 text-[11px] sm:text-xs text-center sm:text-left">
             <span className="p-1 bg-rose-100 text-rose-700 rounded-md shrink-0">
               <ShieldCheck className="w-3.5 h-3.5" />
             </span>

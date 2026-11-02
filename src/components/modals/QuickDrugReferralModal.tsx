@@ -273,7 +273,7 @@ export const QuickDrugReferralModal: React.FC<QuickDrugReferralModalProps> = ({
         </div>
       }
     >
-      <form onSubmit={handleSubmitAndSend} className="space-y-4 text-xs">
+      <form onSubmit={handleSubmitAndSend} className="space-y-4 text-base sm:text-xs clinical-record-form">
         {/* Patient Summary Ribbon */}
         <div className="p-3 bg-gradient-to-r from-rose-50/80 via-white to-pink-50/80 rounded-xl border border-rose-200/80 flex flex-wrap items-center justify-between gap-2">
           <div>

@@ -161,7 +161,7 @@ export const HomeVisitModal: React.FC<HomeVisitModalProps> = ({
       badgeColor="indigo"
       confidentialNotice={`บันทึกการเยี่ยมบ้านเวชระเบียนชุมชน HN: ${patient.hn} (${patient.name})`}
     >
-      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form onSubmit={handleSubmit} className="space-y-4 text-base sm:text-xs clinical-record-form">
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>

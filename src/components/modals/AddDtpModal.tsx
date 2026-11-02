@@ -90,7 +90,7 @@ export const AddDtpModal: React.FC<AddDtpModalProps> = ({
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form onSubmit={handleSubmit} className="space-y-4 text-base sm:text-xs clinical-record-form">
         <div>
           <label className="block font-bold text-slate-700 mb-1">
             หัวข้อปัญหาจากการใช้ยา (DRPs) <span className="text-rose-500">*</span>

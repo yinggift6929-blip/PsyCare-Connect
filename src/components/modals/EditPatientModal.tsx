@@ -140,7 +140,7 @@ export const EditPatientModal: React.FC<EditPatientModalProps> = ({
       badgeColor="rose"
       confidentialNotice={`การแก้ไขข้อมูลเวชระเบียน HN: ${patient.hn} (${patient.name})`}
     >
-      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form onSubmit={handleSubmit} className="space-y-4 text-base sm:text-xs clinical-record-form">
 
           {/* Section: Patient Name Editing & D/C / Refer Assistants */}
           <div className="bg-gradient-to-r from-amber-50/70 via-rose-50/40 to-purple-50/40 p-3.5 rounded-2xl border border-amber-200/90 space-y-2.5">

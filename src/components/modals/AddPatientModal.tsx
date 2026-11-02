@@ -77,7 +77,7 @@ export const AddPatientModal: React.FC<AddPatientModalProps> = ({
       badgeColor="rose"
       confidentialNotice="การบันทึกเวชระเบียนผู้ป่วยจิตเวชรายใหม่ (New Patient Intake)"
     >
-      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form onSubmit={handleSubmit} className="space-y-4 text-base sm:text-xs clinical-record-form">
 
           {/* Tracking Group Selector */}
           <div className="bg-rose-50/30 p-3 rounded-xl border border-rose-100 space-y-1.5">

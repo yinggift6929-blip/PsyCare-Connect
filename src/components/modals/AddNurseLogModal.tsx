@@ -112,7 +112,7 @@ export const AddNurseLogModal: React.FC<AddNurseLogModalProps> = ({
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form onSubmit={handleSubmit} className="space-y-4 text-base sm:text-xs clinical-record-form">
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block font-bold text-slate-700 mb-1">ความดันโลหิต (BP):</label>

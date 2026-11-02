@@ -140,7 +140,7 @@ export const DiepssAssessmentModal: React.FC<DiepssAssessmentModalProps> = ({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleSubmit} className="space-y-4 text-base sm:text-xs clinical-record-form">
           {/* Table Matrix */}
           <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
             <table className="w-full text-xs text-left">

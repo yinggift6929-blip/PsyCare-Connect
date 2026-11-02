@@ -141,7 +141,7 @@ export const MetabolicMonitoringModal: React.FC<MetabolicMonitoringModalProps> =
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+      <form onSubmit={handleSubmit} className="space-y-4 text-base sm:text-xs clinical-record-form">
           {/* Antipsychotic Drug & Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-rose-50/30 p-3 rounded-xl border border-rose-100">
             <div>

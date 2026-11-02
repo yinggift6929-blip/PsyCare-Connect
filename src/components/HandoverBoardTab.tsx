@@ -150,7 +150,7 @@ export const HandoverBoardTab: React.FC<HandoverBoardTabProps> = ({
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3 bg-rose-50/20 p-3.5 rounded-xl border border-rose-100">
+        <form onSubmit={handleSubmit} className="space-y-3 bg-rose-50/20 p-3.5 rounded-xl border border-rose-100 clinical-record-form">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <label className="block text-[11px] font-bold text-slate-700 mb-1">

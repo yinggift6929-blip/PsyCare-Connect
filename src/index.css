@@ -6,6 +6,14 @@
   }
 }
 
+/* Accessible Font Scaling */
+html[data-font-size="large"] {
+  font-size: 112%;
+}
+html[data-font-size="xlarge"] {
+  font-size: 125%;
+}
+
 /* Custom subtle scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -21,3 +29,128 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #f472b6;
 }
+
+/* ==========================================================================
+   MOBILE DATA RECORDING & ACCESSIBILITY ENLARGEMENT (สมาร์ทโฟน / มือถือ)
+   เพิ่มขนาดตัวอักษรให้อ่านง่าย พิมพ์สะดวก ไม่เกิดปัญหา iOS Auto-Zoom
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* 1. ทุกช่องกรอกข้อมูล (Inputs, Textarea, Select) ขนาดไม่ต่ำกว่า 16px */
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="search"],
+  input[type="time"],
+  input[type="datetime-local"],
+  select,
+  textarea {
+    font-size: 16px !important; /* ป้องกัน iOS auto-zoom และตัวอักษรใหญ่ชัดเจน */
+    line-height: 1.5 !important;
+    min-height: 46px !important;
+    padding: 0.65rem 0.85rem !important;
+    border-radius: 0.75rem !important;
+  }
+
+  textarea {
+    min-height: 100px !important;
+    font-size: 16px !important;
+    line-height: 1.55 !important;
+  }
+
+  /* 2. หัวข้อช่องกรอกข้อมูล (Form Labels) ตัวใหญ่และหนาชัดเจน */
+  label,
+  .form-label {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    line-height: 1.4 !important;
+    color: #1e293b !important; /* slate-800 ชัดเจน */
+    margin-bottom: 0.35rem !important;
+  }
+
+  /* 3. เนื้อหาและแบบฟอร์มการบันทึกในโมดอลและแท็บ (Clinical Record Forms) */
+  .clinical-record-form,
+  .clinical-modal-body form,
+  form.space-y-4,
+  form.space-y-3,
+  form.space-y-5 {
+    font-size: 15px !important;
+  }
+
+  /* ข้อความคำแนะนำ (Helper texts) บนมือถือ */
+  .clinical-record-form .text-xs,
+  .clinical-modal-body .text-xs,
+  form.space-y-4 .text-xs {
+    font-size: 13.5px !important;
+    line-height: 1.45 !important;
+  }
+
+  .clinical-record-form .text-\[10px\],
+  .clinical-record-form .text-\[11px\],
+  .clinical-modal-body .text-\[10px\],
+  .clinical-modal-body .text-\[11px\],
+  form.space-y-4 .text-\[10px\],
+  form.space-y-4 .text-\[11px\] {
+    font-size: 12px !important;
+  }
+
+  /* 4. ปุ่มบันทึกข้อมูลและปุ่มกดยืนยัน (Action Buttons) ขนาดสัมผัส 44px+ และตัวอักษรใหญ่ */
+  form button[type="submit"],
+  .modal-action-btn,
+  .clinical-modal-footer button,
+  form button.bg-teal-600,
+  form button.bg-rose-500,
+  form button.bg-amber-600,
+  form button.bg-emerald-600 {
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    min-height: 46px !important;
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+    padding-top: 0.65rem !important;
+    padding-bottom: 0.65rem !important;
+    border-radius: 0.75rem !important;
+  }
+
+  /* 5. ตัวเลือก Checkbox และ Radio Button แตะง่ายขึ้น */
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 0.5rem !important;
+    accent-color: #0d9488 !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* ป้ายตัวเลือกที่ครอบ Checkbox / Radio */
+  label.flex.items-center,
+  label.flex.items-start {
+    font-size: 15px !important;
+    padding-top: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+    cursor: pointer !important;
+  }
+
+  /* 6. แบบประเมินทางจิตเวชและสุขภาพจิต (2Q, 9Q, 8Q, DIEPSS, MARS-5, ฯลฯ) */
+  .assessment-question,
+  .assessment-item-title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1.5 !important;
+  }
+
+  .assessment-option,
+  .assessment-option-label {
+    font-size: 15px !important;
+    min-height: 44px !important;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  /* 7. โมดอลและแถบบันทึกข้อมูลเต็มความกว้างและระยะขอบที่เหมาะสมบนมือถือ */
+  .clinical-modal-container {
+    max-height: 96vh !important;
+    border-radius: 1.25rem !important;
+  }
+}
+

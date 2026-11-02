@@ -16,7 +16,8 @@ import {
   BarChart3, 
   Send,
   UserCheck,
-  Palette
+  Palette,
+  Type
 } from 'lucide-react';
 import { RoleType } from '../types.ts';
 import { 
@@ -127,6 +128,14 @@ const THEMES: Record<HeaderTheme, {
   }
 };
 
+export type FontSizeScale = 'normal' | 'large' | 'xlarge';
+
+const FONT_SCALES: { id: FontSizeScale; label: string; desc: string; badge: string }[] = [
+  { id: 'normal', label: 'ขนาดมาตรฐาน (100%)', desc: 'ขนาดสำหรับคอมพิวเตอร์ / จอทั่วไป', badge: 'A' },
+  { id: 'large', label: 'ขนาดใหญ่ (+12%) 📱', desc: 'แนะนำสำหรับบันทึกข้อมูลผ่านมือถือ', badge: 'A+' },
+  { id: 'xlarge', label: 'ขนาดใหญ่พิเศษ (+25%) 🔍', desc: 'ตัวอักษรใหญ่ ชัดเจน อ่านง่ายพิเศษ', badge: 'A++' },
+];
+
 export const Header: React.FC<HeaderProps> = ({
   currentRole,
   onSelectRole,
@@ -154,9 +163,23 @@ export const Header: React.FC<HeaderProps> = ({
   });
   const [isThemePickerOpen, setIsThemePickerOpen] = useState(false);
 
+  const [fontSize, setFontSize] = useState<FontSizeScale>(() => {
+    return (localStorage.getItem('psycare_font_size') as FontSizeScale) || 'normal';
+  });
+  const [isFontPickerOpen, setIsFontPickerOpen] = useState(false);
+
   useEffect(() => {
     localStorage.setItem('psycare_header_theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (fontSize === 'normal') {
+      document.documentElement.removeAttribute('data-font-size');
+    } else {
+      document.documentElement.setAttribute('data-font-size', fontSize);
+    }
+    localStorage.setItem('psycare_font_size', fontSize);
+  }, [fontSize]);
 
   const currentTheme = THEMES[theme] || THEMES.teal;
   const sheetEditUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
@@ -317,6 +340,70 @@ export const Header: React.FC<HeaderProps> = ({
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Font Size Accessibility Selector (สำคัญมากสำหรับบันทึกข้อมูลผ่านมือถือ) */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsFontPickerOpen(!isFontPickerOpen);
+                  setIsThemePickerOpen(false);
+                }}
+                className={`p-2 rounded-xl border transition flex items-center gap-1 shadow-2xs cursor-pointer ${currentTheme.toolBtnBg}`}
+                title="ปรับขนาดตัวอักษรให้อ่านง่ายขึ้นเมื่อบันทึกผ่านมือถือ (มาตรฐาน / ใหญ่ / ใหญ่พิเศษ)"
+              >
+                <Type className="w-4 h-4 text-white" />
+                <span className="text-[11px] font-black px-1.5 py-0.5 bg-white/25 rounded-md">
+                  {fontSize === 'xlarge' ? 'A++' : fontSize === 'large' ? 'A+' : 'A'}
+                </span>
+              </button>
+
+              {isFontPickerOpen && (
+                <div className="absolute right-0 mt-2 w-72 bg-white text-slate-800 rounded-2xl shadow-xl border border-slate-200 p-2.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                  <div className="px-2.5 py-1.5 text-xs font-black text-slate-700 border-b border-slate-100 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Type className="w-3.5 h-3.5 text-teal-600" />
+                      <span>ขนาดตัวอักษร (Mobile Font):</span>
+                    </span>
+                    <button 
+                      onClick={() => setIsFontPickerOpen(false)}
+                      className="text-slate-400 hover:text-slate-600 text-xs font-bold"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="space-y-1.5 pt-2">
+                    {FONT_SCALES.map((scale) => (
+                      <button
+                        key={scale.id}
+                        onClick={() => {
+                          setFontSize(scale.id);
+                          setIsFontPickerOpen(false);
+                        }}
+                        className={`w-full text-left p-2.5 rounded-xl transition cursor-pointer flex items-center justify-between ${
+                          fontSize === scale.id
+                            ? 'bg-teal-50 text-teal-900 border border-teal-300 shadow-2xs'
+                            : 'hover:bg-slate-50 text-slate-700 border border-transparent'
+                        }`}
+                      >
+                        <div className="min-w-0 pr-2">
+                          <div className="text-xs font-bold flex items-center gap-1.5">
+                            <span className="px-1.5 py-0.5 bg-slate-100 rounded text-[11px] font-mono font-bold text-slate-700">
+                              {scale.badge}
+                            </span>
+                            <span>{scale.label}</span>
+                          </div>
+                          <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                            {scale.desc}
+                          </p>
+                        </div>
+                        {fontSize === scale.id && <span className="text-teal-600 font-extrabold text-sm">✓</span>}
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
