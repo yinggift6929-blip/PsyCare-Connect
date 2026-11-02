@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { User } from 'firebase/auth';
 import { 
   FileSpreadsheet, 
@@ -7,27 +7,21 @@ import {
   Pill, 
   Stethoscope, 
   Brain, 
-  Building2,
+  Building2, 
   CheckCircle2, 
   LogOut, 
-  Settings2,
-  Sparkles,
-  Bell,
-  BarChart3,
+  Settings2, 
+  Sparkles, 
+  Bell, 
+  BarChart3, 
   Send,
-  Users,
-  ChevronDown,
   UserCheck
 } from 'lucide-react';
 import { RoleType } from '../types.ts';
 import { 
   TeamMember, 
-  MULTIDISCIPLINARY_TEAM, 
-  PROFESSION_GROUPS, 
-  formatMemberNameAndPosition,
   getTeamMembersByProfession 
 } from '../data/teamMembers.ts';
-import { TeamMemberSlider } from './common/TeamMemberSlider.tsx';
 
 interface HeaderProps {
   currentRole: RoleType;
@@ -61,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
   user,
   spreadsheetId,
   isSyncing,
-  syncSuccess,
+  syncSuccess: _syncSuccess,
   lastSyncTime,
   dueTodayCount,
   onOpenDailyAlert,
@@ -73,97 +67,127 @@ export const Header: React.FC<HeaderProps> = ({
   onSyncNow,
   onRefreshServerData,
   onOpenSettings,
-  onOpenDeviceSync,
   activeDevicesCount
 }) => {
-  const [showTeamSlider, setShowTeamSlider] = useState(true);
   const sheetEditUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`;
 
   return (
-    <header className="bg-gradient-to-r from-pink-100/95 via-rose-50/90 to-pink-100/90 text-slate-800 sticky top-0 z-40 shadow-xs border-b border-pink-200/80 backdrop-blur-md">
+    <header className="bg-gradient-to-r from-pink-700 via-rose-700 to-pink-700 text-white sticky top-0 z-40 shadow-md border-b border-rose-800/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Top Navbar Row */}
-        <div className="h-16 flex items-center justify-between gap-2 sm:gap-4">
-          {/* Logo & Clinic Title */}
-          <div className="flex items-center space-x-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-400 via-rose-400 to-pink-300 flex items-center justify-center text-white shadow-xs border border-pink-200/60 shrink-0">
-              <Brain className="w-5 h-5 text-white" />
+        <div className="h-16 flex items-center justify-between gap-3 sm:gap-4">
+          {/* Logo & Clinic Title (กว้างขวาง สบายตา ไม่โดนบีบย่อ) */}
+          <div className="flex items-center space-x-3 shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-white text-rose-700 flex items-center justify-center shadow-xs shrink-0">
+              <Brain className="w-5 h-5 text-rose-700" />
             </div>
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <h1 className="font-extrabold text-base sm:text-lg leading-tight tracking-tight text-slate-850 text-slate-800 truncate">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="font-black text-base sm:text-lg leading-tight tracking-tight text-white">
                   PsyCare Sheet Connect
                 </h1>
-                <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-bold bg-pink-100/90 text-pink-700 px-2.5 py-0.5 rounded-full border border-pink-200/90 shadow-2xs">
-                  <Sparkles className="w-3 h-3 text-pink-500" /> สหวิชาชีพจิตเวช
+                <span className="hidden md:inline-flex items-center gap-1 text-[11px] font-bold bg-white/20 text-white px-2.5 py-0.5 rounded-full border border-white/30 shadow-2xs">
+                  <Sparkles className="w-3 h-3 text-pink-200" /> สหวิชาชีพจิตเวช
                 </span>
               </div>
-              <p className="text-[11px] text-pink-700/80 font-medium truncate">
-                บริบาลเภสัชกรรม • พยาบาล • นักจิตวิทยา • ซิงค์อัตโนมัติทุกเครื่อง
+              <p className="text-[11px] text-pink-100 font-medium truncate">
+                ระบบบริบาลเภสัชกรรม • สหวิชาชีพคลินิกจิตเวช
               </p>
             </div>
           </div>
 
-          {/* Multidisciplinary Role Switcher (4 Professions) */}
-          <div className="hidden lg:flex items-center bg-white/90 backdrop-blur-md rounded-2xl p-1 border border-pink-200/80 shadow-2xs">
-            <span className="text-[11px] font-bold text-slate-500 px-2.5">กลุ่มวิชาชีพ:</span>
+          {/* Multidisciplinary Role Switcher (แถบเลือกวิชาชีพแบบกะทัดรัด พร้อมเลือกผู้ปฏิบัติงานในตัว) */}
+          <div className="hidden lg:flex items-center bg-black/15 backdrop-blur-md rounded-2xl p-1 border border-white/20 shadow-inner">
+            <span className="text-[11px] font-bold text-pink-100 px-2">กลุ่มวิชาชีพ:</span>
+            
+            {/* Pharmacist */}
             <button
               onClick={() => onSelectRole('pharmacist')}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 currentRole === 'pharmacist'
-                  ? 'bg-gradient-to-r from-pink-400 to-rose-400 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-pink-700 hover:bg-pink-50/70'
+                  ? 'bg-white text-rose-900 shadow-sm font-extrabold'
+                  : 'text-pink-100 hover:text-white hover:bg-white/15'
               }`}
             >
-              <Pill className="w-3.5 h-3.5" /> ภญ.สุภิตา (เภสัชกร)
+              <Pill className="w-3.5 h-3.5" /> 
+              <span>ภญ.สุภิตา (เภสัชกร)</span>
             </button>
-            <button
-              onClick={() => onSelectRole('nurse')}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                currentRole === 'nurse'
-                  ? 'bg-teal-500 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-teal-700 hover:bg-teal-50/70'
-              }`}
-            >
-              <Stethoscope className="w-3.5 h-3.5" /> พยาบาลวิชาชีพ
-              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-black ${
-                currentRole === 'nurse' ? 'bg-white text-teal-800' : 'bg-teal-100 text-teal-800'
-              }`}>
-                3
-              </span>
-            </button>
+
+            {/* Nurse with inline quick selector */}
+            <div className="relative inline-flex items-center">
+              <button
+                onClick={() => onSelectRole('nurse')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  currentRole === 'nurse'
+                    ? 'bg-white text-teal-950 shadow-sm font-extrabold'
+                    : 'text-pink-100 hover:text-white hover:bg-white/15'
+                }`}
+              >
+                <Stethoscope className="w-3.5 h-3.5" /> 
+                <span>พยาบาลวิชาชีพ</span>
+                <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-black ${
+                  currentRole === 'nurse' ? 'bg-teal-100 text-teal-900' : 'bg-white/20 text-white'
+                }`}>
+                  3
+                </span>
+              </button>
+
+              {currentRole === 'nurse' && (
+                <select
+                  value={activeTeamMember?.id}
+                  onChange={(e) => {
+                    const found = getTeamMembersByProfession('nurse').find(m => m.id === e.target.value);
+                    if (found && onSelectTeamMember) onSelectTeamMember(found);
+                  }}
+                  className="ml-1 text-[11px] bg-white text-teal-950 font-bold px-2 py-1 rounded-lg border border-teal-300 shadow-2xs cursor-pointer focus:outline-hidden"
+                  title="เลือกรายชื่อพยาบาลผู้ปฏิบัติงาน"
+                >
+                  {getTeamMembersByProfession('nurse').map((nurse) => (
+                    <option key={nurse.id} value={nurse.id}>
+                      {nurse.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* Psychologist */}
             <button
               onClick={() => onSelectRole('psychologist')}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 currentRole === 'psychologist'
-                  ? 'bg-amber-400 text-amber-950 shadow-xs border border-amber-500/30'
-                  : 'text-slate-600 hover:text-amber-900 hover:bg-amber-50'
+                  ? 'bg-white text-amber-950 shadow-sm font-extrabold'
+                  : 'text-pink-100 hover:text-white hover:bg-white/15'
               }`}
             >
-              <Brain className="w-3.5 h-3.5 text-amber-800" /> น.ส.อัยมี (นักจิตวิทยา)
+              <Brain className="w-3.5 h-3.5 text-amber-700" /> 
+              <span>น.ส.อัยมี (จิตวิทยา)</span>
             </button>
+
+            {/* Public Health */}
             <button
               onClick={() => onSelectRole('public_health')}
-              className={`px-2.5 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 currentRole === 'public_health'
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-blue-700 hover:bg-blue-50'
+                  ? 'bg-white text-blue-950 shadow-sm font-extrabold'
+                  : 'text-pink-100 hover:text-white hover:bg-white/15'
               }`}
             >
-              <Building2 className="w-3.5 h-3.5" /> น.ส. สุธาสินี (สธ.)
+              <Building2 className="w-3.5 h-3.5" /> 
+              <span>น.ส. สุธาสินี (สธ.)</span>
             </button>
           </div>
 
           {/* Right: Dashboard, Daily Alert Bell, Fast Sync & Google Sheet */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             {/* Monthly Clinic Jit-Dee Pharmacy Dashboard Button */}
             {onOpenMonthlyDashboard && (
               <button
                 onClick={onOpenMonthlyDashboard}
-                title="แสดง Dashboard สรุปผลการบริบาลเภสัชกรรมผู้ป่วยคลินิกจิตดี เป็นรายเดือน เพื่อดึงสรุปเป็นผลการดำเนินงาน"
-                className="px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-sky-500 via-indigo-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white rounded-xl shadow-xs transition flex items-center gap-1.5 text-xs font-bold active:scale-95 cursor-pointer"
+                title="แสดง Dashboard สรุปผลการบริบาลเภสัชกรรมผู้ป่วยคลินิกจิตดี รายเดือน เพื่อดึงสรุปเป็นผลการดำเนินงาน"
+                className="px-2.5 sm:px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-xl shadow-xs transition flex items-center gap-1.5 text-xs font-bold active:scale-95 cursor-pointer backdrop-blur-xs"
               >
-                <BarChart3 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                <BarChart3 className="w-3.5 h-3.5 text-pink-200" />
                 <span className="hidden md:inline">Dashboard สรุปผลงาน</span>
                 <span className="md:hidden">Dashboard</span>
               </button>
@@ -173,12 +197,12 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={onOpenDailyAlert}
               title="ดูรายชื่อผู้ป่วยที่ต้องติดตามวันนี้ (เยี่ยมบ้าน, Telemed, คลินิก)"
-              className="relative p-2 bg-white hover:bg-pink-50 text-pink-800 rounded-xl border border-pink-200/80 transition flex items-center gap-1.5 shadow-2xs font-semibold cursor-pointer"
+              className="relative p-2 bg-white/20 hover:bg-white/30 text-white rounded-xl border border-white/30 transition flex items-center gap-1.5 shadow-2xs font-semibold cursor-pointer"
             >
-              <Bell className="w-4 h-4 text-pink-500" />
-              <span className="hidden sm:inline text-xs font-bold text-slate-700">นัดวันนี้</span>
+              <Bell className="w-4 h-4 text-pink-200" />
+              <span className="hidden sm:inline text-xs font-bold text-white">นัดวันนี้</span>
               {dueTodayCount > 0 && (
-                <span className="bg-pink-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full border border-white shadow-xs">
+                <span className="bg-white text-rose-700 text-[10px] font-black px-1.5 py-0.2 rounded-full shadow-xs">
                   {dueTodayCount}
                 </span>
               )}
@@ -191,14 +215,14 @@ export const Header: React.FC<HeaderProps> = ({
                 title="ตั้งค่าการแจ้งเตือน LINE & Telegram (รับเคสผู้ป่วย / ส่งเวร / นัดหมายเข้ามือถือ)"
                 className={`p-2 rounded-xl border transition flex items-center gap-1.5 shadow-2xs cursor-pointer ${
                   isNotificationActive
-                    ? 'bg-sky-50 text-sky-700 border-sky-300 hover:bg-sky-100'
-                    : 'bg-white hover:bg-pink-50 text-slate-700 border-pink-200/80'
+                    ? 'bg-white/30 text-white border-white/50'
+                    : 'bg-white/20 hover:bg-white/30 text-white border-white/30'
                 }`}
               >
-                <Send className={`w-3.5 h-3.5 ${isNotificationActive ? 'text-sky-600' : 'text-slate-500'}`} />
-                <span className="hidden lg:inline text-xs font-bold text-slate-700">แจ้งเตือน Telegram/LINE</span>
+                <Send className="w-3.5 h-3.5 text-pink-200" />
+                <span className="hidden xl:inline text-xs font-bold text-white">แจ้งเตือน Telegram/LINE</span>
                 {isNotificationActive && (
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="เปิดใช้งานแจ้งเตือนอยู่"></span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="เปิดใช้งานแจ้งเตือนอยู่"></span>
                 )}
               </button>
             )}
@@ -209,23 +233,23 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={onRefreshServerData}
                 disabled={isSyncing}
                 title="ดึงข้อมูลล่าสุดจากทุกเครื่องทันที (Live Sync)"
-                className="p-2 bg-white hover:bg-pink-50 text-slate-700 rounded-xl border border-pink-200/80 transition flex items-center gap-1 shadow-2xs cursor-pointer"
+                className="p-2 bg-white/20 hover:bg-white/30 text-white rounded-xl border border-white/30 transition flex items-center gap-1 shadow-2xs cursor-pointer"
               >
-                <RefreshCw className={`w-3.5 h-3.5 text-pink-600 ${isSyncing ? 'animate-spin' : ''}`} />
-                <span className="hidden xl:inline text-xs font-semibold text-slate-600">ดึงข้อมูลล่าสุด</span>
+                <RefreshCw className={`w-3.5 h-3.5 text-pink-200 ${isSyncing ? 'animate-spin' : ''}`} />
+                <span className="hidden 2xl:inline text-xs font-semibold text-white">ดึงข้อมูลล่าสุด</span>
               </button>
             )}
 
             {user ? (
-              <div className="flex items-center gap-2 bg-white/90 p-1 sm:p-1.5 rounded-2xl border border-pink-200 shadow-2xs">
+              <div className="flex items-center gap-2 bg-white/20 p-1 sm:p-1.5 rounded-2xl border border-white/30 shadow-2xs backdrop-blur-xs">
                 {/* Sync to Sheet Action Button */}
                 <button
                   onClick={onSyncNow}
                   disabled={isSyncing}
                   title="ซิงค์ข้อมูลกับ Google Sheet"
-                  className="bg-gradient-to-r from-pink-400 to-rose-400 hover:from-pink-500 hover:to-rose-500 disabled:opacity-50 text-white text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition shadow-xs cursor-pointer"
+                  className="bg-white hover:bg-rose-50 text-rose-900 disabled:opacity-50 text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition shadow-xs cursor-pointer"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 text-white ${isSyncing ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-3.5 h-3.5 text-rose-700 ${isSyncing ? 'animate-spin' : ''}`} />
                   <span className="hidden sm:inline">{isSyncing ? 'กำลังซิงค์...' : 'ซิงค์ Sheet'}</span>
                 </button>
 
@@ -234,40 +258,40 @@ export const Header: React.FC<HeaderProps> = ({
                   href={sheetEditUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold px-2.5 py-1.5 rounded-xl flex items-center gap-1 transition shadow-2xs"
+                  className="bg-white/25 hover:bg-white/35 text-white border border-white/30 text-xs font-semibold px-2.5 py-1.5 rounded-xl flex items-center gap-1 transition shadow-2xs"
                   title="เปิดดูไฟล์ Google Sheet จริง"
                 >
-                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-300" />
                   <span className="hidden md:inline">เปิด Sheet</span>
-                  <ExternalLink className="w-3 h-3 text-emerald-600" />
+                  <ExternalLink className="w-3 h-3 text-white" />
                 </a>
 
                 {/* Sheet Settings */}
                 <button
                   onClick={onOpenSettings}
                   title="ตั้งค่า Google Sheet"
-                  className="text-slate-500 hover:text-slate-800 p-1.5 rounded-xl hover:bg-pink-50 transition cursor-pointer"
+                  className="text-pink-100 hover:text-white p-1.5 rounded-xl hover:bg-white/20 transition cursor-pointer"
                 >
-                  <Settings2 className="w-4 h-4 text-pink-600" />
+                  <Settings2 className="w-4 h-4 text-white" />
                 </button>
 
                 {/* User Info Avatar & Logout */}
-                <div className="flex items-center gap-2 pl-1 border-l border-pink-200">
+                <div className="flex items-center gap-2 pl-1 border-l border-white/20">
                   {user.photoURL ? (
                     <img 
                       src={user.photoURL} 
                       alt={user.displayName || 'User'} 
-                      className="w-7 h-7 rounded-full border border-pink-300 shadow-2xs"
+                      className="w-7 h-7 rounded-full border border-white/40 shadow-2xs"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-pink-400 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+                    <div className="w-7 h-7 rounded-full bg-white text-rose-800 flex items-center justify-center text-xs font-bold shadow-2xs">
                       {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
                     </div>
                   )}
                   <button
                     onClick={onLogout}
                     title="ออกจากระบบ Google"
-                    className="text-slate-400 hover:text-pink-600 p-1 rounded-lg hover:bg-pink-50 transition cursor-pointer"
+                    className="text-pink-200 hover:text-white p-1 rounded-lg hover:bg-white/20 transition cursor-pointer"
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
@@ -278,7 +302,7 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={onLogin}
-                  className="bg-white hover:bg-pink-50 text-slate-800 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-2 shadow-2xs transition transform active:scale-95 border border-pink-200 cursor-pointer"
+                  className="bg-white hover:bg-rose-50 text-slate-900 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-2 shadow-xs transition transform active:scale-95 border border-white/40 cursor-pointer"
                   title="เชื่อมต่อ Google Sheet สำหรับสำรองข้อมูลลง Sheet"
                 >
                   <svg className="w-4 h-4" viewBox="0 0 48 48">
@@ -292,74 +316,29 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   onClick={onOpenSettings}
                   title="ตั้งค่า Sheet ID"
-                  className="text-slate-500 hover:text-slate-800 p-2 rounded-xl bg-white hover:bg-pink-50 border border-pink-200 transition shadow-2xs cursor-pointer"
+                  className="text-white hover:text-white p-2 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 transition shadow-2xs cursor-pointer"
                 >
-                  <Settings2 className="w-4 h-4 text-pink-600" />
+                  <Settings2 className="w-4 h-4 text-white" />
                 </button>
               </div>
             )}
           </div>
         </div>
 
-        {/* Multidisciplinary Team Ribbon & Scrollable Slider (แถบเลื่อนทีมสหวิชาชีพ) */}
-        <div className="py-2 px-3 my-1.5 bg-white/95 rounded-2xl border border-pink-200/90 shadow-2xs backdrop-blur-md">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5">
-            {/* Left: Active Practitioner Indicator */}
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="p-2 rounded-xl bg-pink-100 text-pink-700 shadow-2xs shrink-0">
-                <Users className="w-4 h-4 text-pink-600" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    ผู้ปฏิบัติงานขณะนี้:
-                  </span>
-                  {activeTeamMember && (
-                    <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 text-xs font-extrabold px-2.5 py-0.5 rounded-full border border-emerald-300 shadow-2xs">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      {activeTeamMember.name} • <span className="font-semibold text-emerald-700">{activeTeamMember.position}</span>
-                    </span>
-                  )}
-                </div>
-                <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                  {currentRole === 'nurse' 
-                    ? 'พยาบาลวิชาชีพ (มี 3 ท่าน) — เลื่อนแถบด้านขวาเพื่อเลือกรายชื่อผู้ปฏิบัติงาน'
-                    : 'จำค่าชื่อและตำแหน่งอัตโนมัติ (ตำแหน่งเดียวในกลุ่มวิชาชีพนี้)'}
-                </p>
-              </div>
-            </div>
-
-            {/* Right: The Scrollable Slider for current profession */}
-            <div className="flex-1 lg:max-w-xl">
-              <TeamMemberSlider
-                profession={currentRole}
-                selectedMemberId={activeTeamMember?.id}
-                onSelectMember={(member) => {
-                  if (onSelectTeamMember) onSelectTeamMember(member);
-                  if (member.profession !== currentRole) onSelectRole(member.profession);
-                }}
-                showProfessionTabs={false}
-                compact={true}
-                label=""
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Status Sub-bar with comfortable pastel contrast */}
-        <div className="py-1.5 border-t border-pink-200/60 bg-pink-50/40 text-[11px] text-slate-600 flex flex-wrap items-center justify-between -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3">
+        {/* Status Sub-bar: Compact, Elegant, Official */}
+        <div className="py-1.5 border-t border-rose-600/50 text-[11px] text-pink-100 flex flex-wrap items-center justify-between -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-3 flex-wrap">
             <button
               type="button"
               onClick={onRefreshServerData}
               disabled={isSyncing}
-              className="flex items-center gap-1.5 text-emerald-800 font-bold bg-emerald-50/90 hover:bg-emerald-100/90 px-2.5 py-0.5 rounded-lg border border-emerald-300 text-[11px] transition cursor-pointer shadow-2xs"
-              title="ระบบเชื่อมต่อคลาวด์อัตโนมัติ รองรับ Vercel, GitHub และเชื่อมโยงทุกอุปกรณ์ตรงกันทันที (คลิกเพื่ออัปเดตข้อมูล)"
+              className="flex items-center gap-1.5 text-white font-bold bg-white/15 hover:bg-white/25 px-2.5 py-0.5 rounded-lg border border-white/20 text-[11px] transition cursor-pointer shadow-2xs"
+              title="ระบบเชื่อมต่อคลาวด์อัตโนมัติ รองรับ Vercel, GitHub และเชื่อมโยงทุกอุปกรณ์ตรงกันทันที"
             >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>🟢 ซิงค์อัตโนมัติ Cloud Real-Time</span>
               {activeDevicesCount !== undefined && activeDevicesCount > 0 && (
-                <span className="bg-emerald-200 text-emerald-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">
+                <span className="bg-white/25 text-white text-[10px] px-1.5 py-0.2 rounded-full font-black">
                   {activeDevicesCount} เครื่อง
                 </span>
               )}
@@ -367,33 +346,44 @@ export const Header: React.FC<HeaderProps> = ({
 
             {user && (
               <>
-                <span className="hidden sm:inline text-pink-300">•</span>
-                <span className="flex items-center gap-1 text-emerald-700 font-medium">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                <span className="hidden sm:inline text-rose-400">•</span>
+                <span className="flex items-center gap-1 text-emerald-300 font-medium">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-300" />
                   Google Sheet เชื่อมต่อแล้ว
                 </span>
               </>
             )}
 
-            <span className="hidden sm:inline text-pink-300">•</span>
-            <span className="hidden sm:inline text-slate-500 truncate max-w-xs">
-              Sheet ID: <code className="bg-white/90 px-1.5 py-0.5 rounded text-[10px] text-slate-700 border border-pink-200 font-mono">{spreadsheetId}</code>
+            <span className="hidden sm:inline text-rose-400">•</span>
+            <span className="hidden sm:inline text-pink-100/90 truncate max-w-xs">
+              Sheet ID: <code className="bg-black/20 px-1.5 py-0.5 rounded text-[10px] text-pink-100 border border-white/20 font-mono">{spreadsheetId}</code>
             </span>
+
+            {/* Display active practitioner info subtly in the status line */}
+            {activeTeamMember && (
+              <>
+                <span className="hidden md:inline text-rose-400">•</span>
+                <span className="hidden md:inline-flex items-center gap-1 text-pink-100 font-medium">
+                  <UserCheck className="w-3.5 h-3.5 text-pink-300" />
+                  <span>ผู้ปฏิบัติงาน: <strong>{activeTeamMember.name}</strong> ({activeTeamMember.position})</span>
+                </span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
             {lastSyncTime && (
-              <span className="text-slate-500">
-                ซิงค์ล่าสุด: <strong className="text-slate-700 font-bold">{lastSyncTime}</strong>
+              <span className="text-pink-100/80">
+                ซิงค์ล่าสุด: <strong className="text-white font-bold">{lastSyncTime}</strong>
               </span>
             )}
 
             {/* Mobile Role Switcher */}
-            <div className="flex lg:hidden items-center gap-1 bg-white p-0.5 rounded-lg border border-pink-200">
+            <div className="flex lg:hidden items-center gap-1 bg-black/20 p-0.5 rounded-lg border border-white/20">
               <button
                 onClick={() => onSelectRole('pharmacist')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  currentRole === 'pharmacist' ? 'bg-pink-400 text-white' : 'text-slate-600'
+                  currentRole === 'pharmacist' ? 'bg-white text-rose-900' : 'text-pink-100'
                 }`}
               >
                 เภสัช
@@ -401,7 +391,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => onSelectRole('nurse')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  currentRole === 'nurse' ? 'bg-teal-500 text-white' : 'text-slate-600'
+                  currentRole === 'nurse' ? 'bg-white text-teal-900' : 'text-pink-100'
                 }`}
               >
                 พยาบาล
@@ -409,7 +399,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => onSelectRole('psychologist')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  currentRole === 'psychologist' ? 'bg-amber-200 text-amber-950 border border-amber-300' : 'text-slate-600'
+                  currentRole === 'psychologist' ? 'bg-white text-amber-900' : 'text-pink-100'
                 }`}
               >
                 จิตวิทยา
@@ -417,7 +407,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 onClick={() => onSelectRole('public_health')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                  currentRole === 'public_health' ? 'bg-blue-600 text-white' : 'text-slate-600'
+                  currentRole === 'public_health' ? 'bg-white text-blue-900' : 'text-pink-100'
                 }`}
               >
                 สธ.
