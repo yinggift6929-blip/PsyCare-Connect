@@ -147,9 +147,9 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
             <PatientGenderAvatar gender={patient.gender} size="lg" />
           </div>
 
-          <div className="flex-1 min-w-0 space-y-2.5">
+          <div className="flex-1 min-w-0 space-y-3.5 pt-0.5">
             {/* Row 1: ชื่อ สกุล ในบรรทัดเดียวกัน ต่อด้วย กล่อง HN: */}
-            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap pb-1.5 border-b border-slate-100/90">
               <h2 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
                 {patient.name}
               </h2>
@@ -178,7 +178,7 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({
             </div>
 
             {/* Row 2: การวินิจฉัย (การวินิจฉัยโรคชัดเจน ต่อจากบรรทัดชื่อและ HN) */}
-            <div className="flex items-center gap-2.5 flex-wrap pt-0.5">
+            <div className="flex items-center gap-2.5 flex-wrap pt-1">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50/90 border border-amber-300 text-amber-950 shadow-2xs">
                 <Activity className="w-4 h-4 text-amber-600 shrink-0" />
                 <span className="text-xs font-bold text-amber-800">การวินิจฉัย:</span>

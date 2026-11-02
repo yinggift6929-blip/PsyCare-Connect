@@ -23,7 +23,12 @@ import {
   User, 
   CalendarClock, 
   ArrowRight,
-  Filter
+  Filter,
+  Copy,
+  FileText,
+  Save,
+  RotateCcw,
+  ChevronUp
 } from 'lucide-react';
 import { 
   Patient, 
@@ -67,6 +72,7 @@ interface PharmacistCareTabProps {
   onSaveMars5?: (record: Partial<Mars5Assessment>, updatedAdherencePercent?: number) => void;
   onUpdateAppointment?: (patientId: string, appointment: { nextAppointment?: string; nextAppointmentType?: 'home_visit' | 'telemed' | 'clinic'; nextAppointmentObjective?: string }) => void;
   onResolveHandover?: (id: string, responseNote?: string) => void;
+  onSaveHosxpNote?: (patientId: string, note: string) => void;
 }
 
 // 6 Required DRP Topics (Requirement 2)
@@ -102,7 +108,8 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
   onSaveSafetyLog,
   onSaveMars5,
   onUpdateAppointment,
-  onResolveHandover
+  onResolveHandover,
+  onSaveHosxpNote
 }) => {
   const patientMeds = medications.filter(m => m.patientId === patient.id);
   const patientDtps = dtps.filter(d => d.patientId === patient.id);
@@ -121,6 +128,164 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
     (h.subject.includes('Med Rec') || h.subject.includes('รพ.อื่น') || h.content.includes('Medication Reconciliation')) &&
     h.status === 'open'
   );
+
+  // ==========================================
+  // Section 0 State: บันทึกข้อมูลการบริบาลเภสัชกรรมทั้งหมด ใน HOSxP
+  // ==========================================
+  const [hosxpNote, setHosxpNote] = useState<string>(() => {
+    return patient.hosxpPharmacyNote || 
+      localStorage.getItem(`psycare_hosxp_note_${patient.id}`) || 
+      '';
+  });
+  const [isCopiedHosxp, setIsCopiedHosxp] = useState(false);
+  const [isSavedHosxp, setIsSavedHosxp] = useState(false);
+  const [isHosxpBoxCollapsed, setIsHosxpBoxCollapsed] = useState(false);
+  const [selectedHosxpTemplate, setSelectedHosxpTemplate] = useState<string>('default');
+
+  // Synchronize when active patient changes
+  useEffect(() => {
+    const saved = patient.hosxpPharmacyNote || localStorage.getItem(`psycare_hosxp_note_${patient.id}`) || '';
+    setHosxpNote(saved);
+  }, [patient.id, patient.hosxpPharmacyNote]);
+
+  const handleCopyHosxpNote = async () => {
+    if (!hosxpNote.trim()) {
+      alert('ยังไม่มีข้อความให้คัดลอก กรุณาพิมพ์หรือกดปุ่ม "✨ ดึงสรุปอัตโนมัติ" ก่อนค่ะ');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(hosxpNote);
+      setIsCopiedHosxp(true);
+      setTimeout(() => setIsCopiedHosxp(false), 3000);
+    } catch (e) {
+      alert('ไม่สามารถคัดลอกผ่านคลิปบอร์ดได้ กรุณาลองคลุมดำข้อความแล้วกดคัดลอกด้วยตนเองค่ะ');
+    }
+  };
+
+  const handleSaveHosxp = () => {
+    try {
+      localStorage.setItem(`psycare_hosxp_note_${patient.id}`, hosxpNote);
+    } catch (e) {}
+    if (onSaveHosxpNote) {
+      onSaveHosxpNote(patient.id, hosxpNote);
+    }
+    setIsSavedHosxp(true);
+    setTimeout(() => setIsSavedHosxp(false), 3000);
+  };
+
+  const handleAutoGenerateHosxpNote = (mode: 'full' | 'soap' | 'drp' = 'full') => {
+    const todayTh = new Date().toLocaleDateString('th-TH', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+
+    if (mode === 'soap') {
+      const compiledSoap = `[SOAP NOTE - การบริบาลทางเภสัชกรรม คลินิกจิตเวช HOSxP]
+วันที่: ${todayTh} | HN: ${patient.hn} | ผู้ป่วย: ${patient.name}
+การวินิจฉัย: ${patient.diagnosis || '-'} | กลุ่มติดตาม: ${patient.trackingGroup === 'home_visit' ? 'เยี่ยมบ้าน' : patient.trackingGroup === 'telemed' ? 'Telemed' : 'คลินิก/DRPs'}
+
+S (Subjective):
+- ผู้ป่วย/ญาติให้ข้อมูล: อาการทางจิตทรงตัว ไม่มีอาการกำเริบ รับประทานอาหารและนอนหลับได้
+- ความร่วมมือการใช้ยา: ผู้ป่วยแจ้งรับประทานยาสม่ำเสมอ ${patient.adherenceScore >= 80 ? 'ดี' : 'ต้องเฝ้าระวัง'} (MARS-5: ${latestMars5?.totalScore ?? '-'}/25)
+- อาการไม่พึงประสงค์: ${latestDiepss ? `${latestDiepss.severityLabel} (${latestDiepss.antipsychoticDrug})` : 'ไม่พบอาการสั่นเกร็ง หรือน้ำลายยืด'}
+
+O (Objective):
+- รายการยาที่ได้รับ:
+${patientMeds.length > 0 ? patientMeds.map((m, i) => `  ${i+1}. ${m.name} ${m.sig}`).join('\n') : '  - ไม่พบรายการยา'}
+- ปัญหาจากการใช้ยา (DRPs): ${patientDtps.length > 0 ? patientDtps.map(d => `${d.domain}: ${d.description || ''}`).join(', ') : 'No DRPs'}
+- ผลตรวจ Metabolic: ${latestMetabolic ? `BP: ${latestMetabolic.sbp}/${latestMetabolic.dbp} mmHg, รอบเอว: ${latestMetabolic.waistCm} cm, BMI: ${latestMetabolic.bmi}, FBS: ${latestMetabolic.fbs} mg/dL` : 'ยังไม่มีผลตรวจ'}
+
+A (Assessment):
+- ผู้ป่วย ${patient.diagnosis || 'โรคจิตเวช'} ได้รับยา ${patientMeds[0]?.name || 'Antipsychotic'} ควบคุมอาการได้ดี
+- ปัญหา DRPs: ${patientDtps.length > 0 ? 'พบปัญหาที่ต้องติดตามต่อเนื่อง' : 'ไม่พบปัญหาการใช้ยาที่ต้องแทรกแซงเร่งด่วน'}
+
+P (Plan):
+- ติดตามความร่วมมือในการรับประทานยาอย่างต่อเนื่อง
+- ให้คำแนะนำการใช้ยาตามหลัก 5R และเฝ้าระวังอาการข้างเคียง EPS
+- นัดติดตามครั้งถัดไป: ${patient.nextAppointment ? `${formatAppointmentDate(patient.nextAppointment, 'short')} (${patient.nextAppointmentType || 'clinic'})` : 'ตามแพทย์นัด'}
+
+ผู้บันทึก: ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)
+PsyCare Sheet Connect`;
+      setHosxpNote(compiledSoap);
+      return;
+    }
+
+    if (mode === 'drp') {
+      const compiledDrp = `[บันทึก DRPs & CLINICAL PHARMACY INTERVENTION - HOSxP]
+วันที่: ${todayTh} | HN: ${patient.hn} | ${patient.name}
+การวินิจฉัย: ${patient.diagnosis || '-'}
+
+รายการปัญหาจากการใช้ยา (DRPs):
+${patientDtps.length > 0 
+  ? patientDtps.map((d, i) => `${i + 1}. หัวข้อ: ${d.domain}\n   รายละเอียด: ${d.description || '-'}\n   ยาสาเหตุ: ${d.causeDrug || '-'}\n   ข้อเสนอแนะ/การแทรกแซง: ${d.intervention || '-'}\n   สถานะ: ${d.status === 'resolved' ? 'แก้ไขแล้ว (Resolved)' : 'รอดำเนินการ (Pending)'}`).join('\n\n')
+  : '- ไม่พบปัญหาจากการใช้ยา (No DRPs)'}
+
+คำแนะนำและการบริบาลทางเภสัชกรรม:
+- ให้คำปรึกษาและเน้นย้ำความสำคัญของการรับประทานยาอย่างต่อเนื่อง
+- ส่งต่อประสานงานทีมสหวิชาชีพและแพทย์ผู้ให้การรักษา
+
+ผู้บันทึก: ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)`;
+      setHosxpNote(compiledDrp);
+      return;
+    }
+
+    // Default: FULL COMPREHENSIVE HOSxP Note
+    const medLines = patientMeds.length > 0 
+      ? patientMeds.map((m, i) => `  ${i + 1}. ${m.name} : ${m.sig}${m.indication ? ` (${m.indication})` : ''}`).join('\n')
+      : '  - ไม่พบรายการยาจิตเวชที่บันทึกไว้';
+
+    const drpLines = patientDtps.length > 0
+      ? patientDtps.map((d, i) => `  ${i + 1}. [${d.domain}] ${d.description || ''} (ยาสาเหตุ: ${d.causeDrug || '-'}) -> ข้อเสนอแนะ: ${d.intervention || '-'} [${d.status === 'resolved' ? 'แก้ไขแล้ว' : 'รอดำเนินการ'}]`).join('\n')
+      : '  - ไม่พบปัญหาการใช้ยา (No DRPs)';
+
+    const adherenceSummary = latestMars5 
+      ? `คะแนน MARS-5: ${latestMars5.totalScore}/25 (${latestMars5.interpretation || 'ประเมินแล้ว'}), ประเมินความร่วมมือ: ${patient.adherenceScore}%`
+      : `ความร่วมมือการใช้ยาภาพรวม: ${patient.adherenceScore}% (ยังไม่ได้ประเมิน MARS-5 รอบล่าสุด)`;
+
+    const diepssSummary = latestDiepss
+      ? `คะแนน DIEPSS: ${latestDiepss.totalScore}/36 (${latestDiepss.severityLabel}), ยาที่เฝ้าระวัง: ${latestDiepss.antipsychoticDrug}`
+      : 'ไม่พบรายงานอาการไม่พึงประสงค์รุนแรง (EPS ปกติ)';
+
+    const metabolicSummary = latestMetabolic
+      ? `BP: ${latestMetabolic.sbp}/${latestMetabolic.dbp} mmHg, รอบเอว: ${latestMetabolic.waistCm} cm, BMI: ${latestMetabolic.bmi}, FBS: ${latestMetabolic.fbs} mg/dL, TG: ${latestMetabolic.triglycerides} mg/dL -> ${latestMetabolic.isMetabolicSyndrome ? 'เข้าเกณฑ์ Metabolic Syndrome' : 'ปกติ'}`
+      : 'ยังไม่มีผลตรวจ Metabolic Lab ล่าสุด';
+
+    const appSummary = patient.nextAppointment 
+      ? `นัดครั้งถัดไป: ${formatAppointmentDate(patient.nextAppointment, 'full')} (${patient.nextAppointmentType === 'home_visit' ? 'เยี่ยมบ้าน' : patient.nextAppointmentType === 'telemed' ? 'Telemed' : 'ตรวจคลินิก'}) ${patient.nextAppointmentObjective ? `[วัตถุประสงค์: ${patient.nextAppointmentObjective}]` : ''}`
+      : 'ยังไม่ได้ระบุวันนัดหมายถัดไป';
+
+    const compiledFull = `[บันทึกข้อมูลการบริบาลทางเภสัชกรรมทั้งหมด - สำหรับลงระบบ HOSxP]
+วันที่บันทึก: ${todayTh}
+ผู้ป่วย: ${patient.name} | HN: ${patient.hn} | อายุ: ${patient.age} ปี | เพศ: ${patient.gender}
+การวินิจฉัย (Diagnosis): ${patient.diagnosis || 'Psychiatric Condition'}
+กลุ่มติดตาม: ${patient.trackingGroup === 'home_visit' ? 'เยี่ยมบ้าน (Home Visit)' : patient.trackingGroup === 'telemed' ? 'Telemed' : 'คลินิก/DRPs'} | ความเสี่ยง: ${patient.riskLevel}
+
+1. รายการยาจิตเวชที่ได้รับปัจจุบัน (Current Medication Regimen):
+${medLines}
+
+2. ปัญหาจากการใช้ยาและการบริบาลทางเภสัชกรรม (DRPs & Interventions):
+${drpLines}
+
+3. ความร่วมมือในการใช้ยา (Medication Adherence):
+  - ${adherenceSummary}
+
+4. การเฝ้าระวังอาการไม่พึงประสงค์จากยาจิตเวช (ADR / EPS Monitoring):
+  - ${diepssSummary}
+
+5. ผลตรวจติดตามเมตาบอลิก (Metabolic Syndrome Monitoring):
+  - ${metabolicSummary}
+
+6. แผนการบริบาลและการให้คำแนะนำ (Pharmacy Care Plan & Counseling):
+  - อธิบายการใช้ยา วิธีการรับประทาน และเน้นย้ำความสม่ำเสมอ
+  - ให้ความรู้เรื่องอาการไม่พึงประสงค์ที่ต้องเฝ้าระวัง และข้อควรปฏิบัติ
+  - นัดหมายติดตาม: ${appSummary}
+
+ผู้บันทึก: ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)
+ระบบเชื่อมโยงข้อมูล: PsyCare Sheet Connect (เวชระเบียนจิตเวชชุมชน)`;
+
+    setHosxpNote(compiledFull);
+  };
 
   // ==========================================
   // Section 1 State: Quick Add Medication (Req 3 & 4)
@@ -393,6 +558,166 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-150">
+      {/* ========================================================
+          0. ช่องว่างสำหรับบันทึกข้อมูลการบริบาลเภสัชกรรมทั้งหมด ใน HOSxP (ใต้ชื่อผู้ป่วย สำหรับเภสัชกร)
+         ======================================================== */}
+      <section className="bg-gradient-to-br from-teal-50/90 via-white to-emerald-50/70 rounded-3xl shadow-sm border-2 border-teal-300 p-4 sm:p-5 space-y-3.5 transition-all clinical-record-form">
+        {/* Header Ribbon */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-teal-200">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 bg-gradient-to-br from-teal-600 to-emerald-700 text-white rounded-2xl shadow-xs shrink-0">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[10px] font-black uppercase tracking-wider bg-teal-700 text-white px-2.5 py-0.5 rounded-md shadow-2xs">
+                  HOSxP Note
+                </span>
+                <h3 className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">
+                  บันทึกข้อมูลการบริบาลเภสัชกรรมทั้งหมด ใน Hos XP
+                </h3>
+              </div>
+              <p className="text-xs text-slate-600 mt-0.5">
+                ช่องสำหรับพิมพ์ บันทึก และคัดลอกข้อมูลสรุปการบริบาลทางเภสัชกรรมทั้งหมดไปวางในระบบ HOSxP (ผู้ป่วย: {patient.name} HN: {patient.hn})
+              </p>
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            {/* Auto-generate button */}
+            <button
+              type="button"
+              onClick={() => handleAutoGenerateHosxpNote('full')}
+              className="px-3 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 cursor-pointer"
+              title="ดึงข้อมูลยา DRPs ความร่วมมือ และผลแล็บทั้งหมดของผู้ป่วยคนนี้มาสรุปเป็นข้อความพร้อมลง HOSxP ทันที"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>✨ ดึงสรุปอัตโนมัติ</span>
+            </button>
+
+            {/* Copy button */}
+            <button
+              type="button"
+              onClick={handleCopyHosxpNote}
+              className={`px-3.5 py-1.5 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 cursor-pointer border ${
+                isCopiedHosxp 
+                  ? 'bg-emerald-700 text-white border-emerald-800 ring-2 ring-emerald-300' 
+                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-300'
+              }`}
+              title="คัดลอกข้อความทั้งหมดลงคลิปบอร์ด เพื่อนำไปกดวาง (Ctrl+V) ในระบบ HOSxP"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              <span>{isCopiedHosxp ? '✓ คัดลอกสำเร็จแล้ว!' : '📋 คัดลอกลง HOSxP'}</span>
+            </button>
+
+            {/* Save Note button */}
+            <button
+              type="button"
+              onClick={handleSaveHosxp}
+              className={`px-3 py-1.5 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 cursor-pointer border ${
+                isSavedHosxp
+                  ? 'bg-slate-800 text-white border-slate-900'
+                  : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'
+              }`}
+              title="บันทึกข้อความนี้เก็บไว้ในเวชระเบียนของผู้ป่วย"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>{isSavedHosxp ? '✓ บันทึกแล้ว' : '💾 บันทึก Note'}</span>
+            </button>
+
+            {/* Template Selector */}
+            <select
+              value={selectedHosxpTemplate}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedHosxpTemplate(val);
+                if (val === 'full') handleAutoGenerateHosxpNote('full');
+                else if (val === 'soap') handleAutoGenerateHosxpNote('soap');
+                else if (val === 'drp') handleAutoGenerateHosxpNote('drp');
+                else if (val === 'clear') {
+                  if (confirm('ต้องการล้างข้อความในช่อง HOSxP หรือไม่?')) {
+                    setHosxpNote('');
+                  }
+                  setSelectedHosxpTemplate('default');
+                }
+              }}
+              className="text-xs bg-white text-slate-700 border border-slate-300 rounded-xl px-2.5 py-1.5 font-bold cursor-pointer hover:bg-slate-50"
+              title="เลือกแม่แบบข้อความสำหรับ HOSxP"
+            >
+              <option value="default">📑 แม่แบบ HOSxP ▾</option>
+              <option value="full">1. สรุปครบวงจร (Full Note)</option>
+              <option value="soap">2. แบบฟอร์ม SOAP Note</option>
+              <option value="drp">3. แบบฟอร์ม DRPs & Counseling</option>
+              <option value="clear">🗑️ ล้างข้อความ (Clear)</option>
+            </select>
+
+            {/* Collapse toggle */}
+            <button
+              type="button"
+              onClick={() => setIsHosxpBoxCollapsed(!isHosxpBoxCollapsed)}
+              className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition"
+              title={isHosxpBoxCollapsed ? 'ขยายช่องบันทึก' : 'ย่อช่องบันทึก'}
+            >
+              {isHosxpBoxCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Textarea & Helper Information */}
+        {!isHosxpBoxCollapsed && (
+          <div className="space-y-2 animate-in fade-in duration-150">
+            {/* Quick alert feedback if copied or saved */}
+            {isCopiedHosxp && (
+              <div className="p-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl flex items-center justify-between shadow-xs animate-in slide-in-from-top-1">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                  <span>คัดลอกข้อความสำหรับการบริบาลเภสัชกรรมเรียบร้อยแล้ว พร้อมนำไปวาง (Ctrl+V) ในโปรแกรม HOSxP ได้ทันที!</span>
+                </span>
+                <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono">Clipboard Ready</span>
+              </div>
+            )}
+
+            {isSavedHosxp && (
+              <div className="p-2 bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-xs">
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span>บันทึกข้อมูล Note HOSxP เข้าสู่ระบบเวชระเบียนของผู้ป่วยเรียบร้อยแล้ว</span>
+              </div>
+            )}
+
+            {/* The Main HOSxP Textarea */}
+            <div className="relative">
+              <textarea
+                value={hosxpNote}
+                onChange={(e) => setHosxpNote(e.target.value)}
+                placeholder="พิมพ์บันทึกข้อมูลการบริบาลเภสัชกรรมทั้งหมดสำหรับลงระบบ HOSxP ที่นี่... หรือกดปุ่ม '✨ ดึงสรุปอัตโนมัติ' เพื่อให้ระบบรวบรวมยา, DRPs, ความร่วมมือ, และผลแล็บ มาจัดรูปแบบให้อัตโนมัติ"
+                rows={8}
+                className="w-full p-3.5 bg-white border-2 border-teal-300 focus:border-teal-600 rounded-2xl text-slate-800 font-sans text-sm sm:text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-400/30 transition shadow-xs font-medium resize-y min-h-[160px] sm:min-h-[190px]"
+              />
+            </div>
+
+            {/* Bottom Info bar */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[11px] text-slate-500 pt-0.5 px-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-semibold text-teal-900">
+                  💡 เภสัชกรสามารถพิมพ์แก้ไขเพิ่มเติมในช่องนี้ได้อย่างอิสระ แล้วกด "📋 คัดลอกลง HOSxP" เพื่อนำไปวางใน Hos XP
+                </span>
+                {patient.hosxpNoteUpdatedAt && (
+                  <span className="text-slate-400">
+                    • บันทึกล่าสุด: {patient.hosxpNoteUpdatedAt}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 shrink-0 font-mono text-[10px] text-slate-400">
+                <span>ความยาว: {hosxpNote.length} ตัวอักษร</span>
+                <span>•</span>
+                <span>{hosxpNote.split(/\s+/).filter(Boolean).length} คำ</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* Med Rec Referral Alert Banner from Multidisciplinary Team */}
       {pendingMedRecHandovers.length > 0 && (
         <div className="p-4 bg-gradient-to-r from-amber-50 via-orange-50/50 to-white rounded-3xl border-2 border-amber-300 shadow-xs space-y-3 animate-in fade-in">

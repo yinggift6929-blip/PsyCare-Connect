@@ -1162,6 +1162,26 @@ export default function App() {
     }).catch(() => {});
   };
 
+  // Action: Save HOSxP Pharmacy Care Note
+  const handleSaveHosxpNote = (patientId: string, noteText: string) => {
+    const timestamp = new Date().toLocaleString('th-TH');
+    updateDataAndSync((prev) => ({
+      ...prev,
+      patients: prev.patients.map(p => p.id === patientId ? {
+        ...p,
+        hosxpPharmacyNote: noteText,
+        hosxpNoteUpdatedAt: timestamp
+      } : p)
+    }));
+    try {
+      localStorage.setItem(`psycare_hosxp_note_${patientId}`, noteText);
+    } catch (e) {}
+    setCrossDeviceToast({
+      message: `💾 บันทึก Note การบริบาลเภสัชกรรมสำหรับ HOSxP เรียบร้อยแล้ว`,
+      timestamp
+    });
+  };
+
   // Action: Save & Sync Notification Settings across all devices
   const handleSaveNotificationSettings = async (newSettings: NotificationSettings) => {
     setNotificationSettings(newSettings);
@@ -1350,7 +1370,7 @@ export default function App() {
           </div>
 
           {/* Right Column: Active Patient Care Workspace (8 Cols) */}
-          <div className="lg:col-span-8 space-y-4">
+          <div className="lg:col-span-8 space-y-6">
             {activePatient ? (
               <>
                 {/* Patient Header Banner */}
@@ -1696,6 +1716,7 @@ export default function App() {
                     onSaveSafetyLog={handleSaveSafetyLog}
                     onSaveMars5={handleSaveMars5}
                     onResolveHandover={handleResolveHandover}
+                    onSaveHosxpNote={handleSaveHosxpNote}
                   />
                 )}
 

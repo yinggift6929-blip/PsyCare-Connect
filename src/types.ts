@@ -23,6 +23,8 @@ export interface Patient {
   nextAppointmentType?: 'home_visit' | 'telemed' | 'clinic';
   nextAppointmentObjective?: string;
   updatedAt: string;
+  hosxpPharmacyNote?: string; // บันทึกข้อมูลการบริบาลเภสัชกรรมทั้งหมดสำหรับระบบ HOSxP
+  hosxpNoteUpdatedAt?: string;
 }
 
 export interface Medication {
