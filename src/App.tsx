@@ -1385,7 +1385,7 @@ export default function App() {
                         onClick={() => setActiveTab('analytics')}
                         className={`px-3 py-1.5 rounded-xl flex items-center gap-1.5 text-xs font-bold transition cursor-pointer border ${
                           activeTab === 'analytics'
-                            ? 'bg-sky-600 text-white border-sky-600 shadow-2xs'
+                            ? 'bg-sky-100 text-sky-950 border-2 border-sky-400 shadow-2xs font-black'
                             : 'bg-white hover:bg-sky-50 text-sky-700 border-sky-200 shadow-2xs'
                         }`}
                         title="ดูผลตรวจแล็บและกราฟแนวโน้ม"
@@ -1415,49 +1415,47 @@ export default function App() {
                       onClick={() => setActiveTab('rx')}
                       className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between gap-3 cursor-pointer relative group ${
                         activeTab === 'rx'
-                          ? 'bg-gradient-to-br from-pink-500 via-rose-500 to-pink-600 text-white shadow-md ring-2 ring-pink-400 border-pink-500'
-                          : 'bg-white hover:bg-pink-50/50 border-slate-200 hover:border-pink-300 shadow-2xs'
+                          ? 'bg-gradient-to-br from-rose-50 via-pink-50 to-rose-100/60 border-2 border-rose-400 ring-2 ring-rose-200/70 shadow-xs'
+                          : 'bg-white hover:bg-rose-50/40 border border-slate-200 hover:border-rose-300 shadow-2xs'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className={`p-2.5 rounded-xl transition ${
                           activeTab === 'rx' 
-                            ? 'bg-white/20 text-white shadow-2xs' 
-                            : 'bg-pink-100 text-pink-700 group-hover:bg-pink-200'
+                            ? 'bg-rose-500 text-white shadow-2xs' 
+                            : 'bg-rose-50 text-rose-600 group-hover:bg-rose-100'
                         }`}>
                           <Pill className="w-5 h-5" />
                         </div>
                         <div className="flex items-center gap-1.5 flex-wrap justify-end">
                           {pendingDtpsCount > 0 ? (
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                              activeTab === 'rx' ? 'bg-amber-300 text-amber-950 border-amber-400' : 'bg-amber-100 text-amber-900 border-amber-300'
-                            }`}>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 shadow-2xs">
                               ⚠️ DRP {pendingDtpsCount}
                             </span>
                           ) : (
-                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                              activeTab === 'rx' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                            <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
+                              activeTab === 'rx' ? 'bg-white/80 text-rose-700 border-rose-200' : 'bg-slate-100 text-slate-600 border-slate-200'
                             }`}>
                               DRP ปกติ
                             </span>
                           )}
                           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                            activeTab === 'rx' ? 'bg-white/20 text-white border-white/30' : 'bg-pink-50 text-pink-700 border-pink-200'
+                            activeTab === 'rx' ? 'bg-white/80 text-rose-800 border-rose-200' : 'bg-rose-50 text-rose-700 border-rose-200'
                           }`}>
                             {patientMedsCount} ยา
                           </span>
                         </div>
                       </div>
                       <div>
-                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'rx' ? 'text-white' : 'text-slate-900'}`}>
+                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'rx' ? 'text-rose-950' : 'text-slate-800 group-hover:text-rose-900'}`}>
                           1. การบริบาลเภสัชกรรม
                         </div>
-                        <div className={`text-xs mt-1 ${activeTab === 'rx' ? 'text-pink-100' : 'text-slate-500'}`}>
+                        <div className={`text-xs mt-1 ${activeTab === 'rx' ? 'text-rose-700/90 font-medium' : 'text-slate-500'}`}>
                           เภสัชกร • Rx Care, DRPs & ข้อมูลการใช้ยา
                         </div>
                       </div>
                       <div className={`text-[11px] font-bold flex items-center justify-between pt-2 border-t w-full ${
-                        activeTab === 'rx' ? 'text-white/90 border-white/20' : 'text-pink-600 border-slate-100 group-hover:text-pink-700'
+                        activeTab === 'rx' ? 'text-rose-700 border-rose-200' : 'text-slate-400 border-slate-100 group-hover:text-rose-600'
                       }`}>
                         <span>{activeTab === 'rx' ? '● กำลังบันทึก / แสดงเนื้อหา' : 'คลิกเพื่อบันทึกข้อมูล'}</span>
                         <span className="text-[10px] opacity-80">เภสัชกร</span>
@@ -1470,34 +1468,34 @@ export default function App() {
                       onClick={() => setActiveTab('psych')}
                       className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between gap-3 cursor-pointer relative group ${
                         activeTab === 'psych'
-                          ? 'bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-white shadow-md ring-2 ring-amber-400 border-amber-500'
-                          : 'bg-white hover:bg-amber-50/50 border-slate-200 hover:border-amber-300 shadow-2xs'
+                          ? 'bg-gradient-to-br from-amber-50 via-orange-50/60 to-amber-100/60 border-2 border-amber-400 ring-2 ring-amber-200/70 shadow-xs'
+                          : 'bg-white hover:bg-amber-50/40 border border-slate-200 hover:border-amber-300 shadow-2xs'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className={`p-2.5 rounded-xl transition ${
                           activeTab === 'psych' 
-                            ? 'bg-white/20 text-white shadow-2xs' 
-                            : 'bg-amber-100 text-amber-800 group-hover:bg-amber-200'
+                            ? 'bg-amber-500 text-white shadow-2xs' 
+                            : 'bg-amber-50 text-amber-700 group-hover:bg-amber-100'
                         }`}>
                           <Brain className="w-5 h-5" />
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                          activeTab === 'psych' ? 'bg-white/20 text-white border-white/30' : 'bg-amber-50 text-amber-800 border-amber-200'
+                          activeTab === 'psych' ? 'bg-white/80 text-amber-900 border-amber-200' : 'bg-amber-50 text-amber-800 border-amber-200'
                         }`}>
                           {patientPsychCount} บันทึกประเมิน
                         </span>
                       </div>
                       <div>
-                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'psych' ? 'text-white' : 'text-slate-900'}`}>
+                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'psych' ? 'text-amber-950' : 'text-slate-800 group-hover:text-amber-900'}`}>
                           2. การประเมินของนักจิตวิทยา
                         </div>
-                        <div className={`text-xs mt-1 ${activeTab === 'psych' ? 'text-amber-100' : 'text-slate-500'}`}>
+                        <div className={`text-xs mt-1 ${activeTab === 'psych' ? 'text-amber-800/90 font-medium' : 'text-slate-500'}`}>
                           นักจิตวิทยา • แบบประเมินสุขภาพจิต & CBT
                         </div>
                       </div>
                       <div className={`text-[11px] font-bold flex items-center justify-between pt-2 border-t w-full ${
-                        activeTab === 'psych' ? 'text-white/90 border-white/20' : 'text-amber-700 border-slate-100 group-hover:text-amber-800'
+                        activeTab === 'psych' ? 'text-amber-800 border-amber-200' : 'text-slate-400 border-slate-100 group-hover:text-amber-700'
                       }`}>
                         <span>{activeTab === 'psych' ? '● กำลังบันทึก / แสดงเนื้อหา' : 'คลิกเพื่อบันทึกข้อมูล'}</span>
                         <span className="text-[10px] opacity-80">นักจิตวิทยา</span>
@@ -1510,34 +1508,34 @@ export default function App() {
                       onClick={() => setActiveTab('telemed')}
                       className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between gap-3 cursor-pointer relative group ${
                         activeTab === 'telemed'
-                          ? 'bg-gradient-to-br from-teal-500 via-emerald-600 to-teal-600 text-white shadow-md ring-2 ring-teal-400 border-teal-500'
-                          : 'bg-white hover:bg-teal-50/50 border-slate-200 hover:border-teal-300 shadow-2xs'
+                          ? 'bg-gradient-to-br from-teal-50 via-emerald-50/60 to-teal-100/60 border-2 border-teal-400 ring-2 ring-teal-200/70 shadow-xs'
+                          : 'bg-white hover:bg-teal-50/40 border border-slate-200 hover:border-teal-300 shadow-2xs'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className={`p-2.5 rounded-xl transition ${
                           activeTab === 'telemed' 
-                            ? 'bg-white/20 text-white shadow-2xs' 
-                            : 'bg-teal-100 text-teal-700 group-hover:bg-teal-200'
+                            ? 'bg-teal-600 text-white shadow-2xs' 
+                            : 'bg-teal-50 text-teal-700 group-hover:bg-teal-100'
                         }`}>
                           <PhoneCall className="w-5 h-5" />
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                          activeTab === 'telemed' ? 'bg-white/20 text-white border-white/30' : 'bg-teal-50 text-teal-700 border-teal-200'
+                          activeTab === 'telemed' ? 'bg-white/80 text-teal-900 border-teal-200' : 'bg-teal-50 text-teal-700 border-teal-200'
                         }`}>
                           {patientTelemedCount} บันทึกติดตาม
                         </span>
                       </div>
                       <div>
-                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'telemed' ? 'text-white' : 'text-slate-900'}`}>
+                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'telemed' ? 'text-teal-950' : 'text-slate-800 group-hover:text-teal-900'}`}>
                           3. การติดตาม Telemed
                         </div>
-                        <div className={`text-xs mt-1 ${activeTab === 'telemed' ? 'text-teal-100' : 'text-slate-500'}`}>
+                        <div className={`text-xs mt-1 ${activeTab === 'telemed' ? 'text-teal-800/90 font-medium' : 'text-slate-500'}`}>
                           โทร / Video Call • Telepsychiatry
                         </div>
                       </div>
                       <div className={`text-[11px] font-bold flex items-center justify-between pt-2 border-t w-full ${
-                        activeTab === 'telemed' ? 'text-white/90 border-white/20' : 'text-teal-700 border-slate-100 group-hover:text-teal-800'
+                        activeTab === 'telemed' ? 'text-teal-700 border-teal-200' : 'text-slate-400 border-slate-100 group-hover:text-teal-700'
                       }`}>
                         <span>{activeTab === 'telemed' ? '● กำลังบันทึก / แสดงเนื้อหา' : 'คลิกเพื่อบันทึกข้อมูล'}</span>
                         <span className="text-[10px] opacity-80">Telemed</span>
@@ -1550,34 +1548,34 @@ export default function App() {
                       onClick={() => setActiveTab('nurse')}
                       className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between gap-3 cursor-pointer relative group ${
                         activeTab === 'nurse'
-                          ? 'bg-gradient-to-br from-cyan-600 via-sky-600 to-blue-600 text-white shadow-md ring-2 ring-cyan-400 border-cyan-500'
-                          : 'bg-white hover:bg-cyan-50/50 border-slate-200 hover:border-cyan-300 shadow-2xs'
+                          ? 'bg-gradient-to-br from-cyan-50 via-sky-50/60 to-cyan-100/60 border-2 border-cyan-400 ring-2 ring-cyan-200/70 shadow-xs'
+                          : 'bg-white hover:bg-cyan-50/40 border border-slate-200 hover:border-cyan-300 shadow-2xs'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className={`p-2.5 rounded-xl transition ${
                           activeTab === 'nurse' 
-                            ? 'bg-white/20 text-white shadow-2xs' 
-                            : 'bg-cyan-100 text-cyan-700 group-hover:bg-cyan-200'
+                            ? 'bg-cyan-600 text-white shadow-2xs' 
+                            : 'bg-cyan-50 text-cyan-700 group-hover:bg-cyan-100'
                         }`}>
                           <Stethoscope className="w-5 h-5" />
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                          activeTab === 'nurse' ? 'bg-white/20 text-white border-white/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200'
+                          activeTab === 'nurse' ? 'bg-white/80 text-cyan-900 border-cyan-200' : 'bg-cyan-50 text-cyan-700 border-cyan-200'
                         }`}>
                           {patientNurseCount} บันทึกพยาบาล
                         </span>
                       </div>
                       <div>
-                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'nurse' ? 'text-white' : 'text-slate-900'}`}>
+                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'nurse' ? 'text-cyan-950' : 'text-slate-800 group-hover:text-cyan-900'}`}>
                           4. บันทึกการพยาบาล
                         </div>
-                        <div className={`text-xs mt-1 ${activeTab === 'nurse' ? 'text-cyan-100' : 'text-slate-500'}`}>
+                        <div className={`text-xs mt-1 ${activeTab === 'nurse' ? 'text-cyan-800/90 font-medium' : 'text-slate-500'}`}>
                           พยาบาลวิชาชีพ • ซักประวัติ & สัญญาณชีพ
                         </div>
                       </div>
                       <div className={`text-[11px] font-bold flex items-center justify-between pt-2 border-t w-full ${
-                        activeTab === 'nurse' ? 'text-white/90 border-white/20' : 'text-cyan-700 border-slate-100 group-hover:text-cyan-800'
+                        activeTab === 'nurse' ? 'text-cyan-700 border-cyan-200' : 'text-slate-400 border-slate-100 group-hover:text-cyan-700'
                       }`}>
                         <span>{activeTab === 'nurse' ? '● กำลังบันทึก / แสดงเนื้อหา' : 'คลิกเพื่อบันทึกข้อมูล'}</span>
                         <span className="text-[10px] opacity-80">พยาบาล</span>
@@ -1590,34 +1588,34 @@ export default function App() {
                       onClick={() => setActiveTab('homevisit')}
                       className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between gap-3 cursor-pointer relative group ${
                         activeTab === 'homevisit'
-                          ? 'bg-gradient-to-br from-indigo-500 via-indigo-600 to-violet-600 text-white shadow-md ring-2 ring-indigo-400 border-indigo-500'
-                          : 'bg-white hover:bg-indigo-50/50 border-slate-200 hover:border-indigo-300 shadow-2xs'
+                          ? 'bg-gradient-to-br from-indigo-50 via-blue-50/60 to-indigo-100/60 border-2 border-indigo-400 ring-2 ring-indigo-200/70 shadow-xs'
+                          : 'bg-white hover:bg-indigo-50/40 border border-slate-200 hover:border-indigo-300 shadow-2xs'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className={`p-2.5 rounded-xl transition ${
                           activeTab === 'homevisit' 
-                            ? 'bg-white/20 text-white shadow-2xs' 
-                            : 'bg-indigo-100 text-indigo-700 group-hover:bg-indigo-200'
+                            ? 'bg-indigo-600 text-white shadow-2xs' 
+                            : 'bg-indigo-50 text-indigo-700 group-hover:bg-indigo-100'
                         }`}>
                           <Home className="w-5 h-5" />
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                          activeTab === 'homevisit' ? 'bg-white/20 text-white border-white/30' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                          activeTab === 'homevisit' ? 'bg-white/80 text-indigo-900 border-indigo-200' : 'bg-indigo-50 text-indigo-700 border-indigo-200'
                         }`}>
                           {patientHomeVisitsCount} บันทึกเยี่ยม
                         </span>
                       </div>
                       <div>
-                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'homevisit' ? 'text-white' : 'text-slate-900'}`}>
+                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'homevisit' ? 'text-indigo-950' : 'text-slate-800 group-hover:text-indigo-900'}`}>
                           5. การเยี่ยมบ้าน (Home Visit)
                         </div>
-                        <div className={`text-xs mt-1 ${activeTab === 'homevisit' ? 'text-indigo-100' : 'text-slate-500'}`}>
+                        <div className={`text-xs mt-1 ${activeTab === 'homevisit' ? 'text-indigo-800/90 font-medium' : 'text-slate-500'}`}>
                           ทีมสหวิชาชีพ • ลงพื้นที่ & ภาพถ่าย
                         </div>
                       </div>
                       <div className={`text-[11px] font-bold flex items-center justify-between pt-2 border-t w-full ${
-                        activeTab === 'homevisit' ? 'text-white/90 border-white/20' : 'text-indigo-700 border-slate-100 group-hover:text-indigo-800'
+                        activeTab === 'homevisit' ? 'text-indigo-700 border-indigo-200' : 'text-slate-400 border-slate-100 group-hover:text-indigo-700'
                       }`}>
                         <span>{activeTab === 'homevisit' ? '● กำลังบันทึก / แสดงเนื้อหา' : 'คลิกเพื่อบันทึกข้อมูล'}</span>
                         <span className="text-[10px] opacity-80">เยี่ยมบ้าน</span>
@@ -1630,42 +1628,40 @@ export default function App() {
                       onClick={() => setActiveTab('handover')}
                       className={`p-4 rounded-2xl border text-left transition flex flex-col justify-between gap-3 cursor-pointer relative group ${
                         activeTab === 'handover'
-                          ? 'bg-gradient-to-br from-purple-500 via-purple-600 to-fuchsia-600 text-white shadow-md ring-2 ring-purple-400 border-purple-500'
-                          : 'bg-white hover:bg-purple-50/50 border-slate-200 hover:border-purple-300 shadow-2xs'
+                          ? 'bg-gradient-to-br from-purple-50 via-fuchsia-50/60 to-purple-100/60 border-2 border-purple-400 ring-2 ring-purple-200/70 shadow-xs'
+                          : 'bg-white hover:bg-purple-50/40 border border-slate-200 hover:border-purple-300 shadow-2xs'
                       }`}
                     >
                       <div className="flex items-center justify-between w-full">
                         <div className={`p-2.5 rounded-xl transition ${
                           activeTab === 'handover' 
-                            ? 'bg-white/20 text-white shadow-2xs' 
-                            : 'bg-purple-100 text-purple-700 group-hover:bg-purple-200'
+                            ? 'bg-purple-600 text-white shadow-2xs' 
+                            : 'bg-purple-50 text-purple-700 group-hover:bg-purple-100'
                         }`}>
                           <MessageSquare className="w-5 h-5" />
                         </div>
                         {openHandoversCount > 0 ? (
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                            activeTab === 'handover' ? 'bg-rose-500 text-white border-rose-300' : 'bg-rose-100 text-rose-800 border-rose-300'
-                          }`}>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300 shadow-2xs">
                             {openHandoversCount} เรื่องเปิดอยู่
                           </span>
                         ) : (
-                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
-                            activeTab === 'handover' ? 'bg-white/20 text-white' : 'bg-purple-50 text-purple-700'
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${
+                            activeTab === 'handover' ? 'bg-white/80 text-purple-800 border-purple-200' : 'bg-purple-50 text-purple-700 border-purple-200'
                           }`}>
                             สื่อสารปกติ
                           </span>
                         )}
                       </div>
                       <div>
-                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'handover' ? 'text-white' : 'text-slate-900'}`}>
+                        <div className={`text-sm sm:text-base font-black leading-tight ${activeTab === 'handover' ? 'text-purple-950' : 'text-slate-800 group-hover:text-purple-900'}`}>
                           6. ส่งต่อสหวิชาชีพ
                         </div>
-                        <div className={`text-xs mt-1 ${activeTab === 'handover' ? 'text-purple-100' : 'text-slate-500'}`}>
+                        <div className={`text-xs mt-1 ${activeTab === 'handover' ? 'text-purple-800/90 font-medium' : 'text-slate-500'}`}>
                           Handover Board • ปรึกษา & ประสานงาน
                         </div>
                       </div>
                       <div className={`text-[11px] font-bold flex items-center justify-between pt-2 border-t w-full ${
-                        activeTab === 'handover' ? 'text-white/90 border-white/20' : 'text-purple-700 border-slate-100 group-hover:text-purple-800'
+                        activeTab === 'handover' ? 'text-purple-700 border-purple-200' : 'text-slate-400 border-slate-100 group-hover:text-purple-700'
                       }`}>
                         <span>{activeTab === 'handover' ? '● กำลังบันทึก / แสดงเนื้อหา' : 'คลิกเพื่อบันทึกข้อมูล'}</span>
                         <span className="text-[10px] opacity-80">Handover</span>
