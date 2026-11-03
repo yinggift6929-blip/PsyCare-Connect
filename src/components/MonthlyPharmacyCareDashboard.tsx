@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   BarChart3, 
   Calendar, 
@@ -22,10 +22,10 @@ import {
   ClipboardCheck, 
   HeartHandshake, 
   Sparkles, 
-  X,
-  Search,
-  ArrowUpRight,
-  Filter
+  X, 
+  Search, 
+  ArrowUpRight, 
+  Filter 
 } from 'lucide-react';
 import { 
   Patient, 
@@ -41,7 +41,7 @@ import {
   MetabolicRecord,
   DtpDomain
 } from '../types.ts';
-import { formatAppointmentDate } from '../utils/dateUtils.ts';
+import { formatAppointmentDate, getYearMonth, getCurrentYearMonth } from '../utils/dateUtils.ts';
 
 interface MonthlyPharmacyCareDashboardProps {
   isOpen: boolean;
@@ -78,12 +78,14 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
   onSelectPatient,
   onSyncNow
 }) => {
-  // Extract all available months from records
+  // Extract all available months from records using robust getYearMonth
   const availableMonths = useMemo(() => {
-    const dates: string[] = [];
+    const dates: (string | undefined | null)[] = [];
     patients.forEach(p => {
       if (p.lastVisit) dates.push(p.lastVisit);
       if (p.nextAppointment) dates.push(p.nextAppointment);
+      if (p.updatedAt) dates.push(p.updatedAt);
+      if (p.hosxpNoteUpdatedAt) dates.push(p.hosxpNoteUpdatedAt);
     });
     dtps.forEach(d => { if (d.date) dates.push(d.date); });
     homeVisits.forEach(h => { if (h.date) dates.push(h.date); });
@@ -94,30 +96,48 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
 
     const monthSet = new Set<string>();
     dates.forEach(d => {
-      if (d && d.length >= 7) {
-        monthSet.add(d.substring(0, 7)); // YYYY-MM
-      }
+      const ym = getYearMonth(d);
+      if (ym) monthSet.add(ym);
     });
 
-    // Ensure current month (e.g. 2026-10) is always available
+    // Ensure current month (e.g. 2026-11) is always included
+    const currentYM = getCurrentYearMonth();
+    monthSet.add(currentYM);
     monthSet.add('2026-10');
-    monthSet.add('2026-09');
 
     const sorted = Array.from(monthSet).sort().reverse();
     return sorted;
   }, [patients, dtps, homeVisits, telemedRecords, mars5Records, diepssRecords, metabolicRecords]);
 
-  // Selected Month (default to newest month)
-  const [selectedMonth, setSelectedMonth] = useState<string>(availableMonths[0] || '2026-10');
+  // Selected Month (default to current month or first available or 'all')
+  const currentYM = useMemo(() => getCurrentYearMonth(), []);
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    return availableMonths.includes(currentYM) ? currentYM : (availableMonths[0] || 'all');
+  });
   const [filterGroup, setFilterGroup] = useState<'all' | 'home_visit' | 'telemed' | 'clinic_dtp'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [copiedSummary, setCopiedSummary] = useState(false);
+
+  // Synchronize selected month when modal opens or available months change
+  useEffect(() => {
+    if (isOpen) {
+      if (selectedMonth !== 'all' && !availableMonths.includes(selectedMonth)) {
+        if (availableMonths.includes(currentYM)) {
+          setSelectedMonth(currentYM);
+        } else if (availableMonths.length > 0) {
+          setSelectedMonth(availableMonths[0]);
+        } else {
+          setSelectedMonth('all');
+        }
+      }
+    }
+  }, [isOpen, availableMonths, currentYM, selectedMonth]);
 
   if (!isOpen) return null;
 
   // Thai month names
   const formatThaiMonth = (ym: string) => {
-    if (ym === 'all') return 'สรุปภาพรวมทั้งปี (Year-to-Date)';
+    if (ym === 'all') return 'สรุปภาพรวมสะสมทั้งหมด (All Records)';
     const parts = ym.split('-');
     if (parts.length < 2) return ym;
     const year = parseInt(parts[0], 10) + 543;
@@ -142,11 +162,12 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
     }
   };
 
-  // Filter records according to selected month
-  const isDateInSelectedMonth = (dStr?: string) => {
+  // Filter records according to selected month using getYearMonth
+  const isDateInSelectedMonth = (dStr?: string | null) => {
     if (!dStr) return false;
     if (selectedMonth === 'all') return true;
-    return dStr.startsWith(selectedMonth);
+    const ym = getYearMonth(dStr);
+    return ym === selectedMonth;
   };
 
   // Filtered DTPs for this month
@@ -169,18 +190,31 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
   // Patients active or scheduled in this month or with DTPs in this month
   const monthlyPatientIds = new Set<string>();
   patients.forEach(p => {
-    if (isDateInSelectedMonth(p.lastVisit) || isDateInSelectedMonth(p.nextAppointment)) {
+    if (
+      isDateInSelectedMonth(p.lastVisit) || 
+      isDateInSelectedMonth(p.nextAppointment) ||
+      isDateInSelectedMonth(p.updatedAt) ||
+      isDateInSelectedMonth(p.hosxpNoteUpdatedAt)
+    ) {
       monthlyPatientIds.add(p.id);
     }
   });
   monthlyDtps.forEach(d => monthlyPatientIds.add(d.patientId));
   monthlyHomeVisits.forEach(h => monthlyPatientIds.add(h.patientId));
   monthlyTelemeds.forEach(t => monthlyPatientIds.add(t.patientId));
+  monthlyMars5.forEach(m => monthlyPatientIds.add(m.patientId));
+  monthlyDiepss.forEach(d => monthlyPatientIds.add(d.patientId));
+  monthlyMetabolics.forEach(met => monthlyPatientIds.add(met.patientId));
 
-  // If few specific month records, include all patients if viewing all or default
-  const activePatientsInMonth = patients.filter(p => 
-    selectedMonth === 'all' || monthlyPatientIds.has(p.id) || patients.length <= 5
-  );
+  // If specific month has matched records, use those.
+  // If viewing all, or if no patients specifically have an appointment in the chosen month,
+  // show all clinic patients so the user ALWAYS sees their registered clinic cohort!
+  const hasSpecificMonthMatches = monthlyPatientIds.size > 0;
+  const isShowingAllAsFallback = selectedMonth !== 'all' && !hasSpecificMonthMatches && patients.length > 0;
+
+  const activePatientsInMonth = (selectedMonth === 'all' || !hasSpecificMonthMatches)
+    ? patients
+    : patients.filter(p => monthlyPatientIds.has(p.id));
 
   // Group distributions (3 Groups: เยี่ยมบ้าน, telemed, คลินิก/DRPs)
   const homeVisitGroupPatients = activePatientsInMonth.filter(p => p.trackingGroup === 'home_visit');
@@ -403,12 +437,12 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
               onChange={(e) => setSelectedMonth(e.target.value)}
               className="text-xs font-bold bg-white border border-sky-300 text-sky-950 px-3 py-1.5 rounded-xl shadow-2xs focus:ring-2 focus:ring-sky-400 focus:outline-none cursor-pointer"
             >
+              <option value="all">📊 สรุปภาพรวมสะสมทั้งหมด (All Records / ผู้ป่วยทั้งหมด)</option>
               {availableMonths.map(m => (
                 <option key={m} value={m}>
-                  {formatThaiMonth(m)}
+                  {formatThaiMonth(m)} {m === currentYM ? '⭐ (เดือนปัจจุบัน)' : ''}
                 </option>
               ))}
-              <option value="all">สรุปภาพรวมสะสมทั้งหมด (All Records)</option>
             </select>
 
             {/* Next Month */}
@@ -420,11 +454,40 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
             >
               <ChevronRight className="w-3.5 h-3.5" />
             </button>
+
+            {/* Quick Switch Buttons */}
+            <div className="flex items-center gap-1 ml-1">
+              <button
+                type="button"
+                onClick={() => setSelectedMonth('all')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition shadow-2xs ${
+                  selectedMonth === 'all'
+                    ? 'bg-sky-600 text-white'
+                    : 'bg-white hover:bg-sky-50 text-slate-700 border border-slate-200'
+                }`}
+                title="แสดงข้อมูลสรุปผลงานสะสมทุกเดือนทั้งหมด"
+              >
+                📊 ภาพรวมทั้งหมด
+              </button>
+              <button
+                type="button"
+                onClick={() => setSelectedMonth(currentYM)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition shadow-2xs ${
+                  selectedMonth === currentYM
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-white hover:bg-indigo-50 text-slate-700 border border-slate-200'
+                }`}
+                title="สลับไปดูข้อมูลประจำเดือนปัจจุบัน"
+              >
+                📅 เดือนปัจจุบัน
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500">
-              สถานะ: <strong>สรุปผลงาน {formatThaiMonth(selectedMonth)}</strong>
+            <span className="text-xs text-slate-600 bg-white px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs">
+              สถานะ: <strong className="text-slate-900">{formatThaiMonth(selectedMonth)}</strong>
+              <span className="text-slate-400 ml-1.5 font-normal">({activePatientsInMonth.length} ราย)</span>
             </span>
           </div>
         </div>
@@ -440,6 +503,25 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
               ประจำเดือน: {formatThaiMonth(selectedMonth)} • กลุ่มงานเภสัชกรรมและเครือข่ายบริการสุขภาพจิต
             </p>
           </div>
+
+          {/* Informative Fallback Notice when a month has no specific appointments */}
+          {isShowingAllAsFallback && (
+            <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs text-amber-900 shadow-2xs animate-in fade-in">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>
+                  <strong>ข้อสังเกต:</strong> ในรอบเดือน <strong>{formatThaiMonth(selectedMonth)}</strong> ยังไม่มีนัดหมายหรือกิจกรรมเฉพาะเจาะจง ระบบจึงแสดงข้อมูลผู้ป่วยทั้งหมดในความดูแลของคลินิกจิตดี (<strong>{patients.length} ราย</strong>) ให้ตรวจสอบ
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedMonth('all')}
+                className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[11px] shrink-0 self-start sm:self-auto transition"
+              >
+                📊 ดูภาพรวมสะสมทั้งหมด
+              </button>
+            </div>
+          )}
 
           {/* 1. Summary KPI Cards (ตัวชี้วัดผลการดำเนินงาน 4 เสาหลัก) */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
@@ -600,7 +682,22 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
               </div>
 
               <span className="text-xs font-bold text-amber-900 bg-amber-50 px-3 py-1 rounded-xl border border-amber-200">
-                พบรวม {monthlyDtps.length} เรื่อง • แก้ไขสำเร็จ {resolvedDtps.length} เรื่อง ({dtpResolutionRate}%)
+                {monthlyDtps.length > 0 ? (
+                  `พบรวม ${monthlyDtps.length} เรื่อง • แก้ไขสำเร็จ ${resolvedDtps.length} เรื่อง (${dtpResolutionRate}%)`
+                ) : (
+                  <span>
+                    ในเดือนนี้ยังไม่พบ DRPs {dtps.length > 0 && `(สะสมทั้งคลินิก ${dtps.length} เรื่อง)`}
+                    {dtps.length > 0 && selectedMonth !== 'all' && (
+                      <button
+                        type="button"
+                        onClick={() => setSelectedMonth('all')}
+                        className="ml-1.5 underline text-sky-700 hover:text-sky-900 font-bold cursor-pointer"
+                      >
+                        ดูทั้งหมด
+                      </button>
+                    )}
+                  </span>
+                )}
               </span>
             </div>
 
@@ -721,69 +818,103 @@ export const MonthlyPharmacyCareDashboard: React.FC<MonthlyPharmacyCareDashboard
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {displayPatients.map(p => {
-                    const pDtps = monthlyDtps.filter(d => d.patientId === p.id);
-                    const pPending = pDtps.filter(d => d.status === 'pending');
-                    return (
-                      <tr key={p.id} className="hover:bg-slate-50/80 transition">
-                        <td className="py-2.5 px-3 font-mono font-bold text-slate-700">{p.hn}</td>
-                        <td className="py-2.5 px-3 font-bold text-slate-900">
-                          {p.name}
-                          {p.statusTag && (
-                            <span className="ml-2 text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded font-normal">
-                              {p.statusTag}
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-2.5 px-3">
-                          {p.trackingGroup === 'home_visit' ? (
-                            <span className="text-[10px] font-bold bg-indigo-50 text-indigo-800 px-2 py-0.5 rounded-md border border-indigo-200">
-                              🏠 เยี่ยมบ้าน
-                            </span>
-                          ) : p.trackingGroup === 'telemed' ? (
-                            <span className="text-[10px] font-bold bg-teal-50 text-teal-800 px-2 py-0.5 rounded-md border border-teal-200">
-                              📱 Telemed
-                            </span>
-                          ) : (
-                            <span className="text-[10px] font-bold bg-rose-50 text-rose-800 px-2 py-0.5 rounded-md border border-rose-200">
-                              🏥 คลินิก/DRPs
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-2.5 px-3 text-slate-700">{p.diagnosis}</td>
-                        <td className="py-2.5 px-3 text-center">
-                          <span className={`font-bold ${
-                            p.adherenceScore >= 80 ? 'text-teal-600' : p.adherenceScore >= 60 ? 'text-amber-600' : 'text-rose-600'
-                          }`}>
-                            {p.adherenceScore}%
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3">
-                          {pDtps.length > 0 ? (
-                            <span className={`text-[11px] font-semibold ${pPending.length > 0 ? 'text-amber-700' : 'text-teal-700'}`}>
-                              พบ {pDtps.length} เรื่อง {pPending.length > 0 ? `(ค้าง ${pPending.length})` : '(แก้ไขครบ)'}
-                            </span>
-                          ) : (
-                            <span className="text-slate-400 text-[11px]">ไม่พบ DRPs</span>
-                          )}
-                        </td>
-                        <td className="py-2.5 px-3 text-right print:hidden">
-                          {onSelectPatient && (
+                  {displayPatients.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-10 bg-slate-50/50">
+                        <div className="flex flex-col items-center justify-center gap-2 max-w-md mx-auto text-slate-500">
+                          <AlertTriangle className="w-8 h-8 text-amber-500" />
+                          <p className="font-bold text-slate-800 text-sm">ไม่พบข้อมูลผู้ป่วยตามเงื่อนไขที่เลือก</p>
+                          <p className="text-xs text-slate-500">
+                            {searchQuery 
+                              ? `ไม่พบผลการค้นหาสำหรับ "${searchQuery}"` 
+                              : `ในรอบเดือน ${formatThaiMonth(selectedMonth)} ยังไม่มีรายชื่อผู้ป่วยตรงตามตัวกรอง`}
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            {searchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setSearchQuery('')}
+                                className="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer"
+                              >
+                                ล้างคำค้นหา
+                              </button>
+                            )}
                             <button
-                              onClick={() => {
-                                onSelectPatient(p.id);
-                                onClose();
-                              }}
-                              className="text-xs text-sky-600 hover:text-sky-800 font-bold hover:underline inline-flex items-center gap-1"
+                              type="button"
+                              onClick={() => { setSelectedMonth('all'); setFilterGroup('all'); setSearchQuery(''); }}
+                              className="px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold shadow-xs cursor-pointer"
                             >
-                              <span>เปิดดูเคส</span>
-                              <ArrowUpRight className="w-3 h-3" />
+                              📊 แสดงสรุปภาพรวมทั้งหมด ({patients.length} ราย)
                             </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    displayPatients.map(p => {
+                      const pDtps = monthlyDtps.filter(d => d.patientId === p.id);
+                      const pPending = pDtps.filter(d => d.status === 'pending');
+                      return (
+                        <tr key={p.id} className="hover:bg-slate-50/80 transition">
+                          <td className="py-2.5 px-3 font-mono font-bold text-slate-700">{p.hn}</td>
+                          <td className="py-2.5 px-3 font-bold text-slate-900">
+                            {p.name}
+                            {p.statusTag && (
+                              <span className="ml-2 text-[10px] bg-slate-100 text-slate-600 px-1.5 py-0.2 rounded font-normal">
+                                {p.statusTag}
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            {p.trackingGroup === 'home_visit' ? (
+                              <span className="text-[10px] font-bold bg-indigo-50 text-indigo-800 px-2 py-0.5 rounded-md border border-indigo-200">
+                                🏠 เยี่ยมบ้าน
+                              </span>
+                            ) : p.trackingGroup === 'telemed' ? (
+                              <span className="text-[10px] font-bold bg-teal-50 text-teal-800 px-2 py-0.5 rounded-md border border-teal-200">
+                                📱 Telemed
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold bg-rose-50 text-rose-800 px-2 py-0.5 rounded-md border border-rose-200">
+                                🏥 คลินิก/DRPs
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-700">{p.diagnosis}</td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={`font-bold ${
+                              p.adherenceScore >= 80 ? 'text-teal-600' : p.adherenceScore >= 60 ? 'text-amber-600' : 'text-rose-600'
+                            }`}>
+                              {p.adherenceScore}%
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3">
+                            {pDtps.length > 0 ? (
+                              <span className={`text-[11px] font-semibold ${pPending.length > 0 ? 'text-amber-700' : 'text-teal-700'}`}>
+                                พบ {pDtps.length} เรื่อง {pPending.length > 0 ? `(ค้าง ${pPending.length})` : '(แก้ไขครบ)'}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 text-[11px]">ไม่พบ DRPs</span>
+                            )}
+                          </td>
+                          <td className="py-2.5 px-3 text-right print:hidden">
+                            {onSelectPatient && (
+                              <button
+                                onClick={() => {
+                                  onSelectPatient(p.id);
+                                  onClose();
+                                }}
+                                className="text-xs text-sky-600 hover:text-sky-800 font-bold hover:underline inline-flex items-center gap-1"
+                              >
+                                <span>เปิดดูเคส</span>
+                                <ArrowUpRight className="w-3 h-3" />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>

@@ -137,8 +137,10 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
       localStorage.getItem(`psycare_hosxp_note_${patient.id}`) || 
       '';
   });
-  const [isCopiedHosxp, setIsCopiedHosxp] = useState(false);
+  const [isCopiedLatest, setIsCopiedLatest] = useState(false);
+  const [isCopiedAll, setIsCopiedAll] = useState(false);
   const [isSavedHosxp, setIsSavedHosxp] = useState(false);
+  const [hosxpToast, setHosxpToast] = useState<string>('');
   const [isHosxpBoxCollapsed, setIsHosxpBoxCollapsed] = useState(false);
   const [selectedHosxpTemplate, setSelectedHosxpTemplate] = useState<string>('default');
 
@@ -148,42 +150,86 @@ export const PharmacistCareTab: React.FC<PharmacistCareTabProps> = ({
     setHosxpNote(saved);
   }, [patient.id, patient.hosxpPharmacyNote]);
 
-  const handleCopyHosxpNote = async () => {
+  // Count visits in the current text log
+  const getVisitCount = (text: string): number => {
+    if (!text || !text.trim()) return 0;
+    const matches = text.match(/(?:📌\s*\[?(?:การบริบาล|SOAP NOTE|บันทึก DRPs)|ครั้งที่\s*\d+|Visit(?:\s*ครั้งที่)?\s*\d+|═{10,}|-{10,})/gi);
+    if (matches && matches.length > 0) {
+      return Math.max(matches.length, 1);
+    }
+    return 1;
+  };
+
+  // Extract only the latest visit block for pasting into today's HOSxP OPD card
+  const getLatestVisitContent = (text: string): string => {
+    if (!text || !text.trim()) return '';
+    const dividerRegex = /(?:\n\s*═{10,}\s*\n|\n\s*-{10,}\s*\n)/;
+    const parts = text.split(dividerRegex);
+    if (parts.length > 1) {
+      const last = parts[parts.length - 1].trim();
+      if (last) return last;
+      return parts[parts.length - 2].trim();
+    }
+    return text.trim();
+  };
+
+  const handleCopyLatestVisit = async () => {
+    const latest = getLatestVisitContent(hosxpNote);
+    if (!latest) {
+      alert('ยังไม่มีข้อมูลการบริบาลในระบบ กรุณากดปุ่ม "➕ เพิ่มบันทึก Visit ถัดไป" หรือพิมพ์ข้อมูลก่อนค่ะ');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(latest);
+      setIsCopiedLatest(true);
+      setTimeout(() => setIsCopiedLatest(false), 3000);
+    } catch (e) {
+      alert('ไม่สามารถคัดลอกได้อัตโนมัติ กรุณาลองคลุมดำแล้วคัดลอกด้วยตนเองค่ะ');
+    }
+  };
+
+  const handleCopyAllVisits = async () => {
     if (!hosxpNote.trim()) {
-      alert('ยังไม่มีข้อความให้คัดลอก กรุณาพิมพ์หรือกดปุ่ม "✨ ดึงสรุปอัตโนมัติ" ก่อนค่ะ');
+      alert('ยังไม่มีข้อความให้คัดลอก กรุณาพิมพ์หรือกดปุ่ม "➕ เพิ่มบันทึก Visit ถัดไป" ก่อนค่ะ');
       return;
     }
     try {
       await navigator.clipboard.writeText(hosxpNote);
-      setIsCopiedHosxp(true);
-      setTimeout(() => setIsCopiedHosxp(false), 3000);
+      setIsCopiedAll(true);
+      setTimeout(() => setIsCopiedAll(false), 3000);
     } catch (e) {
-      alert('ไม่สามารถคัดลอกผ่านคลิปบอร์ดได้ กรุณาลองคลุมดำข้อความแล้วกดคัดลอกด้วยตนเองค่ะ');
+      alert('ไม่สามารถคัดลอกได้อัตโนมัติ กรุณาลองคลุมดำแล้วคัดลอกด้วยตนเองค่ะ');
     }
   };
 
-  const handleSaveHosxp = () => {
+  const handleSaveHosxp = (customText?: string) => {
+    const textToSave = customText !== undefined ? customText : hosxpNote;
     try {
-      localStorage.setItem(`psycare_hosxp_note_${patient.id}`, hosxpNote);
+      localStorage.setItem(`psycare_hosxp_note_${patient.id}`, textToSave);
     } catch (e) {}
     if (onSaveHosxpNote) {
-      onSaveHosxpNote(patient.id, hosxpNote);
+      onSaveHosxpNote(patient.id, textToSave);
     }
     setIsSavedHosxp(true);
     setTimeout(() => setIsSavedHosxp(false), 3000);
   };
 
-  const handleAutoGenerateHosxpNote = (mode: 'full' | 'soap' | 'drp' = 'full') => {
-    const todayTh = new Date().toLocaleDateString('th-TH', { 
+  const buildVisitContent = (mode: 'full' | 'soap' | 'drp', visitNumber: number) => {
+    const now = new Date();
+    const todayTh = now.toLocaleDateString('th-TH', { 
       year: 'numeric', 
       month: 'long', 
       day: 'numeric' 
     });
+    const nowTime = now.toLocaleTimeString('th-TH', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
 
     if (mode === 'soap') {
-      const compiledSoap = `[SOAP NOTE - การบริบาลทางเภสัชกรรม คลินิกจิตเวช HOSxP]
-วันที่: ${todayTh} | HN: ${patient.hn} | ผู้ป่วย: ${patient.name}
-การวินิจฉัย: ${patient.diagnosis || '-'} | กลุ่มติดตาม: ${patient.trackingGroup === 'home_visit' ? 'เยี่ยมบ้าน' : patient.trackingGroup === 'telemed' ? 'Telemed' : 'คลินิก/DRPs'}
+      return `📌 [SOAP NOTE การบริบาลทางเภสัชกรรม ครั้งที่ ${visitNumber} | วันที่: ${todayTh} เวลา ${nowTime} น.]
+HN: ${patient.hn} | ผู้ป่วย: ${patient.name} | การวินิจฉัย: ${patient.diagnosis || '-'}
+กลุ่มติดตาม: ${patient.trackingGroup === 'home_visit' ? 'เยี่ยมบ้าน' : patient.trackingGroup === 'telemed' ? 'Telemed' : 'คลินิก/DRPs'} | ความเสี่ยง: ${patient.riskLevel}
 
 S (Subjective):
 - ผู้ป่วย/ญาติให้ข้อมูล: อาการทางจิตทรงตัว ไม่มีอาการกำเริบ รับประทานอาหารและนอนหลับได้
@@ -206,15 +252,12 @@ P (Plan):
 - นัดติดตามครั้งถัดไป: ${patient.nextAppointment ? `${formatAppointmentDate(patient.nextAppointment, 'short')} (${patient.nextAppointmentType || 'clinic'})` : 'ตามแพทย์นัด'}
 
 ผู้บันทึก: ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)
-PsyCare Sheet Connect`;
-      setHosxpNote(compiledSoap);
-      return;
+บันทึกผ่าน: PsyCare Sheet Connect (เวชระเบียนจิตเวชชุมชน)`;
     }
 
     if (mode === 'drp') {
-      const compiledDrp = `[บันทึก DRPs & CLINICAL PHARMACY INTERVENTION - HOSxP]
-วันที่: ${todayTh} | HN: ${patient.hn} | ${patient.name}
-การวินิจฉัย: ${patient.diagnosis || '-'}
+      return `📌 [บันทึก DRPs & CLINICAL PHARMACY INTERVENTION ครั้งที่ ${visitNumber} | วันที่: ${todayTh} เวลา ${nowTime} น.]
+HN: ${patient.hn} | ${patient.name} | การวินิจฉัย: ${patient.diagnosis || '-'}
 
 รายการปัญหาจากการใช้ยา (DRPs):
 ${patientDtps.length > 0 
@@ -224,13 +267,12 @@ ${patientDtps.length > 0
 คำแนะนำและการบริบาลทางเภสัชกรรม:
 - ให้คำปรึกษาและเน้นย้ำความสำคัญของการรับประทานยาอย่างต่อเนื่อง
 - ส่งต่อประสานงานทีมสหวิชาชีพและแพทย์ผู้ให้การรักษา
+- นัดติดตามครั้งถัดไป: ${patient.nextAppointment ? `${formatAppointmentDate(patient.nextAppointment, 'short')}` : 'ตามแพทย์นัด'}
 
 ผู้บันทึก: ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)`;
-      setHosxpNote(compiledDrp);
-      return;
     }
 
-    // Default: FULL COMPREHENSIVE HOSxP Note
+    // Default: FULL COMPREHENSIVE Note
     const medLines = patientMeds.length > 0 
       ? patientMeds.map((m, i) => `  ${i + 1}. ${m.name} : ${m.sig}${m.indication ? ` (${m.indication})` : ''}`).join('\n')
       : '  - ไม่พบรายการยาจิตเวชที่บันทึกไว้';
@@ -255,8 +297,7 @@ ${patientDtps.length > 0
       ? `นัดครั้งถัดไป: ${formatAppointmentDate(patient.nextAppointment, 'full')} (${patient.nextAppointmentType === 'home_visit' ? 'เยี่ยมบ้าน' : patient.nextAppointmentType === 'telemed' ? 'Telemed' : 'ตรวจคลินิก'}) ${patient.nextAppointmentObjective ? `[วัตถุประสงค์: ${patient.nextAppointmentObjective}]` : ''}`
       : 'ยังไม่ได้ระบุวันนัดหมายถัดไป';
 
-    const compiledFull = `[บันทึกข้อมูลการบริบาลทางเภสัชกรรมทั้งหมด - สำหรับลงระบบ HOSxP]
-วันที่บันทึก: ${todayTh}
+    return `📌 [บันทึกข้อมูลการบริบาลทางเภสัชกรรม ครั้งที่ ${visitNumber} | วันที่: ${todayTh} เวลา ${nowTime} น.]
 ผู้ป่วย: ${patient.name} | HN: ${patient.hn} | อายุ: ${patient.age} ปี | เพศ: ${patient.gender}
 การวินิจฉัย (Diagnosis): ${patient.diagnosis || 'Psychiatric Condition'}
 กลุ่มติดตาม: ${patient.trackingGroup === 'home_visit' ? 'เยี่ยมบ้าน (Home Visit)' : patient.trackingGroup === 'telemed' ? 'Telemed' : 'คลินิก/DRPs'} | ความเสี่ยง: ${patient.riskLevel}
@@ -283,8 +324,27 @@ ${drpLines}
 
 ผู้บันทึก: ภญ.สุภิตา ทองขำ (เภสัชกรชำนาญการ)
 ระบบเชื่อมโยงข้อมูล: PsyCare Sheet Connect (เวชระเบียนจิตเวชชุมชน)`;
+  };
 
-    setHosxpNote(compiledFull);
+  // Append downward for new visit notes, preserving existing history
+  const handleAddOrAppendVisit = (mode: 'full' | 'soap' | 'drp' = 'full', forceOverwrite: boolean = false) => {
+    const currentVisits = getVisitCount(hosxpNote);
+    const nextVisitNumber = forceOverwrite || !hosxpNote.trim() ? 1 : currentVisits + 1;
+    const newContent = buildVisitContent(mode, nextVisitNumber);
+
+    let updatedNote: string;
+    if (!hosxpNote.trim() || forceOverwrite) {
+      updatedNote = newContent;
+    } else {
+      // Append downwards for the next visit with clean divider
+      const divider = '\n\n══════════════════════════════════════════════════════════════════════════\n\n';
+      updatedNote = hosxpNote.trim() + divider + newContent;
+    }
+
+    setHosxpNote(updatedNote);
+    handleSaveHosxp(updatedNote);
+    setHosxpToast(`✓ เพิ่มและบันทึกการบริบาล Visit ครั้งที่ ${nextVisitNumber} ต่อท้ายเรียบร้อยแล้ว (ข้อมูลเดิมยังคงอยู่ครบถ้วน)`);
+    setTimeout(() => setHosxpToast(''), 4000);
   };
 
   // ==========================================
@@ -561,162 +621,213 @@ ${drpLines}
       {/* ========================================================
           0. ช่องว่างสำหรับบันทึกข้อมูลการบริบาลเภสัชกรรมทั้งหมด ใน HOSxP (ใต้ชื่อผู้ป่วย สำหรับเภสัชกร)
          ======================================================== */}
-      <section className="bg-gradient-to-br from-teal-50/90 via-white to-emerald-50/70 rounded-3xl shadow-sm border-2 border-teal-300 p-4 sm:p-5 space-y-3.5 transition-all clinical-record-form">
-        {/* Header Ribbon */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-teal-200">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-gradient-to-br from-teal-600 to-emerald-700 text-white rounded-2xl shadow-xs shrink-0">
-              <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] font-black uppercase tracking-wider bg-teal-700 text-white px-2.5 py-0.5 rounded-md shadow-2xs">
-                  HOSxP Note
-                </span>
-                <h3 className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">
-                  บันทึกข้อมูลการบริบาลเภสัชกรรมทั้งหมด ใน Hos XP
-                </h3>
+      {(() => {
+        const visitCount = getVisitCount(hosxpNote);
+        return (
+          <section className="bg-gradient-to-br from-teal-50/90 via-white to-emerald-50/70 rounded-3xl shadow-sm border-2 border-teal-300 p-4 sm:p-5 space-y-3.5 transition-all clinical-record-form">
+            {/* Header Ribbon */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-teal-200">
+              <div className="flex items-start sm:items-center gap-3">
+                <div className="p-2.5 bg-gradient-to-br from-teal-600 to-emerald-700 text-white rounded-2xl shadow-xs shrink-0 mt-0.5 sm:mt-0">
+                  <FileText className="w-5 h-5 sm:w-6 sm:h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[10px] font-black uppercase tracking-wider bg-teal-700 text-white px-2.5 py-0.5 rounded-md shadow-2xs">
+                      HOSxP Note
+                    </span>
+                    <h3 className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">
+                      บันทึกข้อมูลการบริบาลเภสัชกรรมทั้งหมด ใน Hos XP
+                    </h3>
+                    <span className="text-[11px] font-bold bg-teal-100 text-teal-800 border border-teal-300 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-teal-600" />
+                      {visitCount > 0 ? `สะสม ${visitCount} Visit` : 'ยังไม่มี Visit'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    บันทึกประวัติการบริบาลทางเภสัชกรรมต่อเนื่อง (ข้อมูลเดิมจะถูกเก็บสะสมไว้ตลอด และการบริบาลในครั้งถัดไปจะต่อลงเป็นข้างล่างๆ แต่ละ visit)
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-slate-600 mt-0.5">
-                ช่องสำหรับพิมพ์ บันทึก และคัดลอกข้อมูลสรุปการบริบาลทางเภสัชกรรมทั้งหมดไปวางในระบบ HOSxP (ผู้ป่วย: {patient.name} HN: {patient.hn})
-              </p>
-            </div>
-          </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-1.5 flex-wrap justify-end">
-            {/* Auto-generate button */}
-            <button
-              type="button"
-              onClick={() => handleAutoGenerateHosxpNote('full')}
-              className="px-3 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 cursor-pointer"
-              title="ดึงข้อมูลยา DRPs ความร่วมมือ และผลแล็บทั้งหมดของผู้ป่วยคนนี้มาสรุปเป็นข้อความพร้อมลง HOSxP ทันที"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>✨ ดึงสรุปอัตโนมัติ</span>
-            </button>
+              {/* Action buttons */}
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                {/* Append Next Visit Button */}
+                <button
+                  type="button"
+                  onClick={() => handleAddOrAppendVisit('full', false)}
+                  className="px-3 py-1.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                  title="ดึงข้อมูลยา DRPs ความร่วมมือ และผลแล็บปัจจุบันมาต่อท้ายเป็นบันทึก Visit ถัดไป (ข้อมูลเดิมยังคงอยู่ครบถ้วน)"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>➕ เพิ่มบันทึก Visit ถัดไป (ต่อท้าย)</span>
+                </button>
 
-            {/* Copy button */}
-            <button
-              type="button"
-              onClick={handleCopyHosxpNote}
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 cursor-pointer border ${
-                isCopiedHosxp 
-                  ? 'bg-emerald-700 text-white border-emerald-800 ring-2 ring-emerald-300' 
-                  : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-300'
-              }`}
-              title="คัดลอกข้อความทั้งหมดลงคลิปบอร์ด เพื่อนำไปกดวาง (Ctrl+V) ในระบบ HOSxP"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              <span>{isCopiedHosxp ? '✓ คัดลอกสำเร็จแล้ว!' : '📋 คัดลอกลง HOSxP'}</span>
-            </button>
+                {/* Copy Latest Visit Only */}
+                <button
+                  type="button"
+                  onClick={handleCopyLatestVisit}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 cursor-pointer border ${
+                    isCopiedLatest 
+                      ? 'bg-emerald-700 text-white border-emerald-800 ring-2 ring-emerald-300' 
+                      : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border-emerald-300'
+                  }`}
+                  title="คัดลอกเฉพาะข้อความของ Visit ล่าสุดไปวางในโปรแกรม HOSxP โดยไม่ต้องตัดประวัติเก่าออก"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>{isCopiedLatest ? '✓ คัดลอก Visit ล่าสุดแล้ว!' : '📋 คัดลอกเฉพาะ Visit ล่าสุด'}</span>
+                </button>
 
-            {/* Save Note button */}
-            <button
-              type="button"
-              onClick={handleSaveHosxp}
-              className={`px-3 py-1.5 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 cursor-pointer border ${
-                isSavedHosxp
-                  ? 'bg-slate-800 text-white border-slate-900'
-                  : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'
-              }`}
-              title="บันทึกข้อความนี้เก็บไว้ในเวชระเบียนของผู้ป่วย"
-            >
-              <Save className="w-3.5 h-3.5" />
-              <span>{isSavedHosxp ? '✓ บันทึกแล้ว' : '💾 บันทึก Note'}</span>
-            </button>
+                {/* Copy All Visits */}
+                <button
+                  type="button"
+                  onClick={handleCopyAllVisits}
+                  className={`px-2.5 py-1.5 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1 active:scale-95 cursor-pointer border ${
+                    isCopiedAll 
+                      ? 'bg-emerald-700 text-white border-emerald-800' 
+                      : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'
+                  }`}
+                  title="คัดลอกประวัติการบริบาลครบทุก Visit สะสม"
+                >
+                  <Copy className="w-3 h-3 text-slate-500" />
+                  <span>{isCopiedAll ? '✓ คัดลอกทุก Visit แล้ว!' : `ทุก Visit (${visitCount})`}</span>
+                </button>
 
-            {/* Template Selector */}
-            <select
-              value={selectedHosxpTemplate}
-              onChange={(e) => {
-                const val = e.target.value;
-                setSelectedHosxpTemplate(val);
-                if (val === 'full') handleAutoGenerateHosxpNote('full');
-                else if (val === 'soap') handleAutoGenerateHosxpNote('soap');
-                else if (val === 'drp') handleAutoGenerateHosxpNote('drp');
-                else if (val === 'clear') {
-                  if (confirm('ต้องการล้างข้อความในช่อง HOSxP หรือไม่?')) {
-                    setHosxpNote('');
-                  }
-                  setSelectedHosxpTemplate('default');
-                }
-              }}
-              className="text-xs bg-white text-slate-700 border border-slate-300 rounded-xl px-2.5 py-1.5 font-bold cursor-pointer hover:bg-slate-50"
-              title="เลือกแม่แบบข้อความสำหรับ HOSxP"
-            >
-              <option value="default">📑 แม่แบบ HOSxP ▾</option>
-              <option value="full">1. สรุปครบวงจร (Full Note)</option>
-              <option value="soap">2. แบบฟอร์ม SOAP Note</option>
-              <option value="drp">3. แบบฟอร์ม DRPs & Counseling</option>
-              <option value="clear">🗑️ ล้างข้อความ (Clear)</option>
-            </select>
+                {/* Save Note button */}
+                <button
+                  type="button"
+                  onClick={() => handleSaveHosxp()}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl shadow-xs transition flex items-center gap-1.5 active:scale-95 cursor-pointer border ${
+                    isSavedHosxp
+                      ? 'bg-slate-800 text-white border-slate-900 ring-2 ring-slate-400'
+                      : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-300'
+                  }`}
+                  title="บันทึกข้อความทั้งหมดเก็บไว้ในเวชระเบียนของผู้ป่วย (ข้อมูลเดิมจะไม่หาย)"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{isSavedHosxp ? '✓ บันทึกแล้ว' : '💾 บันทึก Note'}</span>
+                </button>
 
-            {/* Collapse toggle */}
-            <button
-              type="button"
-              onClick={() => setIsHosxpBoxCollapsed(!isHosxpBoxCollapsed)}
-              className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition"
-              title={isHosxpBoxCollapsed ? 'ขยายช่องบันทึก' : 'ย่อช่องบันทึก'}
-            >
-              {isHosxpBoxCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
+                {/* Template & Management Selector */}
+                <select
+                  value={selectedHosxpTemplate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSelectedHosxpTemplate('default');
+                    if (val === 'append-full') handleAddOrAppendVisit('full', false);
+                    else if (val === 'append-soap') handleAddOrAppendVisit('soap', false);
+                    else if (val === 'append-drp') handleAddOrAppendVisit('drp', false);
+                    else if (val === 'overwrite-full') {
+                      if (confirm('คำเตือน: คุณต้องการแทนที่ข้อความทั้งหมดด้วยบันทึก Visit ปัจจุบันใช่หรือไม่? (ข้อมูลเดิมจะถูกเขียนทับ)')) {
+                        handleAddOrAppendVisit('full', true);
+                      }
+                    } else if (val === 'clear') {
+                      if (confirm('คำเตือน: คุณต้องการล้างข้อความการบริบาลทั้งหมดของผู้ป่วยรายนี้ใช่หรือไม่?')) {
+                        setHosxpNote('');
+                        handleSaveHosxp('');
+                      }
+                    }
+                  }}
+                  className="text-xs bg-white text-slate-700 border border-slate-300 rounded-xl px-2.5 py-1.5 font-bold cursor-pointer hover:bg-slate-50"
+                  title="เลือกรูปแบบการเพิ่ม Visit หรือจัดการข้อความ"
+                >
+                  <option value="default">📑 แม่แบบ & ตัวเลือก ▾</option>
+                  <option value="append-full">➕ เพิ่ม Visit: สรุปครบวงจร (ต่อท้าย)</option>
+                  <option value="append-soap">➕ เพิ่ม Visit: SOAP Note (ต่อท้าย)</option>
+                  <option value="append-drp">➕ เพิ่ม Visit: DRPs & Intervention (ต่อท้าย)</option>
+                  <option value="overwrite-full">⚠️ เขียนทับทั้งหมดด้วย Visit ปัจจุบัน (Overwrite)</option>
+                  <option value="clear">🗑️ ล้างประวัติทั้งหมด (Clear)</option>
+                </select>
 
-        {/* Textarea & Helper Information */}
-        {!isHosxpBoxCollapsed && (
-          <div className="space-y-2 animate-in fade-in duration-150">
-            {/* Quick alert feedback if copied or saved */}
-            {isCopiedHosxp && (
-              <div className="p-2.5 bg-emerald-600 text-white text-xs font-bold rounded-xl flex items-center justify-between shadow-xs animate-in slide-in-from-top-1">
-                <span className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-200" />
-                  <span>คัดลอกข้อความสำหรับการบริบาลเภสัชกรรมเรียบร้อยแล้ว พร้อมนำไปวาง (Ctrl+V) ในโปรแกรม HOSxP ได้ทันที!</span>
-                </span>
-                <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono">Clipboard Ready</span>
+                {/* Collapse toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsHosxpBoxCollapsed(!isHosxpBoxCollapsed)}
+                  className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition"
+                  title={isHosxpBoxCollapsed ? 'ขยายช่องบันทึก' : 'ย่อช่องบันทึก'}
+                >
+                  {isHosxpBoxCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+                </button>
               </div>
-            )}
-
-            {isSavedHosxp && (
-              <div className="p-2 bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-xs">
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span>บันทึกข้อมูล Note HOSxP เข้าสู่ระบบเวชระเบียนของผู้ป่วยเรียบร้อยแล้ว</span>
-              </div>
-            )}
-
-            {/* The Main HOSxP Textarea */}
-            <div className="relative">
-              <textarea
-                value={hosxpNote}
-                onChange={(e) => setHosxpNote(e.target.value)}
-                placeholder="พิมพ์บันทึกข้อมูลการบริบาลเภสัชกรรมทั้งหมดสำหรับลงระบบ HOSxP ที่นี่... หรือกดปุ่ม '✨ ดึงสรุปอัตโนมัติ' เพื่อให้ระบบรวบรวมยา, DRPs, ความร่วมมือ, และผลแล็บ มาจัดรูปแบบให้อัตโนมัติ"
-                rows={8}
-                className="w-full p-3.5 bg-white border-2 border-teal-300 focus:border-teal-600 rounded-2xl text-slate-800 font-sans text-sm sm:text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-400/30 transition shadow-xs font-medium resize-y min-h-[160px] sm:min-h-[190px]"
-              />
             </div>
 
-            {/* Bottom Info bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[11px] text-slate-500 pt-0.5 px-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-teal-900">
-                  💡 เภสัชกรสามารถพิมพ์แก้ไขเพิ่มเติมในช่องนี้ได้อย่างอิสระ แล้วกด "📋 คัดลอกลง HOSxP" เพื่อนำไปวางใน Hos XP
-                </span>
-                {patient.hosxpNoteUpdatedAt && (
-                  <span className="text-slate-400">
-                    • บันทึกล่าสุด: {patient.hosxpNoteUpdatedAt}
-                  </span>
+            {/* Textarea & Helper Information */}
+            {!isHosxpBoxCollapsed && (
+              <div className="space-y-2 animate-in fade-in duration-150">
+                {/* Feedback notifications */}
+                {hosxpToast && (
+                  <div className="p-2.5 bg-teal-700 text-white text-xs font-bold rounded-xl flex items-center justify-between shadow-xs animate-in slide-in-from-top-1">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-teal-200" />
+                      <span>{hosxpToast}</span>
+                    </span>
+                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono">Appended</span>
+                  </div>
                 )}
+
+                {isCopiedLatest && (
+                  <div className="p-2.5 bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center justify-between shadow-xs animate-in slide-in-from-top-1">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                      <span>คัดลอกเฉพาะข้อความของ Visit ล่าสุดเรียบร้อยแล้ว พร้อมนำไปวาง (Ctrl+V) ในโปรแกรม HOSxP OPD card ได้ทันที!</span>
+                    </span>
+                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono">Latest Visit Copied</span>
+                  </div>
+                )}
+
+                {isCopiedAll && (
+                  <div className="p-2.5 bg-emerald-800 text-white text-xs font-bold rounded-xl flex items-center justify-between shadow-xs animate-in slide-in-from-top-1">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+                      <span>คัดลอกประวัติการบริบาลครบทุก Visit สะสม ({visitCount} ครั้ง) ลงคลิปบอร์ดเรียบร้อยแล้ว</span>
+                    </span>
+                    <span className="text-[10px] bg-white/20 px-2 py-0.5 rounded font-mono">All Visits Copied</span>
+                  </div>
+                )}
+
+                {isSavedHosxp && (
+                  <div className="p-2 bg-slate-800 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-xs">
+                    <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>บันทึกข้อมูล Note HOSxP เข้าสู่ระบบเวชระเบียนเรียบร้อยแล้ว — ข้อมูลเดิมทั้งหมดถูกเก็บสะสมไว้อย่างปลอดภัย ไม่สูญหาย</span>
+                  </div>
+                )}
+
+                {/* The Main HOSxP Textarea */}
+                <div className="relative">
+                  <textarea
+                    value={hosxpNote}
+                    onChange={(e) => setHosxpNote(e.target.value)}
+                    placeholder="พิมพ์บันทึกข้อมูลการบริบาลเภสัชกรรมทั้งหมดสำหรับลงระบบ HOSxP ที่นี่... หรือกดปุ่ม '➕ เพิ่มบันทึก Visit ถัดไป (ต่อท้าย)' เพื่อดึงข้อมูลยา, DRPs, ความร่วมมือ และผลแล็บ มาต่อท้ายเป็นแต่ละ visit อย่างต่อเนื่อง"
+                    rows={9}
+                    className="w-full p-3.5 bg-white border-2 border-teal-300 focus:border-teal-600 rounded-2xl text-slate-800 font-sans text-sm sm:text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-teal-400/30 transition shadow-xs font-medium resize-y min-h-[170px] sm:min-h-[210px]"
+                  />
+                </div>
+
+                {/* Bottom Info bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 text-[11px] text-slate-500 pt-0.5 px-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-teal-900">
+                      💡 ข้อมูลไม่สูญหาย: ทุกครั้งที่กด "💾 บันทึก Note" หรือ "➕ เพิ่มบันทึก Visit ถัดไป" ประวัติการบริบาลทั้งหมดจะถูกบันทึกสะสมต่อกันลงด้านล่าง
+                    </span>
+                    {patient.hosxpNoteUpdatedAt && (
+                      <span className="text-slate-400">
+                        • บันทึกล่าสุด: {patient.hosxpNoteUpdatedAt}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 font-mono text-[10px] text-slate-400">
+                    <span>สะสม: {visitCount} Visit{visitCount > 1 ? 's' : ''}</span>
+                    <span>•</span>
+                    <span>{hosxpNote.length} ตัวอักษร</span>
+                    <span>•</span>
+                    <span>{hosxpNote.split(/\s+/).filter(Boolean).length} คำ</span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0 font-mono text-[10px] text-slate-400">
-                <span>ความยาว: {hosxpNote.length} ตัวอักษร</span>
-                <span>•</span>
-                <span>{hosxpNote.split(/\s+/).filter(Boolean).length} คำ</span>
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
+            )}
+          </section>
+        );
+      })()}
 
       {/* Med Rec Referral Alert Banner from Multidisciplinary Team */}
       {pendingMedRecHandovers.length > 0 && (

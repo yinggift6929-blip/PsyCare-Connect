@@ -28,7 +28,7 @@ export interface SheetTabDefinition {
 export const REQUIRED_TABS: SheetTabDefinition[] = [
   {
     title: 'Patients',
-    headers: ['ID', 'HN', 'ชื่อ-นามสกุล', 'เพศ', 'อายุ', 'การวินิจฉัยหลัก', 'กลุ่มการติดตาม', 'กลุ่มคลินิก/แท็ก', 'ระดับความเสี่ยง', 'Adherence %', 'เบอร์โทร', 'ที่อยู่', 'วันที่พบล่าสุด', 'วันนัดถัดไป', 'ประเภทการนัด', 'วัตถุประสงค์การนัด', 'อัปเดตล่าสุด']
+    headers: ['ID', 'HN', 'ชื่อ-นามสกุล', 'เพศ', 'อายุ', 'การวินิจฉัยหลัก', 'กลุ่มการติดตาม', 'กลุ่มคลินิก/แท็ก', 'ระดับความเสี่ยง', 'Adherence %', 'เบอร์โทร', 'ที่อยู่', 'วันที่พบล่าสุด', 'วันนัดถัดไป', 'ประเภทการนัด', 'วัตถุประสงค์การนัด', 'อัปเดตล่าสุด', 'บันทึกการบริบาล_HOSxP', 'วันที่บันทึก_HOSxP']
   },
   {
     title: 'Medications',
@@ -230,7 +230,9 @@ export async function loadClinicDataFromSheets(token: string, spreadsheetId: str
         nextAppointment: isExpanded ? (r[13] || '') : (r[11] || ''),
         nextAppointmentType: isExpanded ? ((r[14] === 'home_visit' || r[14] === 'telemed' || r[14] === 'clinic') ? r[14] : undefined) : undefined,
         nextAppointmentObjective: isExpanded ? (r[15] || '') : '',
-        updatedAt: isExpanded ? (r[16] || new Date().toLocaleString('th-TH')) : (r[12] || new Date().toLocaleString('th-TH'))
+        updatedAt: isExpanded ? (r[16] || new Date().toLocaleString('th-TH')) : (r[12] || new Date().toLocaleString('th-TH')),
+        hosxpPharmacyNote: isExpanded ? (r[17] || '') : '',
+        hosxpNoteUpdatedAt: isExpanded ? (r[18] || '') : ''
       };
     });
 
@@ -512,7 +514,7 @@ export async function syncAllDataToSheets(token: string, spreadsheetId: string, 
 
   // Patients
   const patientRows = data.patients.map(p => [
-    p.id, p.hn, p.name, p.gender, p.age, p.diagnosis, p.trackingGroup || 'home_visit', p.statusTag, p.riskLevel, p.adherenceScore, p.phone || '', p.address || '', p.lastVisit || '', p.nextAppointment || '', p.nextAppointmentType || '', p.nextAppointmentObjective || '', p.updatedAt
+    p.id, p.hn, p.name, p.gender, p.age, p.diagnosis, p.trackingGroup || 'home_visit', p.statusTag, p.riskLevel, p.adherenceScore, p.phone || '', p.address || '', p.lastVisit || '', p.nextAppointment || '', p.nextAppointmentType || '', p.nextAppointmentObjective || '', p.updatedAt, p.hosxpPharmacyNote || '', p.hosxpNoteUpdatedAt || ''
   ]);
   await clearAndWrite('Patients', REQUIRED_TABS[0].headers, patientRows);
 

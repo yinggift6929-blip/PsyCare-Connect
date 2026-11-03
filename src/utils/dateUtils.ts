@@ -184,3 +184,37 @@ export function addDaysToDate(baseDateStr: string | null | undefined, daysToAdd:
   const d = String(baseDate.getDate()).padStart(2, '0');
   return `${y}-${m}-${d}`;
 }
+
+/**
+ * ดึงค่า ปี-เดือน (YYYY-MM ในระบบ ค.ศ.) จากวันที่ในรูปแบบต่างๆ อย่างแม่นยำ
+ * รองรับทั้ง ISO YYYY-MM-DD, พ.ศ. 2569, DD/MM/YYYY, และสตริงวันภาษาไทย
+ */
+export function getYearMonth(dateStr?: string | null): string | null {
+  if (!dateStr || typeof dateStr !== 'string' || !dateStr.trim()) return null;
+  const parsed = parseDateParts(dateStr);
+  if (parsed) {
+    const mm = String(parsed.month).padStart(2, '0');
+    return `${parsed.year}-${mm}`;
+  }
+  // Fallback: check standard YYYY-MM prefix
+  const clean = dateStr.trim();
+  const match = clean.match(/^(\d{4})[-\/](\d{1,2})/);
+  if (match) {
+    let yr = parseInt(match[1], 10);
+    const mo = parseInt(match[2], 10);
+    if (yr > 2400) yr -= 543;
+    return `${yr}-${String(mo).padStart(2, '0')}`;
+  }
+  return null;
+}
+
+/**
+ * ดึงค่า ปี-เดือน ของเดือนปัจจุบัน (ค.ศ. YYYY-MM)
+ */
+export function getCurrentYearMonth(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
